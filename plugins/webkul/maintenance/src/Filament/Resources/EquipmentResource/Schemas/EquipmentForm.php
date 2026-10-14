@@ -13,6 +13,7 @@ use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Builder;
 use Webkul\Employee\Models\Employee;
+use Webkul\Maintenance\Models\Equipment;
 use Webkul\Maintenance\Models\EquipmentCategory;
 use Webkul\Maintenance\Models\Team;
 use Webkul\Project\Models\Project;
@@ -43,7 +44,24 @@ class EquipmentForm
                             ->schema([
                                 Select::make('partner_id')
                                     ->label(__('maintenance::filament/resources/equipment.form.sections.product-information.fields.partner'))
-                                    ->relationship('partner', 'name')
+                                    ->relationship(
+                                        'partner',
+                                        'name',
+                                        modifyQueryUsing: fn (Builder $query, $state): Builder => Equipment::filterExternalPartnersQuery($query, 'vendor', $state),
+                                    )
+                                    ->createOptionForm([
+                                        TextInput::make('name')
+                                            ->label(__('maintenance::filament/resources/equipment.form.sections.general.fields.name'))
+                                            ->required()
+                                            ->maxLength(255),
+                                        TextInput::make('email')
+                                            ->email()
+                                            ->maxLength(255),
+                                        TextInput::make('phone')
+                                            ->tel()
+                                            ->maxLength(255),
+                                    ])
+                                    ->createOptionUsing(fn (array $data): int => Equipment::createExternalPartner($data, 'vendor'))
                                     ->native(false)
                                     ->searchable()
                                     ->preload(),
@@ -184,7 +202,24 @@ class EquipmentForm
 
                                 Select::make('customer_id')
                                     ->label(__('maintenance::filament/resources/equipment.form.sections.settings.fields.customer'))
-                                    ->relationship('customer', 'name')
+                                    ->relationship(
+                                        'customer',
+                                        'name',
+                                        modifyQueryUsing: fn (Builder $query, $state): Builder => Equipment::filterExternalPartnersQuery($query, 'customer', $state),
+                                    )
+                                    ->createOptionForm([
+                                        TextInput::make('name')
+                                            ->label(__('maintenance::filament/resources/equipment.form.sections.general.fields.name'))
+                                            ->required()
+                                            ->maxLength(255),
+                                        TextInput::make('email')
+                                            ->email()
+                                            ->maxLength(255),
+                                        TextInput::make('phone')
+                                            ->tel()
+                                            ->maxLength(255),
+                                    ])
+                                    ->createOptionUsing(fn (array $data): int => Equipment::createExternalPartner($data, 'customer'))
                                     ->native(false)
                                     ->searchable()
                                     ->preload(),

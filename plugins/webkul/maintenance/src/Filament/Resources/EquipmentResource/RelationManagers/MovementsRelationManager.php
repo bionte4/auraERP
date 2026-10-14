@@ -17,6 +17,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Webkul\Maintenance\Enums\EquipmentMovementType;
+use Webkul\Maintenance\Models\Equipment;
 use Webkul\Project\Models\Project;
 
 class MovementsRelationManager extends RelationManager
@@ -104,7 +105,24 @@ class MovementsRelationManager extends RelationManager
 
                 Select::make('to_customer_id')
                     ->label(__('maintenance::filament/resources/equipment.movements.fields.to-customer'))
-                    ->relationship('toCustomer', 'name')
+                    ->relationship(
+                        'toCustomer',
+                        'name',
+                        modifyQueryUsing: fn (Builder $query, $state): Builder => Equipment::filterExternalPartnersQuery($query, 'customer', $state),
+                    )
+                    ->createOptionForm([
+                        TextInput::make('name')
+                            ->label(__('maintenance::filament/resources/equipment.form.sections.general.fields.name'))
+                            ->required()
+                            ->maxLength(255),
+                        TextInput::make('email')
+                            ->email()
+                            ->maxLength(255),
+                        TextInput::make('phone')
+                            ->tel()
+                            ->maxLength(255),
+                    ])
+                    ->createOptionUsing(fn (array $data): int => Equipment::createExternalPartner($data, 'customer'))
                     ->default(fn (): ?int => $this->getOwnerRecord()->customer_id)
                     ->searchable()
                     ->preload()

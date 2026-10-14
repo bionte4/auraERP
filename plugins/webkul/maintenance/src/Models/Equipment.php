@@ -2,17 +2,20 @@
 
 namespace Webkul\Maintenance\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 use Webkul\Chatter\Traits\HasChatter;
 use Webkul\Chatter\Traits\HasLogActivity;
 use Webkul\Employee\Models\Employee;
 use Webkul\Field\Traits\HasCustomFields;
 use Webkul\Maintenance\Database\Factories\EquipmentFactory;
+use Webkul\Partner\Enums\AccountType;
 use Webkul\Partner\Models\Partner;
 use Webkul\Project\Models\Project;
 use Webkul\Security\Models\User;
@@ -133,6 +136,76 @@ class Equipment extends Model
     public function movements(): HasMany
     {
         return $this->hasMany(EquipmentMovement::class, 'equipment_id');
+    }
+
+    public static function filterExternalPartnersQuery(Builder $query, string $role = 'vendor', mixed $selectedId = null): Builder
+    {
+        $rankColumn = $role === 'customer' ? 'customer_rank' : 'supplier_rank';
+        $hasRankColumn = Schema::hasColumn('partners_partners', $rankColumn);
+
+        return $query->where(function (Builder $outer) use ($rankColumn, $hasRankColumn, $selectedId): void {
+            if ($selectedId) {
+                $outer->orWhere('partners_partners.id', $selectedId);
+            }
+
+            if ($hasRankColumn) {
+                $outer->orWhere("partners_partners.{$rankColumn}", '>', 0);
+            }
+
+            $outer->orWhere(function (Builder $clean): void {
+                $clean->where(function (Builder $sub): void {
+                    $sub->whereNull('partners_partners.sub_type')
+                        ->orWhereNotIn('partners_partners.sub_type', ['employee', 'invoice', 'delivery', 'other']);
+                });
+
+                if (Schema::hasTable('users') && Schema::hasColumn('users', 'partner_id')) {
+                    $clean->whereNotIn(
+                        'partners_partners.id',
+                        User::query()->whereNotNull('partner_id')->select('partner_id'),
+                    );
+                }
+
+                if (Schema::hasTable('employees_employees') && Schema::hasColumn('employees_employees', 'partner_id')) {
+                    $clean->whereNotIn(
+                        'partners_partners.id',
+                        Employee::withoutGlobalScopes()->whereNotNull('partner_id')->select('partner_id'),
+                    );
+                }
+
+                if (Schema::hasTable('companies') && Schema::hasColumn('companies', 'partner_id')) {
+                    $clean->whereNotIn(
+                        'partners_partners.id',
+                        Company::query()->whereNotNull('partner_id')->select('partner_id'),
+                    );
+                }
+            });
+        });
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public static function createExternalPartner(array $data, string $role = 'vendor'): int
+    {
+        $attributes = [
+            'name'         => $data['name'],
+            'email'        => $data['email'] ?? null,
+            'phone'        => $data['phone'] ?? null,
+            'account_type' => AccountType::COMPANY,
+            'sub_type'     => 'company',
+            'company_id'   => current_company_id(),
+            'creator_id'   => Auth::id(),
+        ];
+
+        $partner = Partner::withoutGlobalScopes()->create($attributes);
+
+        $rankColumn = $role === 'customer' ? 'customer_rank' : 'supplier_rank';
+
+        if (Schema::hasColumn('partners_partners', $rankColumn)) {
+            $partner->forceFill([$rankColumn => 1])->save();
+        }
+
+        return (int) $partner->id;
     }
 
     protected static function newFactory(): EquipmentFactory

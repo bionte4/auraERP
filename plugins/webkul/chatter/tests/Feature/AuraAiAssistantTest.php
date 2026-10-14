@@ -270,3 +270,31 @@ it('records asset movements for relocation and replacement and updates equipment
     $aiReply = app(AuraAiAssistantService::class)->answer('Bagaimana riwayat pergerakan dan replacement aset?');
     expect($aiReply)->toContain('Router Mikrotik #R01');
 });
+
+it('excludes internal users, employees, and companies from equipment vendor and customer dropdown queries', function (): void {
+    $user = FilamentHelper::actingAs([
+        'view_any_employee_employee',
+    ]);
+
+    $emp = Employee::withoutGlobalScopes()->create([
+        'name'       => 'Edo Asri Internal',
+        'is_active'  => true,
+        'company_id' => $user->default_company_id,
+    ]);
+
+    $vendorId = Equipment::createExternalPartner([
+        'name'  => 'PT Bhinneka Vendor',
+        'email' => 'sales@bhinneka.test',
+    ], 'vendor');
+
+    $vendorNames = Equipment::filterExternalPartnersQuery(Partner::withoutGlobalScopes(), 'vendor')
+        ->pluck('name')
+        ->all();
+
+    expect($vendorNames)
+        ->toContain('PT Bhinneka Vendor')
+        ->not->toContain('Edo Asri Internal')
+        ->not->toContain($user->name);
+
+    expect($vendorId)->toBeGreaterThan(0);
+});
