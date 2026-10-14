@@ -18,6 +18,7 @@ use Webkul\Evaluation\Filament\Resources\EvaluationResource\Schemas\EvaluationFo
 use Webkul\Evaluation\Filament\Resources\EvaluationResource\Schemas\EvaluationInfolist;
 use Webkul\Evaluation\Filament\Resources\EvaluationResource\Tables\EvaluationsTable;
 use Webkul\Evaluation\Models\Evaluation;
+use Webkul\PluginManager\Package;
 use Webkul\Support\Enums\NavigationGroup;
 
 class EvaluationResource extends Resource
@@ -26,9 +27,18 @@ class EvaluationResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-check';
 
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 2;
 
     protected static ?string $recordTitleAttribute = 'title';
+
+    public static function getNavigationParentItem(): ?string
+    {
+        if (Package::isPluginInstalled('performance')) {
+            return __('performance::filament/resources/performance-plan.navigation.title');
+        }
+
+        return null;
+    }
 
     public static function getNavigationLabel(): string
     {

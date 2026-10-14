@@ -22,9 +22,14 @@ class AttendanceSiteResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-map-pin';
 
-    protected static ?int $navigationSort = 8;
+    protected static ?int $navigationSort = 2;
 
     protected static ?string $recordTitleAttribute = 'name';
+
+    public static function getNavigationParentItem(): ?string
+    {
+        return __('attendances::filament/resources/attendance.navigation.title');
+    }
 
     public static function getNavigationLabel(): string
     {

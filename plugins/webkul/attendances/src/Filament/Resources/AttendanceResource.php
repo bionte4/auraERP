@@ -19,15 +19,20 @@ class AttendanceResource extends Resource
 {
     protected static ?string $model = Attendance::class;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clock';
+    protected static string|\BackedEnum|null $navigationIcon = null;
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 3;
 
     protected static ?string $recordTitleAttribute = 'work_date';
 
     public static function getNavigationLabel(): string
     {
         return __('attendances::filament/resources/attendance.navigation.title');
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return __('attendances::filament/resources/attendance.navigation.records');
     }
 
     public static function getNavigationGroup(): string|\UnitEnum

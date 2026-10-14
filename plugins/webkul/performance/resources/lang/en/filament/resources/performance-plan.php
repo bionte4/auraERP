@@ -5,7 +5,8 @@ return [
     'plural' => 'Performance plans',
 
     'navigation' => [
-        'title' => 'Performance plans',
+        'title' => 'Performance',
+        'plans' => 'Performance plans',
     ],
 
     'form' => [

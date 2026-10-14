@@ -5,7 +5,8 @@ return [
     'plural' => 'Attendance',
 
     'navigation' => [
-        'title' => 'Attendance',
+        'title'   => 'Attendance',
+        'records' => 'Attendance records',
     ],
 
     'form' => [

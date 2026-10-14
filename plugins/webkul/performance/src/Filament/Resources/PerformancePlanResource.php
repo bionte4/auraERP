@@ -24,15 +24,20 @@ class PerformancePlanResource extends Resource
 {
     protected static ?string $model = PerformancePlan::class;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-chart-bar';
+    protected static string|\BackedEnum|null $navigationIcon = null;
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 4;
 
     protected static ?string $recordTitleAttribute = 'title';
 
     public static function getNavigationLabel(): string
     {
         return __('performance::filament/resources/performance-plan.navigation.title');
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return __('performance::filament/resources/performance-plan.navigation.plans');
     }
 
     public static function getNavigationGroup(): string|\UnitEnum

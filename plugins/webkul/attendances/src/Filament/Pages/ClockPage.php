@@ -23,11 +23,16 @@ class ClockPage extends Page
 {
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-device-phone-mobile';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 1;
 
     protected static ?string $slug = 'absen';
 
     protected string $view = 'attendances::filament.pages.clock';
+
+    public static function getNavigationParentItem(): ?string
+    {
+        return __('attendances::filament/resources/attendance.navigation.title');
+    }
 
     public bool $requiresFace = false;
 

@@ -5,7 +5,8 @@ return [
     'plural' => 'Absensi',
 
     'navigation' => [
-        'title' => 'Absensi',
+        'title'   => 'Absensi',
+        'records' => 'Daftar absensi',
     ],
 
     'form' => [

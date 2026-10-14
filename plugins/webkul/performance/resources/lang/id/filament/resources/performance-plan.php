@@ -5,7 +5,8 @@ return [
     'plural' => 'Rencana kinerja',
 
     'navigation' => [
-        'title' => 'Rencana kinerja',
+        'title' => 'Kinerja',
+        'plans' => 'Rencana kinerja',
     ],
 
     'form' => [

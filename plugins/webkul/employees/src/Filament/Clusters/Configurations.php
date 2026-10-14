@@ -8,7 +8,7 @@ use Webkul\Support\Enums\NavigationGroup;
 
 class Configurations extends Cluster
 {
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 6;
 
     public static function getSlug(?Panel $panel = null): string
     {
