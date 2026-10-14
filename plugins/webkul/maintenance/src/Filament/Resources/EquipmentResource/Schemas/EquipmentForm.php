@@ -12,8 +12,10 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Builder;
+use Webkul\Employee\Models\Employee;
 use Webkul\Maintenance\Models\EquipmentCategory;
 use Webkul\Maintenance\Models\Team;
+use Webkul\Project\Models\Project;
 
 class EquipmentForm
 {
@@ -138,6 +140,51 @@ class EquipmentForm
                                 Select::make('owner_user_id')
                                     ->label(__('maintenance::filament/resources/equipment.form.sections.settings.fields.owner'))
                                     ->relationship('owner', 'name')
+                                    ->native(false)
+                                    ->searchable()
+                                    ->preload(),
+
+                                Select::make('employee_id')
+                                    ->label(__('maintenance::filament/resources/equipment.form.sections.settings.fields.employee'))
+                                    ->relationship('employee', 'name')
+                                    ->native(false)
+                                    ->searchable()
+                                    ->preload()
+                                    ->live()
+                                    ->afterStateUpdated(function (Set $set, Get $get, mixed $state): void {
+                                        if (! $state || $get('owner_user_id')) {
+                                            return;
+                                        }
+
+                                        $userId = Employee::withoutGlobalScopes()->find($state)?->user_id;
+
+                                        if ($userId) {
+                                            $set('owner_user_id', $userId);
+                                        }
+                                    }),
+
+                                Select::make('project_id')
+                                    ->label(__('maintenance::filament/resources/equipment.form.sections.settings.fields.project'))
+                                    ->relationship('project', 'name')
+                                    ->native(false)
+                                    ->searchable()
+                                    ->preload()
+                                    ->live()
+                                    ->afterStateUpdated(function (Set $set, Get $get, mixed $state): void {
+                                        if (! $state || $get('customer_id')) {
+                                            return;
+                                        }
+
+                                        $partnerId = Project::withoutGlobalScopes()->find($state)?->partner_id;
+
+                                        if ($partnerId) {
+                                            $set('customer_id', $partnerId);
+                                        }
+                                    }),
+
+                                Select::make('customer_id')
+                                    ->label(__('maintenance::filament/resources/equipment.form.sections.settings.fields.customer'))
+                                    ->relationship('customer', 'name')
                                     ->native(false)
                                     ->searchable()
                                     ->preload(),

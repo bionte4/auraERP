@@ -12,10 +12,12 @@ return [
     ],
 
     'tabs' => [
-        'my-equipment'      => 'Peralatan Saya',
-        'assigned'          => 'Ditugaskan',
-        'unassigned'        => 'Belum Ditugaskan',
-        'under-maintenance' => 'Dalam Pemeliharaan',
-        'archived'          => 'Diarsipkan',
+        'my-equipment'            => 'Aset & Peralatan Saya',
+        'employee-assets'         => 'Aset Karyawan',
+        'project-customer-assets' => 'Aset Proyek & Customer',
+        'assigned'                => 'Ditugaskan',
+        'unassigned'              => 'Belum Ditugaskan',
+        'under-maintenance'       => 'Dalam Pemeliharaan',
+        'archived'                => 'Diarsipkan',
     ],
 ];

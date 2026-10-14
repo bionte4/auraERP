@@ -7,6 +7,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Webkul\Employee\Models\Employee;
 use Webkul\Maintenance\Filament\Resources\EquipmentResource;
 use Webkul\TableViews\Filament\Components\PresetView;
 use Webkul\TableViews\Filament\Concerns\HasTableViews;
@@ -39,7 +40,30 @@ class ListEquipment extends ListRecords
                 ->icon('heroicon-s-user')
                 ->favorite()
                 ->setAsDefault()
-                ->modifyQueryUsing(fn (Builder $query) => $query->where('owner_user_id', Auth::id())),
+                ->modifyQueryUsing(function (Builder $query): Builder {
+                    $userId = Auth::id();
+                    $employeeId = $userId
+                        ? Employee::withoutGlobalScopes()->where('user_id', $userId)->value('id')
+                        : null;
+
+                    return $query->where(function (Builder $sub) use ($userId, $employeeId): void {
+                        $sub->where('owner_user_id', $userId);
+
+                        if ($employeeId) {
+                            $sub->orWhere('employee_id', $employeeId);
+                        }
+                    });
+                }),
+
+            'employee_assets' => PresetView::make(__('maintenance::filament/resources/equipment/pages/list-equipment.tabs.employee-assets'))
+                ->icon('heroicon-s-identification')
+                ->favorite()
+                ->modifyQueryUsing(fn (Builder $query) => $query->whereNotNull('employee_id')),
+
+            'project_customer_assets' => PresetView::make(__('maintenance::filament/resources/equipment/pages/list-equipment.tabs.project-customer-assets'))
+                ->icon('heroicon-s-briefcase')
+                ->favorite()
+                ->modifyQueryUsing(fn (Builder $query) => $query->where(fn (Builder $sub) => $sub->whereNotNull('project_id')->orWhereNotNull('customer_id'))),
 
             'assigned' => PresetView::make(__('maintenance::filament/resources/equipment/pages/list-equipment.tabs.assigned'))
                 ->icon('heroicon-s-check-circle')

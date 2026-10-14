@@ -86,6 +86,18 @@ class EquipmentInfolist
                                     ->label(__('maintenance::filament/resources/equipment.infolist.sections.settings.entries.owner'))
                                     ->placeholder('—'),
 
+                                TextEntry::make('employee.name')
+                                    ->label(__('maintenance::filament/resources/equipment.infolist.sections.settings.entries.employee'))
+                                    ->placeholder('—'),
+
+                                TextEntry::make('project.name')
+                                    ->label(__('maintenance::filament/resources/equipment.infolist.sections.settings.entries.project'))
+                                    ->placeholder('—'),
+
+                                TextEntry::make('customer.name')
+                                    ->label(__('maintenance::filament/resources/equipment.infolist.sections.settings.entries.customer'))
+                                    ->placeholder('—'),
+
                                 TextEntry::make('location')
                                     ->label(__('maintenance::filament/resources/equipment.infolist.sections.settings.entries.location'))
                                     ->placeholder('—'),

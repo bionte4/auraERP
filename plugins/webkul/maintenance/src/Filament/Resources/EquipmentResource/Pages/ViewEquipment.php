@@ -4,6 +4,7 @@ namespace Webkul\Maintenance\Filament\Resources\EquipmentResource\Pages;
 
 use Filament\Actions\EditAction;
 use Filament\Resources\Pages\ViewRecord;
+use Webkul\Chatter\Filament\Actions\ChatterAction;
 use Webkul\Maintenance\Filament\Resources\EquipmentResource;
 
 class ViewEquipment extends ViewRecord
@@ -13,6 +14,8 @@ class ViewEquipment extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            ChatterAction::make()
+                ->resource(static::$resource),
             EditAction::make(),
         ];
     }

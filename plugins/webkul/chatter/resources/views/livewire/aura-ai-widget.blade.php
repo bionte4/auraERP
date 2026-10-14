@@ -233,6 +233,9 @@
                 <button type="button" class="aura-ai-chip" wire:click="ask('{{ __('chatter::ai.widget.presets.employees') }}')">
                     {{ __('chatter::ai.widget.presets.employees') }}
                 </button>
+                <button type="button" class="aura-ai-chip" wire:click="ask('{{ __('chatter::ai.widget.presets.assets') }}')">
+                    {{ __('chatter::ai.widget.presets.assets') }}
+                </button>
             </div>
 
             <div class="aura-ai-messages">

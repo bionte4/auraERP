@@ -13,6 +13,7 @@ return [
             'contracts'   => 'Kontrak akan berakhir',
             'performance' => 'Ringkasan kinerja & evaluasi',
             'employees'   => 'Ringkasan karyawan',
+            'assets'      => 'Aset proyek & karyawan',
         ],
     ],
 
@@ -42,12 +43,14 @@ return [
         'attendance-month' => 'Absensi bulan ini: :present hadir (:late terlambat)',
         'performance-plan' => 'Rencana Kinerja terbaru: :title (Progres: :score)',
         'evaluation'       => 'Evaluasi Kinerja terbaru: :title (Skor: :score)',
+        'assets'           => 'Aset/Peralatan yang dipegang: :assets',
     ],
 
     'insights' => [
         'no-employee-module'        => 'Modul Karyawan belum aktif.',
         'no-attendance-module'      => 'Modul Absensi belum aktif.',
         'no-project-module'         => 'Modul Proyek belum aktif.',
+        'no-asset-module'           => 'Modul Aset/Peralatan (Maintenance) belum aktif.',
         'contract-heading'          => 'Status Kontrak Karyawan (≤ 30 Hari):',
         'no-expiring-contracts'     => 'Tidak ada kontrak karyawan aktif yang berakhir dalam 30 hari ke depan.',
         'expired'                   => 'sudah berakhir',
@@ -60,6 +63,9 @@ return [
         'plans-count'               => 'Total Rencana Kinerja: :count',
         'evaluations-count'         => 'Total Evaluasi Kinerja: :count',
         'projects-summary'          => 'Ringkasan Proyek: :projects proyek aktif dengan :tasks tugas.',
+        'project-assets-heading'    => 'Aset pada Proyek & Customer:',
+        'assets-summary'            => 'Ringkasan Aset & Peralatan: :total unit (:maintenance dalam pemeliharaan)',
+        'asset-movements-heading'   => 'Riwayat Pergerakan / Perpindahan Aset Terbaru:',
         'employee-summary'          => 'Total Karyawan Aktif: :employees orang di :departments departemen.',
         'personal-heading'          => 'Data Profil & Kinerja Anda (:name):',
         'personal-today-attendance' => 'Absensi Anda hari ini: :in → :out:site',

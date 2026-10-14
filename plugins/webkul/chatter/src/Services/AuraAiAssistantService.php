@@ -13,6 +13,8 @@ use Webkul\Chatter\Models\Message;
 use Webkul\Employee\Models\Department;
 use Webkul\Employee\Models\Employee;
 use Webkul\Evaluation\Models\Evaluation;
+use Webkul\Maintenance\Models\Equipment;
+use Webkul\Maintenance\Models\EquipmentMovement;
 use Webkul\Performance\Models\PerformancePlan;
 use Webkul\PluginManager\Package;
 use Webkul\Project\Models\Project;
@@ -192,6 +194,26 @@ class AuraAiAssistantService
             }
         }
 
+        if (Schema::hasTable('maintenance_equipments')) {
+            $assetsQuery = Equipment::withoutGlobalScopes()
+                ->whereNull('deleted_at')
+                ->where(function ($q) use ($employee): void {
+                    if (Schema::hasColumn('maintenance_equipments', 'employee_id')) {
+                        $q->where('employee_id', $employee->id);
+                    }
+
+                    if ($employee->user_id) {
+                        $q->orWhere('owner_user_id', $employee->user_id);
+                    }
+                });
+
+            $assets = $assetsQuery->pluck('name');
+
+            if ($assets->isNotEmpty()) {
+                $lines[] = '• '.__('chatter::ai.employee.assets', ['assets' => $assets->join(', ')]);
+            }
+        }
+
         return $lines;
     }
 
@@ -213,6 +235,10 @@ class AuraAiAssistantService
 
         if (preg_match('/(kinerja|performance|evaluasi|evaluation|kpi|nilai|skor|score|target)/u', $q)) {
             return $this->performanceAndEvaluationInsights();
+        }
+
+        if (preg_match('/(aset|asset|equipment|peralatan|inventaris|laptop|garansi|warranty|relokasi|relocate|replacement|mutasi|perpindahan|pergerakan)/u', $q)) {
+            return $this->assetInsights();
         }
 
         if (preg_match('/(proyek|project|task|tugas)/u', $q)) {
@@ -447,10 +473,85 @@ class AuraAiAssistantService
             ? Task::withoutGlobalScopes()->whereNull('deleted_at')->count()
             : 0;
 
-        return __('chatter::ai.insights.projects-summary', [
-            'projects' => $projectCount,
-            'tasks'    => $taskCount,
-        ]);
+        $lines = [
+            __('chatter::ai.insights.projects-summary', [
+                'projects' => $projectCount,
+                'tasks'    => $taskCount,
+            ]),
+        ];
+
+        if (Schema::hasTable('maintenance_equipments') && Schema::hasColumn('maintenance_equipments', 'project_id')) {
+            $projectAssets = Equipment::withoutGlobalScopes()
+                ->with(['project', 'customer'])
+                ->whereNull('deleted_at')
+                ->where(fn ($q) => $q->whereNotNull('project_id')->orWhereNotNull('customer_id'))
+                ->limit(10)
+                ->get();
+
+            if ($projectAssets->isNotEmpty()) {
+                $lines[] = '';
+                $lines[] = __('chatter::ai.insights.project-assets-heading');
+
+                foreach ($projectAssets as $asset) {
+                    $proj = $asset->project?->name ?? '—';
+                    $cust = $asset->customer?->name ? " ({$asset->customer->name})" : '';
+                    $lines[] = "• {$asset->name} → {$proj}{$cust}";
+                }
+            }
+        }
+
+        return implode("\n", $lines);
+    }
+
+    protected function assetInsights(): string
+    {
+        if (! Schema::hasTable('maintenance_equipments')) {
+            return __('chatter::ai.insights.no-asset-module');
+        }
+
+        $assets = Equipment::withoutGlobalScopes()
+            ->with(['employee', 'owner', 'project', 'customer', 'category'])
+            ->whereNull('deleted_at')
+            ->get();
+
+        $lines = [
+            __('chatter::ai.insights.assets-summary', [
+                'total'       => $assets->count(),
+                'maintenance' => $assets->where('maintenance_open_count', '>', 0)->count(),
+            ]),
+        ];
+
+        foreach ($assets->take(10) as $asset) {
+            $holder = $asset->employee?->name ?? $asset->owner?->name ?? __('chatter::ai.insights.unassigned');
+            $proj = $asset->project?->name ? " | Proyek: {$asset->project->name}" : '';
+            $cust = $asset->customer?->name ? " | Customer: {$asset->customer->name}" : '';
+            $lines[] = "• {$asset->name} ({$holder}{$proj}{$cust})";
+        }
+
+        if (Schema::hasTable('maintenance_equipment_movements')) {
+            $movements = EquipmentMovement::query()
+                ->with(['equipment', 'fromEmployee', 'toEmployee', 'fromProject', 'toProject', 'replacementEquipment'])
+                ->latest('movement_date')
+                ->latest('id')
+                ->limit(5)
+                ->get();
+
+            if ($movements->isNotEmpty()) {
+                $lines[] = '';
+                $lines[] = __('chatter::ai.insights.asset-movements-heading');
+
+                foreach ($movements as $mov) {
+                    $typeLabel = $mov->movement_type?->getLabel() ?? (string) $mov->movement_type;
+                    $assetName = $mov->equipment?->name ?? ('#'.$mov->equipment_id);
+                    $dateStr = $mov->movement_date?->format('d M Y') ?? '';
+                    $repl = $mov->replacementEquipment?->name ? " → {$mov->replacementEquipment->name}" : '';
+                    $loc = $mov->to_location ? " @ {$mov->to_location}" : '';
+                    $lines[] = "• [{$dateStr}] {$assetName}: {$typeLabel}{$repl}{$loc}";
+                }
+            }
+        }
+
+        return implode("\n", $lines);
     }
 
     protected function employeeOverviewInsights(): string

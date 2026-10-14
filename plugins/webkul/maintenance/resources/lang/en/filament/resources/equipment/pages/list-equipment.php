@@ -12,10 +12,12 @@ return [
     ],
 
     'tabs' => [
-        'my-equipment'      => 'My Equipment',
-        'assigned'          => 'Assigned',
-        'unassigned'        => 'Unassigned',
-        'under-maintenance' => 'Under Maintenance',
-        'archived'          => 'Archived',
+        'my-equipment'            => 'My Assets & Equipment',
+        'employee-assets'         => 'Employee Assets',
+        'project-customer-assets' => 'Project & Customer Assets',
+        'assigned'                => 'Assigned',
+        'unassigned'              => 'Unassigned',
+        'under-maintenance'       => 'Under Maintenance',
+        'archived'                => 'Archived',
     ],
 ];

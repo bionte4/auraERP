@@ -38,6 +38,24 @@ class EquipmentTable
                     ->placeholder('—')
                     ->sortable(),
 
+                TextColumn::make('employee.name')
+                    ->label(__('maintenance::filament/resources/equipment.table.columns.employee'))
+                    ->placeholder('—')
+                    ->searchable()
+                    ->sortable(),
+
+                TextColumn::make('project.name')
+                    ->label(__('maintenance::filament/resources/equipment.table.columns.project'))
+                    ->placeholder('—')
+                    ->searchable()
+                    ->sortable(),
+
+                TextColumn::make('customer.name')
+                    ->label(__('maintenance::filament/resources/equipment.table.columns.customer'))
+                    ->placeholder('—')
+                    ->searchable()
+                    ->sortable(),
+
                 TextColumn::make('serial_no')
                     ->label(__('maintenance::filament/resources/equipment.table.columns.serial-no'))
                     ->placeholder('—')
@@ -86,6 +104,27 @@ class EquipmentTable
                     ->native(false)
                     ->searchable()
                     ->preload(),
+
+                SelectFilter::make('employee_id')
+                    ->label(__('maintenance::filament/resources/equipment.table.filters.employee'))
+                    ->relationship('employee', 'name')
+                    ->native(false)
+                    ->searchable()
+                    ->preload(),
+
+                SelectFilter::make('project_id')
+                    ->label(__('maintenance::filament/resources/equipment.table.filters.project'))
+                    ->relationship('project', 'name')
+                    ->native(false)
+                    ->searchable()
+                    ->preload(),
+
+                SelectFilter::make('customer_id')
+                    ->label(__('maintenance::filament/resources/equipment.table.filters.customer'))
+                    ->relationship('customer', 'name')
+                    ->native(false)
+                    ->searchable()
+                    ->preload(),
             ], $customFilters))
             ->groups([
                 TableGroup::make('technician.name')
@@ -94,6 +133,12 @@ class EquipmentTable
                     ->label(__('maintenance::filament/resources/equipment.table.groups.category')),
                 TableGroup::make('owner.name')
                     ->label(__('maintenance::filament/resources/equipment.table.groups.owner')),
+                TableGroup::make('employee.name')
+                    ->label(__('maintenance::filament/resources/equipment.table.groups.employee')),
+                TableGroup::make('project.name')
+                    ->label(__('maintenance::filament/resources/equipment.table.groups.project')),
+                TableGroup::make('customer.name')
+                    ->label(__('maintenance::filament/resources/equipment.table.groups.customer')),
                 TableGroup::make('partner.name')
                     ->label(__('maintenance::filament/resources/equipment.table.groups.vendor')),
             ])

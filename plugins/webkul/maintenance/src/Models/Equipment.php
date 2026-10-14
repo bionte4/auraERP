@@ -8,9 +8,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
+use Webkul\Chatter\Traits\HasChatter;
+use Webkul\Chatter\Traits\HasLogActivity;
+use Webkul\Employee\Models\Employee;
 use Webkul\Field\Traits\HasCustomFields;
 use Webkul\Maintenance\Database\Factories\EquipmentFactory;
 use Webkul\Partner\Models\Partner;
+use Webkul\Project\Models\Project;
 use Webkul\Security\Models\User;
 use Webkul\Support\Models\Company;
 use Webkul\Support\Traits\BelongsToCompany;
@@ -18,7 +22,7 @@ use Webkul\Support\Traits\BelongsToCompany;
 class Equipment extends Model
 {
     use BelongsToCompany;
-    use HasCustomFields, HasFactory, SoftDeletes;
+    use HasChatter, HasCustomFields, HasFactory, HasLogActivity, SoftDeletes;
 
     protected $table = 'maintenance_equipments';
 
@@ -40,6 +44,9 @@ class Equipment extends Model
         'category_id',
         'partner_id',
         'owner_user_id',
+        'employee_id',
+        'project_id',
+        'customer_id',
         'maintenance_team_id',
         'technician_user_id',
         'company_id',
@@ -83,6 +90,21 @@ class Equipment extends Model
         return $this->belongsTo(User::class, 'owner_user_id');
     }
 
+    public function employee(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class, 'employee_id');
+    }
+
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class, 'project_id');
+    }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Partner::class, 'customer_id');
+    }
+
     public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class, 'maintenance_team_id')->withTrashed();
@@ -106,6 +128,11 @@ class Equipment extends Model
     public function requests(): HasMany
     {
         return $this->hasMany(MaintenanceRequest::class, 'equipment_id');
+    }
+
+    public function movements(): HasMany
+    {
+        return $this->hasMany(EquipmentMovement::class, 'equipment_id');
     }
 
     protected static function newFactory(): EquipmentFactory

@@ -10,6 +10,7 @@ use Webkul\Maintenance\Filament\Resources\EquipmentResource\Pages\CreateEquipmen
 use Webkul\Maintenance\Filament\Resources\EquipmentResource\Pages\EditEquipment;
 use Webkul\Maintenance\Filament\Resources\EquipmentResource\Pages\ListEquipment;
 use Webkul\Maintenance\Filament\Resources\EquipmentResource\Pages\ViewEquipment;
+use Webkul\Maintenance\Filament\Resources\EquipmentResource\RelationManagers\MovementsRelationManager;
 use Webkul\Maintenance\Filament\Resources\EquipmentResource\Schemas\EquipmentForm;
 use Webkul\Maintenance\Filament\Resources\EquipmentResource\Schemas\EquipmentInfolist;
 use Webkul\Maintenance\Filament\Resources\EquipmentResource\Tables\EquipmentTable;
@@ -56,6 +57,13 @@ class EquipmentResource extends Resource
     public static function infolist(Schema $schema): Schema
     {
         return EquipmentInfolist::configure($schema, static::getCustomInfolistEntries());
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            MovementsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

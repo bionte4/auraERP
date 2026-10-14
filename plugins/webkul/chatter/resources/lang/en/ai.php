@@ -13,6 +13,7 @@ return [
             'contracts'   => 'Expiring contracts',
             'performance' => 'Performance & evaluations',
             'employees'   => 'Employee overview',
+            'assets'      => 'Project & employee assets',
         ],
     ],
 
@@ -42,12 +43,14 @@ return [
         'attendance-month' => 'Attendance this month: :present present (:late late)',
         'performance-plan' => 'Latest Performance Plan: :title (Progress: :score)',
         'evaluation'       => 'Latest Performance Evaluation: :title (Score: :score)',
+        'assets'           => 'Assigned Assets/Equipment: :assets',
     ],
 
     'insights' => [
         'no-employee-module'        => 'The Employees module is not active.',
         'no-attendance-module'      => 'The Attendance module is not active.',
         'no-project-module'         => 'The Project module is not active.',
+        'no-asset-module'           => 'The Asset/Equipment (Maintenance) module is not active.',
         'contract-heading'          => 'Employee Contracts Expiring (≤ 30 Days):',
         'no-expiring-contracts'     => 'No active employee contracts are expiring within the next 30 days.',
         'expired'                   => 'expired',
@@ -60,6 +63,9 @@ return [
         'plans-count'               => 'Total Performance Plans: :count',
         'evaluations-count'         => 'Total Performance Evaluations: :count',
         'projects-summary'          => 'Projects Overview: :projects active project(s) with :tasks task(s).',
+        'project-assets-heading'    => 'Assets Assigned to Projects & Customers:',
+        'assets-summary'            => 'Assets & Equipment Overview: :total unit(s) (:maintenance under maintenance)',
+        'asset-movements-heading'   => 'Recent Asset Movements / Transfers:',
         'employee-summary'          => 'Total Active Employees: :employees across :departments department(s).',
         'personal-heading'          => 'Your Profile & Performance Summary (:name):',
         'personal-today-attendance' => 'Your attendance today: :in → :out:site',

@@ -28,6 +28,8 @@ class MaintenanceServiceProvider extends PackageServiceProvider
                 '2026_05_18_000004_create_maintenance_equipments_table',
                 '2026_05_18_000005_create_maintenance_requests_table',
                 '2026_05_18_000006_create_maintenance_team_users_table',
+                '2026_10_14_190000_add_employee_project_customer_to_maintenance_equipments_table',
+                '2026_10_14_193000_create_maintenance_equipment_movements_table',
             ])
             ->runsMigrations()
             ->hasSeeder('Webkul\\Maintenance\\Database\Seeders\\DatabaseSeeder')
