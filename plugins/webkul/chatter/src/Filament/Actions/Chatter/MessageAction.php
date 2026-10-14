@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Throwable;
+use Webkul\Chatter\Services\AuraAiAssistantService;
 use Webkul\Chatter\Support\ChatterMentions;
 
 class MessageAction extends Action
@@ -146,6 +147,13 @@ class MessageAction extends Action
                             $data['attachments'],
                             ['message_id' => $message->id],
                         );
+                    }
+
+                    $plainBody = trim(strip_tags((string) ($data['body'] ?? '')));
+
+                    if (preg_match('/@ai\b/i', $plainBody) === 1) {
+                        $aiPrompt = trim((string) preg_replace('/@ai\b/i', '', $plainBody));
+                        app(AuraAiAssistantService::class)->replyOnRecord($record, $aiPrompt);
                     }
 
                     Notification::make()

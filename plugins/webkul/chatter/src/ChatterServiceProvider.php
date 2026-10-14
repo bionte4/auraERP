@@ -5,7 +5,12 @@ namespace Webkul\Chatter;
 use Filament\Panel;
 use Filament\Support\Assets\Css;
 use Filament\Support\Facades\FilamentAsset;
+use Filament\Support\Facades\FilamentView;
+use Filament\View\PanelsRenderHook;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Blade;
 use Livewire\Livewire;
+use Webkul\Chatter\Livewire\AuraAiWidget;
 use Webkul\Chatter\Livewire\ChatterPanel;
 use Webkul\PluginManager\Package;
 use Webkul\PluginManager\PackageServiceProvider;
@@ -36,6 +41,14 @@ class ChatterServiceProvider extends PackageServiceProvider
         $this->registerCustomCss();
 
         Livewire::component('chatter-panel', ChatterPanel::class);
+        Livewire::component('aura-ai-widget', AuraAiWidget::class);
+
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::BODY_END,
+            fn (): string => Auth::check()
+                ? Blade::render('@livewire(\'aura-ai-widget\')')
+                : '',
+        );
     }
 
     public function packageRegistered(): void

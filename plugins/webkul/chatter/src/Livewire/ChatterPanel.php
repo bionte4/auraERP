@@ -30,6 +30,7 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use Throwable;
 use Webkul\Chatter\Filament\Actions\Chatter\ActivityAction;
+use Webkul\Chatter\Filament\Actions\Chatter\AiAssistantAction;
 use Webkul\Chatter\Filament\Actions\Chatter\FileAction;
 use Webkul\Chatter\Filament\Actions\Chatter\FiltersAction;
 use Webkul\Chatter\Filament\Actions\Chatter\FollowerAction;
@@ -159,6 +160,14 @@ class ChatterPanel extends Component implements HasActions, HasForms, HasInfolis
         return ActivityAction::make('activity')
             ->visible($this->isActivityActionVisible)
             ->setActivityPlans($this->activityPlans)
+            ->record($this->record)
+            ->size('sm')
+            ->slideOver(false);
+    }
+
+    public function aiAssistantAction(): AiAssistantAction
+    {
+        return AiAssistantAction::make('aiAssistant')
             ->record($this->record)
             ->size('sm')
             ->slideOver(false);

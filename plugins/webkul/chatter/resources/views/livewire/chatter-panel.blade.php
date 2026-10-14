@@ -79,6 +79,10 @@
                 @if ($this->activityAction->isVisible())
                     {{ $this->activityAction }}
                 @endif
+
+                @if ($this->aiAssistantAction->isVisible())
+                    {{ $this->aiAssistantAction }}
+                @endif
             </div>
         </div>
 
