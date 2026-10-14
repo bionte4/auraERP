@@ -11,6 +11,21 @@ return [
     ],
 
     'header-actions' => [
+        'template' => [
+            'label' => 'Unduh Template',
+        ],
+
+        'import' => [
+            'label'             => 'Impor Excel / CSV',
+            'modal-heading'     => 'Bulk Import Proyek',
+            'modal-description' => 'Unggah file .xlsx atau .csv sesuai format template (kolom: name, customer, project_manager, stage, start_date, end_date, project_value, allocated_hours, visibility, description). Satu customer dapat memiliki banyak baris proyek.',
+            'file-label'        => 'File Excel (.xlsx) atau CSV (.csv)',
+            'notification'      => [
+                'title' => 'Impor proyek selesai',
+                'body'  => 'Berhasil menambahkan :created proyek baru, memperbarui :updated proyek, dan melewati :skipped baris.',
+            ],
+        ],
+
         'create' => [
             'label' => 'Proyek Baru',
         ],

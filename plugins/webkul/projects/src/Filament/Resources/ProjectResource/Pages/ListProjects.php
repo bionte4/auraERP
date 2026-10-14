@@ -2,13 +2,18 @@
 
 namespace Webkul\Project\Filament\Resources\ProjectResource\Pages;
 
+use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
+use Filament\Forms\Components\FileUpload;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Webkul\Project\Filament\Resources\ProjectResource;
 use Webkul\Project\Models\Project;
+use Webkul\Project\Services\ProjectBulkImportService;
 use Webkul\TableViews\Filament\Components\PresetView;
 use Webkul\TableViews\Filament\Concerns\HasTableViews;
 
@@ -77,6 +82,46 @@ class ListProjects extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('downloadTemplate')
+                ->label(__('projects::filament/resources/project/pages/list-projects.header-actions.template.label'))
+                ->icon('heroicon-o-arrow-down-tray')
+                ->color('gray')
+                ->action(fn () => app(ProjectBulkImportService::class)->downloadTemplate()),
+
+            Action::make('bulkImport')
+                ->label(__('projects::filament/resources/project/pages/list-projects.header-actions.import.label'))
+                ->icon('heroicon-o-arrow-up-tray')
+                ->color('gray')
+                ->modalHeading(__('projects::filament/resources/project/pages/list-projects.header-actions.import.modal-heading'))
+                ->modalDescription(__('projects::filament/resources/project/pages/list-projects.header-actions.import.modal-description'))
+                ->schema([
+                    FileUpload::make('file')
+                        ->label(__('projects::filament/resources/project/pages/list-projects.header-actions.import.file-label'))
+                        ->disk('local')
+                        ->directory('imports/projects')
+                        ->acceptedFileTypes([
+                            'text/csv',
+                            'text/plain',
+                            'application/vnd.ms-excel',
+                            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                        ])
+                        ->required(),
+                ])
+                ->action(function (array $data): void {
+                    $relativePath = (string) ($data['file'] ?? '');
+                    $fullPath = Storage::disk('local')->path($relativePath);
+
+                    $result = app(ProjectBulkImportService::class)->importFromPath($fullPath);
+
+                    Storage::disk('local')->delete($relativePath);
+
+                    Notification::make()
+                        ->success()
+                        ->title(__('projects::filament/resources/project/pages/list-projects.header-actions.import.notification.title'))
+                        ->body(__('projects::filament/resources/project/pages/list-projects.header-actions.import.notification.body', $result))
+                        ->send();
+                }),
+
             CreateAction::make()
                 ->label(__('projects::filament/resources/project/pages/list-projects.header-actions.create.label'))
                 ->icon('heroicon-o-plus-circle'),

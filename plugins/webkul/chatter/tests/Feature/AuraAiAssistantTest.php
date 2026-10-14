@@ -18,6 +18,7 @@ use Webkul\Maintenance\Services\EquipmentBulkImportService;
 use Webkul\Partner\Models\Partner;
 use Webkul\Partner\Services\PartnerBulkImportService;
 use Webkul\Project\Models\Project;
+use Webkul\Project\Services\ProjectBulkImportService;
 use Webkul\Project\Services\ProjectExpiryNotifier;
 use Webkul\Security\Models\User;
 
@@ -432,4 +433,53 @@ it('supports one customer having multiple projects with start/end dates, project
     expect($stagesNotified)->toContain('3_months')
         ->toContain('2_months')
         ->toContain('1_month');
+});
+
+it('bulk imports projects with customer, start/end dates, and project value', function (): void {
+    $manager = User::factory()->create(['name' => 'Budi PM']);
+    $this->actingAs($manager);
+
+    $service = app(ProjectBulkImportService::class);
+
+    $rows = [
+        $service->headings(),
+        [
+            'Implementasi ERP Cabang Jakarta',
+            'PT Bank Mandiri Klien',
+            'Budi PM',
+            'In Progress',
+            '2026-06-01',
+            now()->addDays(50)->toDateString(),
+            '350.000.000',
+            200,
+            'internal',
+            'Proyek ERP Jakarta',
+        ],
+        [
+            'Implementasi ERP Cabang Surabaya',
+            'PT Bank Mandiri Klien',
+            'Budi PM',
+            'Planned',
+            '2026-07-01',
+            now()->addDays(80)->toDateString(),
+            175000000,
+            120,
+            'internal',
+            'Proyek ERP Surabaya',
+        ],
+    ];
+
+    $result = $service->importRows($rows);
+
+    expect($result['created'])->toBe(2)
+        ->and($result['updated'])->toBe(0);
+
+    $customer = Partner::withoutGlobalScopes()->where('name', 'PT Bank Mandiri Klien')->first();
+    expect($customer)->not->toBeNull()
+        ->and($customer->projects()->withoutGlobalScopes()->count())->toBe(2);
+
+    $projJakarta = Project::withoutGlobalScopes()->where('name', 'Implementasi ERP Cabang Jakarta')->first();
+    expect($projJakarta)->not->toBeNull()
+        ->and((float) $projJakarta->project_value)->toBe(350000000.0)
+        ->and($projJakarta->expiryReminderStage())->toBe('2_months');
 });
