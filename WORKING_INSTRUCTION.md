@@ -10,14 +10,14 @@ Halaman login Admin Panel: **`/admin/login`**
 
 | Peran | Email | Password | Hak Akses Utama |
 | :--- | :--- | :--- | :--- |
-| **HRD / Manajemen** | `hrd@opsora.my.id` | `Demo-hrd-2026` | Mengelola Karyawan, Kontrak, Departemen, Lokasi Kerja (Geofence), Rekap Absensi, Rencana Kinerja (KPI), Evaluasi Kinerja, Aset/Peralatan, dan `auraAI` seluruh perusahaan. |
+| **HRD / Manajemen** | `hrd@opsora.my.id` | `Demo-hrd-2026` | Mengelola Karyawan, Kontrak, Departemen, Lokasi Kerja (Geofence), Rekap Absensi, Rencana Kinerja (KPI), Evaluasi Kinerja, Customer/Vendor, Proyek & Nilai Proyek, Aset/Peralatan, Bulk Import Excel/CSV, dan `auraAI` seluruh perusahaan. |
 | **Karyawan (Staf)** | `karyawan@opsora.my.id` | `Demo-karyawan-2026` | Melakukan Absensi (`/admin/absen`), melihat riwayat absensi pribadi, melihat peralatan milik sendiri, dan menggunakan `auraAI` khusus untuk data pribadinya sendiri. |
 
 *(Untuk membuat ulang akun demo kapan saja di server: `php8.4 artisan db:seed --class="Webkul\\Security\\Database\\Seeders\\DemoUserSeeder" --no-interaction`)*
 
 ---
 
-## 2. Pengelolaan Karyawan, Tipe Karyawan & Alert Kontrak (≤ 30 Hari)
+## 2. Pengelolaan Karyawan, Tipe Karyawan, Alert Kontrak (≤ 30 Hari) & Bulk Import
 
 ### A. Mengatur Departemen
 1. Buka menu **Employees → Configurations → Departments** (`/admin/employees/departments`).
@@ -36,7 +36,13 @@ Halaman login Admin Panel: **`/admin/login`**
    - **End Contract Date (Tanggal Berakhir Kontrak):** Isi tanggal berakhir kontrak (khusus karyawan *Contract / Konsultan / Freelance*; kosongkan untuk *Permanent*).
 4. Klik **Save Changes**.
 
-### C. Memantau Kontrak yang Akan Habis (Alert 30 Hari)
+### C. Bulk Import Karyawan (Excel `.xlsx` / CSV)
+1. Buka menu **Employees → Employees** (`/admin/employees/employees`).
+2. Klik tombol **`Unduh Template` (`Download Template`)** di pojok kanan atas untuk mengunduh file `template-import-employees.xlsx`.
+3. Isi kolom: `name`, `work_email`, `work_phone`, `mobile_phone`, `job_title`, `department`, `employment_type`, `join_date`, `contract_end_date`, `identification_id`.
+4. Klik tombol **`Impor Excel / CSV` (`Import Excel / CSV`)**, unggah file yang sudah diisi, lalu klik **Submit**. Jika `work_email` sudah ada, data karyawan tersebut akan diperbarui otomatis.
+
+### D. Memantau Kontrak yang Akan Habis (Alert 30 Hari)
 - **Tab Filter Cepat:** Di halaman daftar **Employees**, klik tab **`Kontrak Segera Berakhir` (`Expiring Contracts`)** untuk menampilkan seluruh karyawan aktif yang masa kontraknya tersisa `≤ 30 hari` atau sudah terlewat.
 - **Badge Peringatan:** Pada kartu karyawan akan muncul badge kuning (**`X hari lagi`**) bila sisa kontrak `≤ 30 hari`, dan badge merah bila kontrak telah berakhir.
 - **Notifikasi Otomatis:**
@@ -78,7 +84,49 @@ Halaman login Admin Panel: **`/admin/login`**
 
 ---
 
-## 5. Manajemen Aset (Karyawan, Proyek, Customer) & Pergerakan Aset
+## 5. Pengelolaan Customer & Vendor (Beserta Bulk Import)
+
+### A. Lokasi Menu Customer & Vendor
+- **Semua Kontak (Customer & Vendor):** Menu **Contact → Contacts** (`/admin/contact/contacts`).
+- **Khusus Customer:** Menu **Sales → Orders → Customers** (`/admin/sales/orders/customers`) atau **Invoices → Customers** (`/admin/invoices/customers`).
+
+### B. Bulk Import Customer & Vendor (Excel `.xlsx` / CSV)
+1. Buka halaman **Contacts** (`/admin/contact/contacts`) atau **Customers** (`/admin/sales/orders/customers`).
+2. Klik **`Unduh Template` (`Download Template`)** untuk mengunduh file `template-import-customers-vendors.xlsx`.
+3. Isi kolom: `name`, `role` (`customer`, `vendor`, atau `both`), `account_type` (`company` / `individual`), `email`, `phone`, `mobile`, `tax_id`, `website`, `street1`, `city`, `zip`, `reference`.
+4. Klik **`Impor Excel / CSV` (`Import Excel / CSV`)** dan unggah file Anda.
+
+---
+
+## 6. Manajemen Proyek Multi-Customer, Nilai Proyek, Reminder 3-2-1 Bulan & Bulk Import
+
+### A. Satu Customer Memiliki Banyak Proyek (`1 Customer → N Projects`)
+1. Buka menu **Project → Projects** (`/admin/project/projects`).
+2. Klik **New Project (`Proyek Baru`)** atau **Edit** proyek.
+3. Pada bagian **Additional Information (`Informasi Tambahan`)**:
+   - **Customer (`Pelanggan`):** Pilih Customer dari daftar (sudah otomatis disaring dari akun karyawan/internal), atau klik tombol **`+`** untuk membuat Customer baru. Satu Customer dapat dipilih pada banyak proyek berbeda.
+   - **Start Date (`Tanggal Mulai Proyek`) & End Date (`Tanggal Akhir Proyek`):** Tentukan periode kontrak/pelaksanaan proyek.
+   - **Project Value (`Nilai Proyek`):** Isi nilai kontrak/anggaran proyek dalam Rupiah (`Rp`).
+4. Anda juga dapat melihat seluruh proyek milik suatu Customer beserta **Total Proyek** dan **Total Nilai Proyek (`Rp`)** langsung dari halaman detail Customer (**Contact → Contacts → View Customer → Tab Proyek**).
+
+### B. Reminder Notifikasi Berjenjang 3, 2, dan 1 Bulan Sebelum `End Date` Proyek
+Sistem memantau kolom `end_date` pada seluruh proyek aktif dan mengirimkan notifikasi lonceng secara berjenjang:
+- **`Pengingat 3 Bulan` (`3_months`)**: Saat sisa waktu proyek memasuki `61 – 90 hari` (hingga 3 bulan kalender) sebelum `end_date` (badge biru / `info`).
+- **`Pengingat 2 Bulan` (`2_months`)**: Saat sisa waktu proyek memasuki `31 – 60 hari` (hingga 2 bulan kalender) sebelum `end_date` (badge kuning / `warning`).
+- **`Pengingat 1 Bulan` (`1_month`)**: Saat sisa waktu proyek memasuki `0 – 30 hari` (hingga 1 bulan kalender) sebelum `end_date` (badge merah / `danger`).
+- **`Proyek Berakhir` (`expired`)**: Saat tanggal akhir proyek telah terlewat (badge merah / `danger`).
+- **Tab Filter Cepat:** Di halaman daftar **Projects**, klik tab **`Berakhir ≤ 3 Bulan` (`Ending ≤ 3 Months`)** atau **`Proyek Pelanggan` (`Customer Projects`)**.
+- **Scheduler Harian:** Berjalan otomatis setiap hari pukul **08:00** pagi (`php8.4 artisan projects:notify-expiring-projects`).
+
+### C. Bulk Import Proyek (Excel `.xlsx` / CSV)
+1. Buka menu **Project → Projects** (`/admin/project/projects`).
+2. Klik **`Unduh Template` (`Download Template`)** untuk mengunduh `template-import-projects.xlsx`.
+3. Isi kolom: `name`, `customer`, `project_manager`, `stage`, `start_date`, `end_date`, `project_value`, `allocated_hours`, `visibility`, `description`.
+4. Klik **`Impor Excel / CSV` (`Import Excel / CSV`)** dan unggah file Anda. Jika nama Customer belum ada, sistem otomatis membuatkannya sebagai Customer baru.
+
+---
+
+## 7. Manajemen Aset (Karyawan, Proyek, Customer), Pergerakan Aset & Bulk Import
 
 ### A. Mendaftarkan Aset / Peralatan Baru
 1. Buka menu **Maintenance → Equipment (`Peralatan`)** (`/admin/maintenance/equipments`).
@@ -93,7 +141,13 @@ Halaman login Admin Panel: **`/admin/login`**
    - **Used in location (`Digunakan di lokasi`):** Isi detail ruangan/gedung/site.
 5. Klik **Create / Save**.
 
-### B. Mencatat Pergerakan / Perpindahan Aset (`Relocation`, `Replacement`, `Return`, dll.)
+### B. Bulk Import Aset / Equipment (Excel `.xlsx` / CSV)
+1. Buka menu **Maintenance → Equipment** (`/admin/maintenance/equipments`).
+2. Klik **`Unduh Template` (`Download Template`)** untuk mengunduh file `template-import-equipment-assets.xlsx`.
+3. Isi kolom: `name`, `serial_no`, `model`, `category`, `vendor`, `employee`, `project`, `customer`, `location`, `cost`, `effective_date`, `warranty_date`, `note`.
+4. Klik **`Impor Excel / CSV` (`Import Excel / CSV`)** dan unggah file Anda. Jika `serial_no` sudah ada, data aset akan diperbarui otomatis.
+
+### C. Mencatat Pergerakan / Perpindahan Aset (`Relocation`, `Replacement`, `Return`, dll.)
 Setiap kali aset berpindah tangan, dipindah ke proyek/lokasi lain, diganti unit baru (*replacement*), atau dikembalikan:
 1. Buka menu **Maintenance → Equipment**, lalu klik **Edit** atau **View** pada aset terkait.
 2. Gulir ke bawah ke bagian **Riwayat Pergerakan / Perpindahan Aset (`Asset Movement / Transfer History`)**.
@@ -113,7 +167,7 @@ Setiap kali aset berpindah tangan, dipindah ke proyek/lokasi lain, diganti unit 
 
 ---
 
-## 6. Penggunaan `auraAI Assistant` (Floating Chatbot & In-Chatter AI)
+## 8. Penggunaan `auraAI Assistant` (Floating Chatbot & In-Chatter AI)
 
 ### A. Floating Chatbot `✨ auraAI` (Pojok Kanan Bawah)
 1. Klik tombol melayang **`✨ auraAI`** di pojok kanan bawah layar.
@@ -122,6 +176,7 @@ Setiap kali aset berpindah tangan, dipindah ke proyek/lokasi lain, diganti unit 
    - *“Kontrak akan berakhir”*
    - *“Ringkasan kinerja & evaluasi”*
    - *“Ringkasan karyawan”*
+   - *“Proyek & nilai proyek”*
    - *“Aset proyek & karyawan”* / *“Bagaimana riwayat replacement aset?”*
 3. **Keamanan Data Otomatis (Role-Aware):**
    - **Admin & HRD:** Menerima laporan dan ringkasan seluruh perusahaan.
@@ -135,7 +190,18 @@ Setiap kali aset berpindah tangan, dipindah ke proyek/lokasi lain, diganti unit 
 
 ---
 
-## 7. Panduan Update / Deploy di Server VPS
+## 9. Ringkasan Semua Menu yang Mendukung Bulk Import Excel (`.xlsx`) / CSV
+
+| Modul | Halaman / URL | Nama File Template |
+| :--- | :--- | :--- |
+| **Employees (Karyawan)** | `/admin/employees/employees` | `template-import-employees.xlsx` |
+| **Customers & Vendors** | `/admin/contact/contacts` & `/admin/sales/orders/customers` | `template-import-customers-vendors.xlsx` |
+| **Projects (Proyek)** | `/admin/project/projects` | `template-import-projects.xlsx` |
+| **Equipment (Aset)** | `/admin/maintenance/equipments` | `template-import-equipment-assets.xlsx` |
+
+---
+
+## 10. Panduan Update / Deploy di Server VPS
 
 Setiap kali ada pembaruan kode dari GitHub (`bionte4/auraERP`), jalankan perintah berikut di VPS (`ubuntu@VM-18-102-ubuntu`):
 
@@ -143,6 +209,8 @@ Setiap kali ada pembaruan kode dari GitHub (`bionte4/auraERP`), jalankan perinta
 cd /var/www/auraerp
 git pull origin main
 php8.4 artisan migrate --force --no-interaction
+php8.4 artisan employees:notify-expiring-contracts
+php8.4 artisan projects:notify-expiring-projects
 php8.4 artisan shield:generate --all --panel=admin --no-interaction
 php8.4 artisan optimize:clear
 ```
