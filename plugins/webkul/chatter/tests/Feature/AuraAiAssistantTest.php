@@ -16,6 +16,7 @@ use Webkul\Maintenance\Models\Equipment;
 use Webkul\Maintenance\Models\EquipmentMovement;
 use Webkul\Maintenance\Services\EquipmentBulkImportService;
 use Webkul\Partner\Models\Partner;
+use Webkul\Partner\Services\PartnerBulkImportService;
 use Webkul\Project\Models\Project;
 
 beforeEach(function (): void {
@@ -328,4 +329,16 @@ it('bulk imports employees and equipment assets from tabular rows', function ():
     expect($importedAsset)->not->toBeNull()
         ->and($importedAsset->employee_id)->toBe($importedEmp->id)
         ->and($importedAsset->location)->toBe('Site Surabaya');
+
+    $partnerResult = app(PartnerBulkImportService::class)->importRows([
+        ['name', 'role', 'account_type', 'email', 'phone', 'city'],
+        ['PT Telkom Pelanggan', 'customer', 'company', 'info@telkom.test', '021-147', 'Jakarta'],
+        ['PT Metrodata Vendor', 'vendor', 'company', 'sales@metrodata.test', '021-29345', 'Jakarta'],
+    ]);
+
+    expect($partnerResult['created'])->toBe(2);
+
+    $cust = Partner::withoutGlobalScopes()->where('email', 'info@telkom.test')->first();
+    expect($cust)->not->toBeNull()
+        ->and($cust->name)->toBe('PT Telkom Pelanggan');
 });
