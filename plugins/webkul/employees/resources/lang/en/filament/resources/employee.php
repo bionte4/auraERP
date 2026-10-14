@@ -16,16 +16,20 @@ return [
     'form' => [
         'sections' => [
             'fields' => [
-                'name'          => 'Name',
-                'job-title'     => 'Job Title',
-                'work-email'    => 'Work Email',
-                'work-phone'    => 'Work Phone',
-                'department'    => 'Department',
-                'work-mobile'   => 'Work Mobile',
-                'job-position'  => 'Job Position',
-                'manager'       => 'Manager',
-                'coach'         => 'Coach',
-                'employee-tags' => 'Employee Tags',
+                'name'                   => 'Name',
+                'job-title'              => 'Job Title',
+                'work-email'             => 'Work Email',
+                'work-phone'             => 'Work Phone',
+                'department'             => 'Department',
+                'work-mobile'            => 'Work Mobile',
+                'job-position'           => 'Job Position',
+                'manager'                => 'Manager',
+                'coach'                  => 'Coach',
+                'employee-tags'          => 'Employee Tags',
+                'employment-type'        => 'Employment Type',
+                'join-date'              => 'Join Date',
+                'contract-end-date'      => 'Contract End Date',
+                'contract-end-date-help' => 'Leave blank for permanent employees. An alert triggers 30 days before this date.',
             ],
         ],
 
@@ -170,13 +174,17 @@ return [
 
     'table' => [
         'columns' => [
-            'name'         => 'Name',
-            'manager-name' => 'Manager',
-            'company-name' => 'Company',
-            'job-title'    => 'Job Title',
-            'work-email'   => 'Work Email',
-            'work-phone'   => 'Work Phone',
-            'categories'   => 'Tags',
+            'name'              => 'Name',
+            'manager-name'      => 'Manager',
+            'company-name'      => 'Company',
+            'job-title'         => 'Job Title',
+            'work-email'        => 'Work Email',
+            'work-phone'        => 'Work Phone',
+            'categories'        => 'Tags',
+            'employment-type'   => 'Employment Type',
+            'contract-end-date' => 'Contract End Date',
+            'contract-expiring' => 'Contract ends in :days day(s) (:date)',
+            'contract-expired'  => 'Contract expired (:date)',
         ],
 
         'filters' => [
@@ -306,16 +314,19 @@ return [
     'infolist' => [
         'sections' => [
             'entries' => [
-                'name'          => 'Name',
-                'job-title'     => 'Job Title',
-                'work-email'    => 'Work Email',
-                'work-mobile'   => 'Work Mobile',
-                'work-phone'    => 'Work Phone',
-                'manager'       => 'Manager',
-                'department'    => 'Department',
-                'job-position'  => 'Job Position',
-                'employee-tags' => 'Employee Tags',
-                'coach'         => 'Coach',
+                'name'              => 'Name',
+                'job-title'         => 'Job Title',
+                'work-email'        => 'Work Email',
+                'work-mobile'       => 'Work Mobile',
+                'work-phone'        => 'Work Phone',
+                'manager'           => 'Manager',
+                'department'        => 'Department',
+                'job-position'      => 'Job Position',
+                'employee-tags'     => 'Employee Tags',
+                'coach'             => 'Coach',
+                'employment-type'   => 'Employment Type',
+                'join-date'         => 'Join Date',
+                'contract-end-date' => 'Contract End Date',
             ],
         ],
 
@@ -422,6 +433,25 @@ return [
                     'pin'                            => 'PIN',
                 ],
             ],
+        ],
+    ],
+
+    'notifications' => [
+        'view-employee' => 'View employee',
+
+        'contract-banner' => [
+            'title' => ':count employee contract(s) expiring within 30 days',
+            'body'  => 'Check the "Expiring Contracts" tab or the notification bell to follow up.',
+        ],
+
+        'contract-expiring' => [
+            'title' => 'Contract expiring soon: :name',
+            'body'  => ':name\'s contract ends in :days day(s) (:date).',
+        ],
+
+        'contract-expired' => [
+            'title' => 'Contract expired: :name',
+            'body'  => ':name\'s contract ended on :date.',
         ],
     ],
 ];

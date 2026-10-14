@@ -4,10 +4,12 @@ namespace Webkul\Employee\Filament\Resources\EmployeeResource\Pages;
 
 use Carbon\Carbon;
 use Filament\Actions\CreateAction;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Webkul\Employee\Filament\Resources\EmployeeResource;
+use Webkul\Employee\Services\ContractExpiryNotifier;
 use Webkul\TableViews\Filament\Components\PresetView;
 use Webkul\TableViews\Filament\Concerns\HasTableViews;
 
@@ -16,6 +18,27 @@ class ListEmployees extends ListRecords
     use HasTableViews;
 
     protected static string $resource = EmployeeResource::class;
+
+    public function mount(): void
+    {
+        parent::mount();
+
+        $notifier = app(ContractExpiryNotifier::class);
+        $notifier->notifyExpiringContracts();
+
+        $expiringCount = $notifier->expiringEmployees()->count();
+
+        if ($expiringCount > 0 && ! session()->has('employees.contract_expiry_toast_shown')) {
+            session()->put('employees.contract_expiry_toast_shown', true);
+
+            Notification::make()
+                ->warning()
+                ->icon('heroicon-o-exclamation-triangle')
+                ->title(__('employees::filament/resources/employee.notifications.contract-banner.title', ['count' => $expiringCount]))
+                ->body(__('employees::filament/resources/employee.notifications.contract-banner.body'))
+                ->send();
+        }
+    }
 
     protected function getHeaderActions(): array
     {
@@ -63,7 +86,20 @@ class ListEmployees extends ListRecords
                 ->icon('heroicon-s-calendar')
                 ->favorite()
                 ->modifyQueryUsing(function (Builder $query) {
-                    return $query->where('created_at', '>=', Carbon::now()->subMonth());
+                    return $query->where(function (Builder $subQuery) {
+                        $subQuery->where('join_date', '>=', Carbon::now()->subMonth()->toDateString())
+                            ->orWhere('created_at', '>=', Carbon::now()->subMonth());
+                    });
+                }),
+
+            'expiring_contracts' => PresetView::make(__('employees::filament/resources/employee/pages/list-employee.tabs.expiring-contracts'))
+                ->icon('heroicon-s-exclamation-triangle')
+                ->favorite()
+                ->modifyQueryUsing(function (Builder $query) {
+                    return $query
+                        ->where('is_active', true)
+                        ->whereNotNull('contract_end_date')
+                        ->whereDate('contract_end_date', '<=', Carbon::now()->addDays(30)->toDateString());
                 }),
         ];
     }

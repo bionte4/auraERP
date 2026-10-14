@@ -19,16 +19,19 @@ class EmploymentTypeSeeder extends Seeder
 
         $employmentTypes = [
             ['creator_id' => $user?->id, 'sort' => 1, 'name' => 'Permanent', 'code' => 'Permanent', 'created_at' => now(), 'updated_at' => now()],
-            ['creator_id' => $user?->id, 'sort' => 2, 'name' => 'Temporary', 'code' => 'Temporary', 'created_at' => now(), 'updated_at' => now()],
-            ['creator_id' => $user?->id, 'sort' => 3, 'name' => 'Seasonal', 'code' => 'Seasonal', 'created_at' => now(), 'updated_at' => now()],
-            ['creator_id' => $user?->id, 'sort' => 4, 'name' => 'Interim', 'code' => 'Interim', 'created_at' => now(), 'updated_at' => now()],
-            ['creator_id' => $user?->id, 'sort' => 5, 'name' => 'Full-Time', 'code' => 'Full-Time', 'created_at' => now(), 'updated_at' => now()],
-            ['creator_id' => $user?->id, 'sort' => 6, 'name' => 'Intern', 'code' => 'Intern', 'created_at' => now(), 'updated_at' => now()],
-            ['creator_id' => $user?->id, 'sort' => 8, 'name' => 'Student', 'code' => 'Student', 'created_at' => now(), 'updated_at' => now()],
-            ['creator_id' => $user?->id, 'sort' => 9, 'name' => 'Apprenticeship', 'code' => 'Apprenticeship', 'created_at' => now(), 'updated_at' => now()],
-            ['creator_id' => $user?->id, 'sort' => 10, 'name' => 'Thesis', 'code' => 'Thesis', 'created_at' => now(), 'updated_at' => now()],
-            ['creator_id' => $user?->id, 'sort' => 11, 'name' => 'Statutory', 'code' => 'Statutory', 'created_at' => now(), 'updated_at' => now()],
-            ['creator_id' => $user?->id, 'sort' => 12, 'name' => 'Employee', 'code' => 'Employee', 'created_at' => now(), 'updated_at' => now()],
+            ['creator_id' => $user?->id, 'sort' => 2, 'name' => 'Contract', 'code' => 'Contract', 'created_at' => now(), 'updated_at' => now()],
+            ['creator_id' => $user?->id, 'sort' => 3, 'name' => 'Konsultan', 'code' => 'Consultant', 'created_at' => now(), 'updated_at' => now()],
+            ['creator_id' => $user?->id, 'sort' => 4, 'name' => 'Freelance', 'code' => 'Freelance', 'created_at' => now(), 'updated_at' => now()],
+            ['creator_id' => $user?->id, 'sort' => 5, 'name' => 'Temporary', 'code' => 'Temporary', 'created_at' => now(), 'updated_at' => now()],
+            ['creator_id' => $user?->id, 'sort' => 6, 'name' => 'Seasonal', 'code' => 'Seasonal', 'created_at' => now(), 'updated_at' => now()],
+            ['creator_id' => $user?->id, 'sort' => 7, 'name' => 'Interim', 'code' => 'Interim', 'created_at' => now(), 'updated_at' => now()],
+            ['creator_id' => $user?->id, 'sort' => 8, 'name' => 'Full-Time', 'code' => 'Full-Time', 'created_at' => now(), 'updated_at' => now()],
+            ['creator_id' => $user?->id, 'sort' => 9, 'name' => 'Intern', 'code' => 'Intern', 'created_at' => now(), 'updated_at' => now()],
+            ['creator_id' => $user?->id, 'sort' => 10, 'name' => 'Student', 'code' => 'Student', 'created_at' => now(), 'updated_at' => now()],
+            ['creator_id' => $user?->id, 'sort' => 11, 'name' => 'Apprenticeship', 'code' => 'Apprenticeship', 'created_at' => now(), 'updated_at' => now()],
+            ['creator_id' => $user?->id, 'sort' => 12, 'name' => 'Thesis', 'code' => 'Thesis', 'created_at' => now(), 'updated_at' => now()],
+            ['creator_id' => $user?->id, 'sort' => 13, 'name' => 'Statutory', 'code' => 'Statutory', 'created_at' => now(), 'updated_at' => now()],
+            ['creator_id' => $user?->id, 'sort' => 14, 'name' => 'Employee', 'code' => 'Employee', 'created_at' => now(), 'updated_at' => now()],
         ];
 
         DB::table('employees_employment_types')->insert($employmentTypes);

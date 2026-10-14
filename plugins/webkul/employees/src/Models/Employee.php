@@ -85,6 +85,9 @@ class Employee extends Model
         'emergency_contact',
         'emergency_phone',
         'employee_type',
+        'employment_type_id',
+        'join_date',
+        'contract_end_date',
         'barcode',
         'pin',
         'address_id',
@@ -108,6 +111,8 @@ class Employee extends Model
         'is_flexible'                    => 'boolean',
         'is_fully_flexible'              => 'boolean',
         'work_permit_scheduled_activity' => 'boolean',
+        'join_date'                      => 'date',
+        'contract_end_date'              => 'date',
     ];
 
     public function getModelTitle(): string
@@ -203,7 +208,23 @@ class Employee extends Model
 
     public function employmentType(): BelongsTo
     {
-        return $this->belongsTo(EmploymentType::class, 'employee_type');
+        return $this->belongsTo(EmploymentType::class, 'employment_type_id');
+    }
+
+    public function daysUntilContractEnds(): ?int
+    {
+        if (! $this->contract_end_date) {
+            return null;
+        }
+
+        return (int) now()->startOfDay()->diffInDays($this->contract_end_date->copy()->startOfDay(), false);
+    }
+
+    public function isContractExpiringSoon(int $days = 30): bool
+    {
+        $remaining = $this->daysUntilContractEnds();
+
+        return $remaining !== null && $remaining >= 0 && $remaining <= $days;
     }
 
     public function categories()

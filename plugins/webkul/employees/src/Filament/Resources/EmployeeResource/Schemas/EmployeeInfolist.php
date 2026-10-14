@@ -99,6 +99,24 @@ class EmployeeInfolist
                                 TextEntry::make('coach.name')
                                     ->placeholder('—')
                                     ->label(__('employees::filament/resources/employee.infolist.sections.entries.coach')),
+                                TextEntry::make('employmentType.name')
+                                    ->placeholder('—')
+                                    ->badge()
+                                    ->label(__('employees::filament/resources/employee.infolist.sections.entries.employment-type')),
+                                TextEntry::make('join_date')
+                                    ->placeholder('—')
+                                    ->date()
+                                    ->label(__('employees::filament/resources/employee.infolist.sections.entries.join-date')),
+                                TextEntry::make('contract_end_date')
+                                    ->placeholder('—')
+                                    ->date()
+                                    ->badge(fn (Employee $record): bool => $record->isContractExpiringSoon() || ($record->daysUntilContractEnds() !== null && $record->daysUntilContractEnds() < 0))
+                                    ->color(fn (Employee $record): string => match (true) {
+                                        $record->daysUntilContractEnds() !== null && $record->daysUntilContractEnds() < 0 => 'danger',
+                                        $record->isContractExpiringSoon()                                                 => 'warning',
+                                        default                                                                           => 'gray',
+                                    })
+                                    ->label(__('employees::filament/resources/employee.infolist.sections.entries.contract-end-date')),
                             ]),
                         ...$customInfolistEntries,
                     ])->columnSpanFull(),

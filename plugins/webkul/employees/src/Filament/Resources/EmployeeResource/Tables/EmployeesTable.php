@@ -76,6 +76,44 @@ class EmployeesTable
                         ])
                             ->visible(fn ($record) => filled($record->work_phone)),
                         Stack::make([
+                            TextColumn::make('employmentType.name')
+                                ->badge()
+                                ->color('info')
+                                ->label(__('employees::filament/resources/employee.table.columns.employment-type')),
+                        ])
+                            ->visible(fn (Employee $record): bool => filled($record->employment_type_id)),
+                        Stack::make([
+                            TextColumn::make('contract_end_date')
+                                ->badge()
+                                ->icon('heroicon-m-calendar-days')
+                                ->color(fn (Employee $record): string => match (true) {
+                                    $record->daysUntilContractEnds() !== null && $record->daysUntilContractEnds() < 0 => 'danger',
+                                    $record->isContractExpiringSoon()                                                 => 'warning',
+                                    default                                                                           => 'gray',
+                                })
+                                ->formatStateUsing(function (Employee $record): string {
+                                    $days = $record->daysUntilContractEnds();
+
+                                    if ($days === null) {
+                                        return '';
+                                    }
+
+                                    $formatted = $record->contract_end_date->format('d M Y');
+
+                                    if ($days < 0) {
+                                        return __('employees::filament/resources/employee.table.columns.contract-expired', ['date' => $formatted]);
+                                    }
+
+                                    if ($days <= 30) {
+                                        return __('employees::filament/resources/employee.table.columns.contract-expiring', ['days' => $days, 'date' => $formatted]);
+                                    }
+
+                                    return $formatted;
+                                })
+                                ->label(__('employees::filament/resources/employee.table.columns.contract-end-date')),
+                        ])
+                            ->visible(fn (Employee $record): bool => filled($record->contract_end_date)),
+                        Stack::make([
                             TextColumn::make('categories.name')
                                 ->label(__('employees::filament/resources/employee.table.columns.categories'))
                                 ->badge()
@@ -105,6 +143,12 @@ class EmployeesTable
             ])
             ->filtersFormColumns(3)
             ->filters(array_merge([
+                SelectFilter::make('employment_type_id')
+                    ->relationship('employmentType', 'name')
+                    ->searchable()
+                    ->multiple()
+                    ->label(__('employees::filament/resources/employee.table.filters.employee-type'))
+                    ->preload(),
                 SelectFilter::make('skills')
                     ->relationship('skills.skill', 'name')
                     ->searchable()

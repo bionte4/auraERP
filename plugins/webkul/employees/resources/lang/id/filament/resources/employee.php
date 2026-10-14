@@ -16,16 +16,20 @@ return [
     'form' => [
         'sections' => [
             'fields' => [
-                'name'          => 'Nama',
-                'job-title'     => 'Jabatan',
-                'work-email'    => 'Email Kerja',
-                'work-phone'    => 'Telepon Kerja',
-                'department'    => 'Departemen',
-                'work-mobile'   => 'Ponsel Kerja',
-                'job-position'  => 'Jabatan',
-                'manager'       => 'Manajer',
-                'coach'         => 'Pembimbing',
-                'employee-tags' => 'Tag Karyawan',
+                'name'                   => 'Nama',
+                'job-title'              => 'Jabatan',
+                'work-email'             => 'Email Kerja',
+                'work-phone'             => 'Telepon Kerja',
+                'department'             => 'Departemen',
+                'work-mobile'            => 'Ponsel Kerja',
+                'job-position'           => 'Jabatan',
+                'manager'                => 'Manajer',
+                'coach'                  => 'Pembimbing',
+                'employee-tags'          => 'Tag Karyawan',
+                'employment-type'        => 'Tipe Karyawan',
+                'join-date'              => 'Tanggal Masuk (Join Date)',
+                'contract-end-date'      => 'Tanggal Berakhir Kontrak',
+                'contract-end-date-help' => 'Kosongkan untuk karyawan tetap (Permanent). Peringatan otomatis muncul 30 hari sebelum tanggal ini.',
             ],
         ],
 
@@ -170,13 +174,17 @@ return [
 
     'table' => [
         'columns' => [
-            'name'         => 'Nama',
-            'manager-name' => 'Manajer',
-            'company-name' => 'Perusahaan',
-            'job-title'    => 'Jabatan',
-            'work-email'   => 'Email Kerja',
-            'work-phone'   => 'Telepon Kerja',
-            'categories'   => 'Tag',
+            'name'              => 'Nama',
+            'manager-name'      => 'Manajer',
+            'company-name'      => 'Perusahaan',
+            'job-title'         => 'Jabatan',
+            'work-email'        => 'Email Kerja',
+            'work-phone'        => 'Telepon Kerja',
+            'categories'        => 'Tag',
+            'employment-type'   => 'Tipe Karyawan',
+            'contract-end-date' => 'Akhir Kontrak',
+            'contract-expiring' => 'Kontrak berakhir :days hari lagi (:date)',
+            'contract-expired'  => 'Kontrak berakhir (:date)',
         ],
 
         'filters' => [
@@ -306,16 +314,19 @@ return [
     'infolist' => [
         'sections' => [
             'entries' => [
-                'name'          => 'Nama',
-                'job-title'     => 'Jabatan',
-                'work-email'    => 'Email Kerja',
-                'work-mobile'   => 'Ponsel Kerja',
-                'work-phone'    => 'Telepon Kerja',
-                'manager'       => 'Manajer',
-                'department'    => 'Departemen',
-                'job-position'  => 'Jabatan',
-                'employee-tags' => 'Tag Karyawan',
-                'coach'         => 'Pembimbing',
+                'name'              => 'Nama',
+                'job-title'         => 'Jabatan',
+                'work-email'        => 'Email Kerja',
+                'work-mobile'       => 'Ponsel Kerja',
+                'work-phone'        => 'Telepon Kerja',
+                'manager'           => 'Manajer',
+                'department'        => 'Departemen',
+                'job-position'      => 'Jabatan',
+                'employee-tags'     => 'Tag Karyawan',
+                'coach'             => 'Pembimbing',
+                'employment-type'   => 'Tipe Karyawan',
+                'join-date'         => 'Tanggal Masuk (Join Date)',
+                'contract-end-date' => 'Tanggal Berakhir Kontrak',
             ],
         ],
 
@@ -422,6 +433,25 @@ return [
                     'pin'                            => 'PIN',
                 ],
             ],
+        ],
+    ],
+
+    'notifications' => [
+        'view-employee' => 'Lihat karyawan',
+
+        'contract-banner' => [
+            'title' => ':count kontrak karyawan akan berakhir (≤ 30 hari)',
+            'body'  => 'Buka tab "Kontrak Akan Berakhir" atau lonceng notifikasi untuk menindaklanjuti.',
+        ],
+
+        'contract-expiring' => [
+            'title' => 'Kontrak akan berakhir: :name',
+            'body'  => 'Kontrak kerja :name berakhir dalam :days hari (:date).',
+        ],
+
+        'contract-expired' => [
+            'title' => 'Kontrak telah berakhir: :name',
+            'body'  => 'Kontrak kerja :name berakhir pada :date.',
         ],
     ],
 ];

@@ -3,7 +3,9 @@
 namespace Webkul\Employee;
 
 use Filament\Panel;
+use Illuminate\Support\Facades\Schedule;
 use Webkul\Chatter\Services\ChatterCleanupService;
+use Webkul\Employee\Console\Commands\NotifyExpiringContractsCommand;
 use Webkul\Employee\Models\Department;
 use Webkul\Employee\Models\Employee;
 use Webkul\PluginManager\Console\Commands\InstallCommand;
@@ -39,8 +41,10 @@ class EmployeeServiceProvider extends PackageServiceProvider
                 '2025_01_24_052852_add_department_id_to_activity_plans_table',
                 '2025_08_20_082638_add_unique_user_id_to_employees_employees_table',
                 '2026_08_09_000000_create_employees_employee_resume_attachments_table',
+                '2026_10_14_180000_add_contract_dates_and_employment_type_to_employees_table',
             ])
             ->runsMigrations()
+            ->hasCommand(NotifyExpiringContractsCommand::class)
             ->hasSeeder('Webkul\\Employee\\Database\Seeders\\DatabaseSeeder')
             ->hasInstallCommand(function (InstallCommand $command) {
                 $command
@@ -57,7 +61,11 @@ class EmployeeServiceProvider extends PackageServiceProvider
 
     public function packageBooted(): void
     {
-        //
+        $this->app->booted(function (): void {
+            if ($this->package->isInstalled()) {
+                Schedule::command('employees:notify-expiring-contracts')->dailyAt('08:00');
+            }
+        });
     }
 
     public function packageRegistered(): void

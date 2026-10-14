@@ -25,6 +25,7 @@ use Webkul\Employee\Enums\Gender;
 use Webkul\Employee\Enums\MaritalStatus;
 use Webkul\Employee\Filament\Clusters\Configurations\Resources\DepartureReasonResource;
 use Webkul\Employee\Filament\Clusters\Configurations\Resources\EmployeeCategoryResource;
+use Webkul\Employee\Filament\Clusters\Configurations\Resources\EmploymentTypeResource;
 use Webkul\Employee\Filament\Clusters\Configurations\Resources\JobPositionResource;
 use Webkul\Employee\Filament\Clusters\Configurations\Resources\WorkLocationResource;
 use Webkul\Employee\Filament\Resources\DepartmentResource;
@@ -164,6 +165,22 @@ class EmployeeForm
                                         modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(owned_by_company($get('company_id'))),
                                     )
                                     ->label(__('employees::filament/resources/employee.form.sections.fields.coach')),
+                                Select::make('employment_type_id')
+                                    ->relationship('employmentType', 'name')
+                                    ->searchable()
+                                    ->preload()
+                                    ->label(__('employees::filament/resources/employee.form.sections.fields.employment-type'))
+                                    ->createOptionForm(fn (Schema $schema) => EmploymentTypeResource::form($schema)),
+                                DatePicker::make('join_date')
+                                    ->label(__('employees::filament/resources/employee.form.sections.fields.join-date'))
+                                    ->native(false)
+                                    ->suffixIcon('heroicon-o-calendar'),
+                                DatePicker::make('contract_end_date')
+                                    ->label(__('employees::filament/resources/employee.form.sections.fields.contract-end-date'))
+                                    ->helperText(__('employees::filament/resources/employee.form.sections.fields.contract-end-date-help'))
+                                    ->native(false)
+                                    ->afterOrEqual('join_date')
+                                    ->suffixIcon('heroicon-o-calendar'),
                             ])
                             ->columns(2),
 
