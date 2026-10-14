@@ -1,11 +1,11 @@
-# AureusERP — Production Docker Image
+# auraERP — Production Docker Image
 
 A single-container, production-ready Docker image for
-[AureusERP](https://github.com/aureuserp/aureuserp). It bundles the application,
+[auraERP](https://github.com/aureuserp/aureuserp). It bundles the application,
 MySQL, PHP-FPM, Nginx and Supervisor — everything needed to run the ERP with one
 `docker run`.
 
-AureusERP is **fully installed at build time** (migrations, seeders, roles &
+auraERP is **fully installed at build time** (migrations, seeders, roles &
 permissions, admin user), so the container boots ready to use.
 
 > This is the **production** image. For local development use Laravel Sail via
@@ -107,7 +107,7 @@ assets, and installs the ERP — it takes several minutes.
 
 | Argument | Default | Description |
 |---|---|---|
-| `APP_REF` | `master` | Branch or tag of AureusERP to clone |
+| `APP_REF` | `master` | Branch or tag of auraERP to clone |
 | `REPO_URL` | `https://github.com/aureuserp/aureuserp.git` | Repository to clone |
 | `PHP_VERSION` | `8.4` | PHP version |
 | `NODE_VERSION` | `22` | Node.js version (used only to compile assets) |
@@ -165,7 +165,7 @@ See [Build arguments](#build-arguments) above — `APP_REF`, `REPO_URL`,
 |---|---|---|
 | `APP_ENV` | `production` | `production` forces URLs to HTTPS; `local` serves over HTTP — see [HTTP vs HTTPS](#http-vs-https) |
 | `APP_DEBUG` | `false` | Detailed error pages when `true` — keep `false` in production |
-| `APP_NAME` | `AureusERP` | Application name |
+| `APP_NAME` | `auraERP` | Application name |
 | `APP_URL` | `http://localhost` | Public base URL |
 | `APP_KEY` | _baked_ | Encryption key — override to pin a stable key |
 | `APP_LOCALE` | `en` | Default locale |
@@ -179,7 +179,7 @@ See [Build arguments](#build-arguments) above — `APP_REF`, `REPO_URL`,
 
 ## HTTP vs HTTPS
 
-AureusERP forces every generated URL to `https` when `APP_ENV=production` (the
+auraERP forces every generated URL to `https` when `APP_ENV=production` (the
 default — correct for a live site behind TLS). For **local testing over plain
 HTTP**, run with `APP_ENV=local`:
 
@@ -263,7 +263,7 @@ is baked into the image, so the container boots instantly with no setup.
 1. Detects internal vs. external database mode from `DB_HOST`.
 2. Applies environment overrides (`APP_*`, `DB_*`) to `.env`.
 3. In external mode, waits for the external database.
-4. Caches config and views; leaves routes dynamic (AureusERP registers plugin
+4. Caches config and views; leaves routes dynamic (auraERP registers plugin
    routes from the database, so route caching is intentionally not used).
 5. Hands off to Supervisor, which starts `mysql`, `php-fpm`, `nginx`, the queue
    worker and the scheduler.
@@ -362,7 +362,7 @@ status with `docker ps` or `docker inspect`.
 `APP_ENV`, `APP_DEBUG`, app URL, name, locale, currency, timezone, encryption
 key.
 
-**Set at build time** (build arguments): AureusERP ref, repository, PHP version,
+**Set at build time** (build arguments): auraERP ref, repository, PHP version,
 Node version, admin account. Service configs (`nginx.conf`, `php.ini`,
 `php-fpm.conf`, `supervisord.conf`) are baked — mount a replacement file over the
 target path to change one.

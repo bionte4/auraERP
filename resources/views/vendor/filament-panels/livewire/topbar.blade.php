@@ -47,8 +47,8 @@
                     </x-slot>
 
                     <div
-                        class="grid grid-cols-2 gap-2 overflow-y-auto p-4 md:grid-cols-3"
-                        style="max-height: 80vh; grid-template-columns: repeat(3, minmax(0, 1fr));"
+                        class="grid grid-cols-2 gap-1 overflow-y-auto p-2 md:grid-cols-3"
+                        style="max-height: 70vh; grid-template-columns: repeat(3, minmax(0, 1fr));"
                     >
                         @foreach ($navigation as $group)
                             @php
@@ -69,11 +69,11 @@
                             >
                                 <a
                                     href="{{ $itemUrl }}"
-                                    class="fi-topbar-item-btn flex flex-col items-center justify-center gap-2 whitespace-nowrap rounded-lg p-4 text-center text-sm font-medium"
+                                    class="fi-topbar-item-btn flex flex-col items-center justify-center gap-1 whitespace-nowrap rounded-lg px-2 py-2 text-center text-xs font-medium"
                                 >
                                     <x-filament::icon
                                         :icon="$groupIcon"
-                                        style="height: 64px; width: 64px"
+                                        class="h-7 w-7"
                                     />
 
                                     {{ $groupLabel }}
@@ -166,7 +166,7 @@
                             @if ($isAdminPanel)
                                 {{-- Admin panel: show active group name as a plain bold heading --}}
                                 <li class="fi-topbar-item">
-                                    <span class="px-3 py-2 text-xl font-bold">
+                                    <span class="px-2 py-1 text-sm font-semibold tracking-tight">
                                         <a {{ \Filament\Support\generate_href_html($group->getItems()->first()->getUrl()) }}>
                                             {{ $groupLabel }}
                                         </a>

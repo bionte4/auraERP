@@ -29,7 +29,8 @@ class CustomerPanelProvider extends PanelProvider
             ->authPasswordBroker('customers')
             ->profile(isSimple: false)
             ->favicon(asset('images/favicon.ico'))
-            ->brandLogo(asset('images/logo.svg'))
+            ->brandLogo(asset('images/logo-full-light.svg'))
+            ->darkModeBrandLogo(asset('images/logo-full-dark.svg'))
             ->darkMode(false)
             ->brandLogoHeight('2rem')
             ->colors([
@@ -39,6 +40,10 @@ class CustomerPanelProvider extends PanelProvider
             ->renderHook(
                 PanelsRenderHook::GLOBAL_SEARCH_END,
                 fn () => view('filament.components.language-switcher'),
+            )
+            ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                fn (): string => '<link rel="stylesheet" href="'.e(asset('css/aura/density.css')).'?v='.filemtime(public_path('css/aura/density.css')).'">',
             )
             ->middleware([
                 EncryptCookies::class,

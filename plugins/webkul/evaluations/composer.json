@@ -1,0 +1,24 @@
+{
+    "name": "webkul/evaluations",
+    "description": "Employee performance evaluations",
+    "authors": [
+        {
+            "name": "auraERP",
+            "email": "support@aureuserp.in"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Webkul\\Evaluation\\EvaluationServiceProvider"
+            ],
+            "aliases": {}
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Webkul\\Evaluation\\": "src/",
+            "Webkul\\Evaluation\\Database\\Factories\\": "database/factories/"
+        }
+    }
+}

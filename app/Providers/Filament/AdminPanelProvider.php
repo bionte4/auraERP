@@ -15,6 +15,7 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\Width;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -40,7 +41,8 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->favicon(asset('images/favicon.ico'))
-            ->brandLogo(asset('images/logo.svg'))
+            ->brandLogo(asset('images/logo-full-light.svg'))
+            ->darkModeBrandLogo(asset('images/logo-full-dark.svg'))
             ->brandLogoHeight('2rem')
             ->passwordReset()
             ->emailVerification()
@@ -50,6 +52,18 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->unsavedChangesAlerts()
             ->topNavigation()
+            ->renderHook(
+                PanelsRenderHook::GLOBAL_SEARCH_END,
+                fn () => view('filament.components.language-switcher'),
+            )
+            ->renderHook(
+                PanelsRenderHook::SIMPLE_LAYOUT_START,
+                fn () => view('filament.components.language-switcher'),
+            )
+            ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                fn (): string => '<link rel="stylesheet" href="'.e(asset('css/aura/density.css')).'?v='.filemtime(public_path('css/aura/density.css')).'">',
+            )
             ->maxContentWidth(Width::Full)
             ->databaseNotifications()
             ->databaseNotificationsPolling('30s')

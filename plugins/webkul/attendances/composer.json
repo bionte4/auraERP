@@ -1,0 +1,24 @@
+{
+    "name": "webkul/attendances",
+    "description": "Employee clock-in and clock-out attendance",
+    "authors": [
+        {
+            "name": "auraERP",
+            "email": "support@aureuserp.in"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Webkul\\Attendance\\AttendanceServiceProvider"
+            ],
+            "aliases": {}
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Webkul\\Attendance\\": "src/",
+            "Webkul\\Attendance\\Database\\Factories\\": "database/factories/"
+        }
+    }
+}

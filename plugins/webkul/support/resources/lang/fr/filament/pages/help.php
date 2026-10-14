@@ -7,7 +7,7 @@ return [
 
     'title'      => 'Aide',
     'heading'    => 'Aide et ressources',
-    'subheading' => 'Tout ce dont vous avez besoin pour tirer le meilleur parti d\'AureusERP.',
+    'subheading' => 'Tout ce dont vous avez besoin pour tirer le meilleur parti d\'auraERP.',
 
     'services' => [
         'group' => 'Services',
@@ -36,7 +36,7 @@ return [
 
         'extensions' => [
             'title'       => 'Modules',
-            'description' => 'Parcourez les extensions officielles et communautaires pour étendre AureusERP avec de nouveaux modules et fonctionnalités.',
+            'description' => 'Parcourez les extensions officielles et communautaires pour étendre auraERP avec de nouveaux modules et fonctionnalités.',
             'button'      => 'Parcourir les modules',
         ],
 

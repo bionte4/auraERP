@@ -111,7 +111,7 @@ class InstallERP extends Command
     protected function handleReinstallation(): bool
     {
         $this->newLine();
-        $this->error('⚠️  WARNING: AUREIUS ERP IS ALREADY INSTALLED!');
+        $this->error('⚠️  WARNING: auraERP IS ALREADY INSTALLED!');
         $this->newLine();
         $this->warn('🚨 DANGER ZONE 🚨');
         $this->warn('Proceeding with reinstallation will:');
@@ -174,7 +174,7 @@ class InstallERP extends Command
         $filePath = storage_path('installed');
 
         $content = sprintf(
-            "AureusERP is successfully installed.\nInstalled at: %s",
+            "auraERP is successfully installed.\nInstalled at: %s",
             now()->toDateTimeString(),
         );
 

@@ -1,0 +1,24 @@
+{
+    "name": "webkul/performance",
+    "description": "Individual performance plans and goals",
+    "authors": [
+        {
+            "name": "auraERP",
+            "email": "support@aureuserp.in"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Webkul\\Performance\\PerformanceServiceProvider"
+            ],
+            "aliases": {}
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Webkul\\Performance\\": "src/",
+            "Webkul\\Performance\\Database\\Factories\\": "database/factories/"
+        }
+    }
+}

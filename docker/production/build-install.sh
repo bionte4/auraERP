@@ -38,7 +38,7 @@ cd "$APP_DIR"
 echo "[build-install] Generating application key..."
 php artisan key:generate --force --no-interaction
 
-echo "[build-install] Installing AureusERP (migrations, seeders, roles, admin)..."
+echo "[build-install] Installing auraERP (migrations, seeders, roles, admin)..."
 php artisan erp:install --force --no-interaction \
     --admin-name="$ADMIN_NAME" \
     --admin-email="$ADMIN_EMAIL" \
@@ -50,4 +50,4 @@ wait "$MYSQL_PID" 2>/dev/null || true
 
 chown -R mysql:mysql /var/lib/mysql
 
-echo "[build-install] AureusERP installation complete."
+echo "[build-install] auraERP installation complete."

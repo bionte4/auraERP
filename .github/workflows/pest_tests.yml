@@ -80,7 +80,7 @@ jobs:
       - name: Generating Application Key
         run: php artisan key:generate
 
-      - name: Running AureusERP Installer
+      - name: Running auraERP Installer
         run: |
           php artisan erp:install \
             --force \

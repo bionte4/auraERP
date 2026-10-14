@@ -31,7 +31,7 @@
             x-transition:leave="transition ease-in duration-75"
             x-transition:leave-start="transform opacity-100 scale-100"
             x-transition:leave-end="transform opacity-0 scale-95"
-            class="absolute {{ $isRtl ? 'left-0' : 'right-0' }} mt-2 w-40 origin-top-right rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-gray-800 dark:ring-white/10 z-50"
+            class="absolute {{ $isRtl ? 'left-0' : 'right-0' }} mt-2 w-52 origin-top-right rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-gray-800 dark:ring-white/10 z-50"
             style="display: none;"
         >
             <div class="py-1">

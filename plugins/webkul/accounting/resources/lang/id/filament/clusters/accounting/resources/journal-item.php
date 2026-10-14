@@ -1,0 +1,97 @@
+<?php
+
+return [
+    'title' => 'Item Jurnal',
+
+    'navigation' => [
+        'title' => 'Item Jurnal',
+    ],
+
+    'table' => [
+        'total'   => 'Total',
+        'columns' => [
+            'number'          => 'Nomor',
+            'date'            => 'Tanggal',
+            'account'         => 'Akun',
+            'partner'         => 'Mitra',
+            'label'           => 'Label',
+            'reference'       => 'Referensi',
+            'journal'         => 'Jurnal',
+            'debit'           => 'Debit',
+            'credit'          => 'Kredit',
+            'balance'         => 'Saldo',
+            'currency'        => 'Mata Uang',
+            'company'         => 'Perusahaan',
+            'status'          => 'Status',
+            'amount-currency' => 'Jumlah Mata Uang',
+            'amount-residual' => 'Jumlah Sisa',
+            'reconciled'      => 'Terekonsiliasi',
+            'due-date'        => 'Tanggal Jatuh Tempo',
+        ],
+
+        'groups' => [
+            'journal-entry' => 'Entri Jurnal',
+            'account'       => 'Akun',
+            'partner'       => 'Mitra',
+            'journal'       => 'Jurnal',
+            'date'          => 'Tanggal',
+            'invoice-date'  => 'Tanggal Faktur',
+            'matching'      => 'Pencocokan',
+            'status'        => 'Status',
+            'company'       => 'Perusahaan',
+        ],
+
+        'filters' => [
+            'number'          => 'Nomor',
+            'label'           => 'Label',
+            'reference'       => 'Referensi',
+            'matching-number' => 'Nomor Pencocokan',
+            'account'         => 'Akun',
+            'partner'         => 'Mitra',
+            'journal'         => 'Jurnal',
+            'currency'        => 'Mata Uang',
+            'company'         => 'Perusahaan',
+            'date'            => 'Tanggal',
+            'invoice-date'    => 'Tanggal Faktur',
+            'due-date'        => 'Tanggal Jatuh Tempo',
+            'discount-date'   => 'Tanggal Diskon',
+            'debit'           => 'Debit',
+            'credit'          => 'Kredit',
+            'balance'         => 'Saldo',
+            'amount-currency' => 'Jumlah Mata Uang',
+            'amount-residual' => 'Jumlah Sisa',
+            'quantity'        => 'Kuantitas',
+            'price-unit'      => 'Harga Satuan',
+            'discount'        => 'Diskon',
+            'reconciled'      => 'Terekonsiliasi',
+            'imported'        => 'Diimpor',
+            'down-payment'    => 'Uang Muka',
+            'created-at'      => 'Dibuat Pada',
+            'updated-at'      => 'Diperbarui Pada',
+        ],
+
+        'saved-filters' => [
+            'label'         => 'Filter Tersimpan',
+            'unposted'      => 'Belum Diposting',
+            'posted'        => 'Diposting',
+            'to-check'      => 'Untuk Diperiksa',
+            'unreconciled'  => 'Belum Direkonsiliasi',
+            'with-residual' => 'Dengan Sisa',
+            'sales'         => 'Penjualan',
+            'purchases'     => 'Pembelian',
+            'bank'          => 'Bank',
+            'cash'          => 'Tunai',
+            'credit'        => 'Kredit',
+            'miscellaneous' => 'Lain-lain',
+            'payable'       => 'Utang',
+            'receivable'    => 'Piutang',
+            'pl-accounts'   => 'Akun Laba & Rugi',
+        ],
+
+        'toolbar-actions' => [
+            'export' => [
+                'label' => 'Ekspor',
+            ],
+        ],
+    ],
+];

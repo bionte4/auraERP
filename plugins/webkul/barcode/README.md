@@ -1,6 +1,6 @@
 # Barcode Plugin
 
-Barcode is a mobile-first AureusERP plugin for inventory operation workflows. It supports:
+Barcode is a mobile-first auraERP plugin for inventory operation workflows. It supports:
 
 - barcode dashboard at `/admin/barcode`
 - dedicated barcode login at `/admin/barcode/login`
