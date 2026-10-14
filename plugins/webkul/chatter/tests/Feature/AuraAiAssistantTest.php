@@ -10,9 +10,11 @@ use Webkul\Chatter\Livewire\AuraAiWidget;
 use Webkul\Chatter\Services\AuraAiAssistantService;
 use Webkul\Employee\Models\Employee;
 use Webkul\Employee\Models\EmploymentType;
+use Webkul\Employee\Services\EmployeeBulkImportService;
 use Webkul\Maintenance\Enums\EquipmentMovementType;
 use Webkul\Maintenance\Models\Equipment;
 use Webkul\Maintenance\Models\EquipmentMovement;
+use Webkul\Maintenance\Services\EquipmentBulkImportService;
 use Webkul\Partner\Models\Partner;
 use Webkul\Project\Models\Project;
 
@@ -297,4 +299,33 @@ it('excludes internal users, employees, and companies from equipment vendor and 
         ->not->toContain($user->name);
 
     expect($vendorId)->toBeGreaterThan(0);
+});
+
+it('bulk imports employees and equipment assets from tabular rows', function (): void {
+    $user = FilamentHelper::actingAs([
+        'view_any_employee_employee',
+    ]);
+
+    $empResult = app(EmployeeBulkImportService::class)->importRows([
+        ['name', 'work_email', 'job_title', 'department', 'employment_type', 'join_date', 'contract_end_date'],
+        ['Nadia Import', 'nadia.import@opsora.my.id', 'QA Engineer', 'Quality Assurance', 'Contract', '2026-01-10', '2026-11-10'],
+    ]);
+
+    expect($empResult['created'])->toBe(1);
+
+    $importedEmp = Employee::withoutGlobalScopes()->where('work_email', 'nadia.import@opsora.my.id')->first();
+    expect($importedEmp)->not->toBeNull()
+        ->and($importedEmp->name)->toBe('Nadia Import');
+
+    $assetResult = app(EquipmentBulkImportService::class)->importRows([
+        ['name', 'serial_no', 'model', 'category', 'vendor', 'employee', 'customer', 'location', 'cost'],
+        ['ThinkPad X1 Carbon #T01', 'SN-TP-X1-99', 'Gen 12', 'Laptops', 'PT Lenovo Distribusi', 'Nadia Import', 'PT Bank Maju', 'Site Surabaya', 24000000],
+    ]);
+
+    expect($assetResult['created'])->toBe(1);
+
+    $importedAsset = Equipment::withoutGlobalScopes()->where('serial_no', 'SN-TP-X1-99')->first();
+    expect($importedAsset)->not->toBeNull()
+        ->and($importedAsset->employee_id)->toBe($importedEmp->id)
+        ->and($importedAsset->location)->toBe('Site Surabaya');
 });

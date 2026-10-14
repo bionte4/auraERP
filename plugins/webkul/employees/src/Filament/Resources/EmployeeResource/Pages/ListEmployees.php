@@ -3,13 +3,17 @@
 namespace Webkul\Employee\Filament\Resources\EmployeeResource\Pages;
 
 use Carbon\Carbon;
+use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
+use Filament\Forms\Components\FileUpload;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Webkul\Employee\Filament\Resources\EmployeeResource;
 use Webkul\Employee\Services\ContractExpiryNotifier;
+use Webkul\Employee\Services\EmployeeBulkImportService;
 use Webkul\TableViews\Filament\Components\PresetView;
 use Webkul\TableViews\Filament\Concerns\HasTableViews;
 
@@ -43,6 +47,46 @@ class ListEmployees extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('downloadTemplate')
+                ->label(__('employees::filament/resources/employee/pages/list-employee.header-actions.template.label'))
+                ->icon('heroicon-o-arrow-down-tray')
+                ->color('gray')
+                ->action(fn () => app(EmployeeBulkImportService::class)->downloadTemplate()),
+
+            Action::make('bulkImport')
+                ->label(__('employees::filament/resources/employee/pages/list-employee.header-actions.import.label'))
+                ->icon('heroicon-o-arrow-up-tray')
+                ->color('gray')
+                ->modalHeading(__('employees::filament/resources/employee/pages/list-employee.header-actions.import.modal-heading'))
+                ->modalDescription(__('employees::filament/resources/employee/pages/list-employee.header-actions.import.modal-description'))
+                ->schema([
+                    FileUpload::make('file')
+                        ->label(__('employees::filament/resources/employee/pages/list-employee.header-actions.import.file-label'))
+                        ->disk('local')
+                        ->directory('imports/employees')
+                        ->acceptedFileTypes([
+                            'text/csv',
+                            'text/plain',
+                            'application/vnd.ms-excel',
+                            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                        ])
+                        ->required(),
+                ])
+                ->action(function (array $data): void {
+                    $relativePath = (string) ($data['file'] ?? '');
+                    $fullPath = Storage::disk('local')->path($relativePath);
+
+                    $result = app(EmployeeBulkImportService::class)->importFromPath($fullPath);
+
+                    Storage::disk('local')->delete($relativePath);
+
+                    Notification::make()
+                        ->success()
+                        ->title(__('employees::filament/resources/employee/pages/list-employee.header-actions.import.notification.title'))
+                        ->body(__('employees::filament/resources/employee/pages/list-employee.header-actions.import.notification.body', $result))
+                        ->send();
+                }),
+
             CreateAction::make()
                 ->icon('heroicon-o-plus-circle')
                 ->label(__('employees::filament/resources/employee/pages/list-employee.header-actions.create.label')),
