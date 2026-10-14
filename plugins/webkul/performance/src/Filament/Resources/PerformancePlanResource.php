@@ -24,7 +24,7 @@ class PerformancePlanResource extends Resource
 {
     protected static ?string $model = PerformancePlan::class;
 
-    protected static string|\BackedEnum|null $navigationIcon = null;
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-chart-bar';
 
     protected static ?int $navigationSort = 4;
 

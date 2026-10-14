@@ -197,11 +197,9 @@
                                             <x-slot name="trigger">
                                                 <x-filament-panels::topbar.item
                                                     :active="$isItemActive"
-                                                    :active-icon="$itemActiveIcon"
                                                     :badge="$itemBadge"
                                                     :badge-color="$itemBadgeColor"
                                                     :badge-tooltip="$itemBadgeTooltip"
-                                                    :icon="$itemIcon"
                                                 >
                                                     {{ $item->getLabel() }}
                                                 </x-filament-panels::topbar.item>
