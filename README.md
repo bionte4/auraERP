@@ -140,7 +140,7 @@ Whether you're managing accounting, inventory, HR, CRM, or projects, auraERP pro
 Ensure your development environment meets the following requirements:
 
 ### Server Requirements
--   **PHP**: 8.3 or higher
+-   **PHP**: 8.3 or 8.4. PHP 8.5 is not supported, because PhpSpreadsheet requires PHP below 8.5. If both are installed, run Artisan with the 8.4 binary (`php8.4 artisan ...`).
 -   **Database**: MySQL 8.0+, MariaDB 10.6+, or PostgreSQL 16+
 -   **Web Server**: Apache 2.4+ or Nginx 1.18+
 
@@ -253,6 +253,9 @@ These plugins can be installed as needed to extend system functionality:
 | Module       | Description                       |
 | ------------ | --------------------------------- |
 | Employees    | Employee management               |
+| Attendances  | Clock-in and clock-out, with a face check and a GPS point on the phone page |
+| Performance  | Performance plans and weighted goals |
+| Evaluations  | Manager reviews with weighted 1–5 ratings |
 | Recruitments | Applicant tracking and hiring     |
 | Timeoffs     | Leave management and tracking     |
 | Timesheet    | Employee work hour tracking       |
@@ -325,6 +328,70 @@ Some plugins require other plugins to function properly. The installation system
 - ✅ Prompts you to install required plugins
 - ✅ Prevents conflicts and missing prerequisites
 - ✅ Validates the installation order
+
+### Production servers
+
+`erp:install` installs the core only. Business plugins stay uninstalled until you add them.
+
+When `APP_ENV=production`, Laravel asks for confirmation before `migrate` and `db:seed`. The Plugins screen runs `<plugin>:install --no-interaction` and does not pass `--force`, so that confirmation is cancelled. The plugin is still marked installed, its menu can appear, and opening it returns a 500 because the tables were never created.
+
+`--force` only allows the command to run on a production server. It does not drop tables or wipe data.
+
+After each plugin install, create its tables. Use the migration folder, which is not always the same word as the menu label:
+
+```bash
+php artisan migrate --force --no-interaction --path=plugins/webkul/<folder>/database/migrations
+```
+
+| Menu label | Artisan command | Folder |
+| --- | --- | --- |
+| Attendances | `attendances:install` | `attendances` |
+| Performance | `performance:install` | `performance` |
+| Evaluations | `evaluations:install` | `evaluations` |
+| Recruitment | `recruitments:install` | `recruitments` |
+| Sales | `sales:install` | `sales` |
+| Purchases | `purchases:install` | `purchases` |
+| Invoices | `invoices:install` | `invoices` |
+| Accounts | `accounts:install` | `accounts` |
+| Accounting | `accounting:install` | `accounting` |
+| Manufacturing | `manufacturing:install` | `manufacturing` |
+| Time Off | `time-off:install` | `time-off` |
+| Website | `website:install` | `website` |
+| Blogs | `blogs:install` | `blogs` |
+
+Install a plugin's dependencies first. Purchases needs Invoices, Invoices and Accounting need Accounts, and Accounts needs Products.
+
+Where a module has sample data, seed it after the tables exist. These seeders replace that module's master rows, so run them on a new database before real records are entered:
+
+```bash
+php artisan db:seed --force --no-interaction --class="Webkul\Employee\Database\Seeders\DatabaseSeeder"
+php artisan db:seed --force --no-interaction --class="Webkul\Product\Database\Seeders\DatabaseSeeder"
+php artisan db:seed --force --no-interaction --class="Webkul\Inventory\Database\Seeders\DatabaseSeeder"
+php artisan db:seed --force --no-interaction --class="Webkul\Project\Database\Seeders\DatabaseSeeder"
+php artisan db:seed --force --no-interaction --class="Webkul\Maintenance\Database\Seeders\DatabaseSeeder"
+php artisan db:seed --force --no-interaction --class="Webkul\Recruitment\Database\Seeders\DatabaseSeeder"
+```
+
+Contacts, barcode, timesheets, attendances, performance plans, and evaluations have no sample seeder. Their pages stay empty until someone saves a record.
+
+If a newly installed group is missing from the launcher, generate the missing permissions and attach every permission to the Admin role:
+
+```bash
+php artisan shield:generate --all --option=permissions --panel=admin
+php artisan tinker --execute="\$role = Spatie\Permission\Models\Role::query()->where('name', 'Admin')->first(); \$role->permissions()->sync(Spatie\Permission\Models\Permission::query()->pluck('id')->all());"
+```
+
+That gives the Admin role every `view`, `create`, `update`, and `delete` permission. The launcher shows a group only when that role can open at least one of its pages. Attendances, performance plans, and evaluations appear inside Employees. Timesheets appear inside Project. The Dashboard launcher opens the first installed module dashboard. With only Projects installed, that page is the project summary at `/admin/project`, not a combined home for every module.
+
+Set `APP_URL` to the public site URL, including `https://`. Asset URLs are built from it. `http://localhost` still serves the HTML, but the stylesheet, scripts, and logo fail to load.
+
+The deploy user and the web server user both need to write `storage` and `bootstrap/cache`. Otherwise a 500 can occur with no `storage/logs/laravel.log` to read:
+
+```bash
+sudo chown -R "$USER":www-data storage bootstrap/cache
+sudo chmod -R ug+rwx storage bootstrap/cache
+sudo find storage bootstrap/cache -type d -exec chmod g+s {} \;
+```
 
 ---
 
