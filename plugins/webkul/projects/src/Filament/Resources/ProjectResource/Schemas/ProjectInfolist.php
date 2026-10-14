@@ -71,6 +71,35 @@ class ProjectInfolist
                                                 return $record->start_date->format('d M Y').' - '.$record->end_date->format('d M Y');
                                             }),
 
+                                        TextEntry::make('project_value')
+                                            ->label(__('projects::filament/resources/project.infolist.sections.additional.entries.project-value'))
+                                            ->icon('heroicon-o-banknotes')
+                                            ->state(fn (Project $record): string => $record->formattedProjectValue()),
+
+                                        TextEntry::make('expiry_reminder')
+                                            ->label(__('projects::filament/resources/project.infolist.sections.additional.entries.expiry-reminder'))
+                                            ->badge()
+                                            ->visible(fn (Project $record): bool => filled($record->end_date))
+                                            ->state(fn (Project $record): ?string => $record->expiryReminderStage() ?? 'active')
+                                            ->color(fn (?string $state): string => match ($state) {
+                                                'expired', '1_month' => 'danger',
+                                                '2_months'           => 'warning',
+                                                '3_months'           => 'info',
+                                                default              => 'success',
+                                            })
+                                            ->formatStateUsing(function (?string $state, Project $record): string {
+                                                $days = $record->daysUntilEndDate();
+                                                $date = $record->end_date?->format('d M Y') ?? '';
+
+                                                return match ($state) {
+                                                    'expired'  => __('projects::filament/resources/project.notifications.stages.expired')." ({$date})",
+                                                    '1_month'  => __('projects::filament/resources/project.notifications.stages.1_month')." ({$days}d - {$date})",
+                                                    '2_months' => __('projects::filament/resources/project.notifications.stages.2_months')." ({$days}d - {$date})",
+                                                    '3_months' => __('projects::filament/resources/project.notifications.stages.3_months')." ({$days}d - {$date})",
+                                                    default    => "{$date} ({$days}d)",
+                                                };
+                                            }),
+
                                         TextEntry::make('allocated_hours')
                                             ->label(__('projects::filament/resources/project.infolist.sections.additional.entries.allocated-hours'))
                                             ->icon('heroicon-o-clock')

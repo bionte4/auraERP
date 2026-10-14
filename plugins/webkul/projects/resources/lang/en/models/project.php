@@ -12,6 +12,7 @@ return [
         'sort'                     => 'Sort Order',
         'start_date'               => 'Start Date',
         'end_date'                 => 'End Date',
+        'project_value'            => 'Project Value',
         'allocated_hours'          => 'Allocated Hours',
         'allow_timesheets'         => 'Allow Timesheets',
         'allow_milestones'         => 'Allow Milestones',

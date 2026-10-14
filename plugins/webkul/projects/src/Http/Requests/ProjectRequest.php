@@ -28,6 +28,7 @@ class ProjectRequest extends FormRequest
             'company_id'       => ['nullable', 'integer', 'exists:companies,id'],
             'start_date'       => ['nullable', 'date', 'required_with:end_date', 'before_or_equal:end_date'],
             'end_date'         => ['nullable', 'date', 'required_with:start_date', 'after_or_equal:start_date'],
+            'project_value'    => ['nullable', 'numeric', 'min:0'],
             'allocated_hours'  => ['nullable', 'numeric', 'min:0'],
             'allow_timesheets' => ['nullable', 'boolean'],
             'allow_milestones' => ['nullable', 'boolean'],

@@ -18,6 +18,8 @@ use Webkul\Maintenance\Services\EquipmentBulkImportService;
 use Webkul\Partner\Models\Partner;
 use Webkul\Partner\Services\PartnerBulkImportService;
 use Webkul\Project\Models\Project;
+use Webkul\Project\Services\ProjectExpiryNotifier;
+use Webkul\Security\Models\User;
 
 beforeEach(function (): void {
     TestBootstrapHelper::ensurePluginInstalled('employees');
@@ -45,6 +47,14 @@ beforeEach(function (): void {
             '--force'          => true,
             '--no-interaction' => true,
             '--path'           => 'plugins/webkul/maintenance/database/migrations/2026_10_14_193000_create_maintenance_equipment_movements_table.php',
+        ]);
+    }
+
+    if (! Schema::hasColumn('projects_projects', 'project_value')) {
+        Artisan::call('migrate', [
+            '--force'          => true,
+            '--no-interaction' => true,
+            '--path'           => 'plugins/webkul/projects/database/migrations/2026_10_14_200000_add_project_value_to_projects_projects_table.php',
         ]);
     }
 });
@@ -341,4 +351,85 @@ it('bulk imports employees and equipment assets from tabular rows', function ():
     $cust = Partner::withoutGlobalScopes()->where('email', 'info@telkom.test')->first();
     expect($cust)->not->toBeNull()
         ->and($cust->name)->toBe('PT Telkom Pelanggan');
+});
+
+it('supports one customer having multiple projects with start/end dates, project value, and 3-2-1 month reminders', function (): void {
+    $manager = User::factory()->create();
+    $this->actingAs($manager);
+
+    $customerId = Project::createCustomerPartner([
+        'name'  => 'PT Nusantara Klien Utama',
+        'email' => 'project@nusantara.test',
+        'phone' => '021-888999',
+    ]);
+
+    $customer = Partner::withoutGlobalScopes()->findOrFail($customerId);
+
+    $project3M = Project::withoutGlobalScopes()->create([
+        'name'          => 'Implementasi ERP Fase 1',
+        'partner_id'    => $customer->id,
+        'user_id'       => $manager->id,
+        'creator_id'    => $manager->id,
+        'start_date'    => now()->subMonths(3)->toDateString(),
+        'end_date'      => now()->addDays(75)->toDateString(),
+        'project_value' => 250000000,
+        'is_active'     => true,
+    ]);
+
+    $project2M = Project::withoutGlobalScopes()->create([
+        'name'          => 'Integrasi Gudang Fase 2',
+        'partner_id'    => $customer->id,
+        'user_id'       => $manager->id,
+        'creator_id'    => $manager->id,
+        'start_date'    => now()->subMonths(2)->toDateString(),
+        'end_date'      => now()->addDays(45)->toDateString(),
+        'project_value' => 150000000,
+        'is_active'     => true,
+    ]);
+
+    $project1M = Project::withoutGlobalScopes()->create([
+        'name'          => 'Maintenance Support Fase 3',
+        'partner_id'    => $customer->id,
+        'user_id'       => $manager->id,
+        'creator_id'    => $manager->id,
+        'start_date'    => now()->subMonths(5)->toDateString(),
+        'end_date'      => now()->addDays(20)->toDateString(),
+        'project_value' => 95000000,
+        'is_active'     => true,
+    ]);
+
+    $projectFar = Project::withoutGlobalScopes()->create([
+        'name'          => 'Pengembangan AI Tahun Depan',
+        'partner_id'    => $customer->id,
+        'user_id'       => $manager->id,
+        'creator_id'    => $manager->id,
+        'start_date'    => now()->toDateString(),
+        'end_date'      => now()->addDays(150)->toDateString(),
+        'project_value' => 500000000,
+        'is_active'     => true,
+    ]);
+
+    expect($customer->projects()->withoutGlobalScopes()->count())->toBe(4)
+        ->and($project3M->formattedProjectValue())->toBe('Rp 250.000.000')
+        ->and($project3M->expiryReminderStage())->toBe('3_months')
+        ->and($project2M->expiryReminderStage())->toBe('2_months')
+        ->and($project1M->expiryReminderStage())->toBe('1_month')
+        ->and($projectFar->expiryReminderStage())->toBeNull();
+
+    $notifier = app(ProjectExpiryNotifier::class);
+
+    // Calling notifyExpiringProjects again should not duplicate already-sent notifications for the same stage
+    $duplicateSent = $notifier->notifyExpiringProjects();
+    expect($duplicateSent)->toBe(0);
+
+    $stagesNotified = $manager->notifications()
+        ->get()
+        ->map(fn ($n) => $n->data['project_expiry_stage'] ?? null)
+        ->filter()
+        ->values()
+        ->all();
+
+    expect($stagesNotified)->toContain('3_months')
+        ->toContain('2_months')
+        ->toContain('1_month');
 });

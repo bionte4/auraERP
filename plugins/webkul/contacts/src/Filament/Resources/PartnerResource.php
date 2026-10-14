@@ -17,6 +17,7 @@ use Webkul\Partner\Filament\Resources\PartnerResource as BasePartnerResource;
 use Webkul\Partner\Filament\Resources\PartnerResource\RelationManagers\AddressesRelationManager;
 use Webkul\Partner\Filament\Resources\PartnerResource\RelationManagers\ContactsRelationManager;
 use Webkul\PluginManager\Package;
+use Webkul\Project\Filament\Resources\ProjectResource\RelationManagers\CustomerProjectsRelationManager;
 use Webkul\Support\Enums\NavigationGroup;
 
 class PartnerResource extends BasePartnerResource
@@ -57,7 +58,7 @@ class PartnerResource extends BasePartnerResource
 
     public static function getRelations(): array
     {
-        return [
+        $relations = [
             RelationGroup::make('Contacts', [
                 ContactsRelationManager::class,
             ])
@@ -68,6 +69,15 @@ class PartnerResource extends BasePartnerResource
             ])
                 ->icon('heroicon-o-map-pin'),
         ];
+
+        if (Package::isPluginInstalled('projects') && class_exists(CustomerProjectsRelationManager::class)) {
+            $relations[] = RelationGroup::make('Projects', [
+                CustomerProjectsRelationManager::class,
+            ])
+                ->icon('heroicon-o-briefcase');
+        }
+
+        return $relations;
     }
 
     public static function getPages(): array

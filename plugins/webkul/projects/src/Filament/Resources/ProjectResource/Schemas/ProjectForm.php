@@ -11,13 +11,16 @@ use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
+use Illuminate\Database\Eloquent\Builder;
 use Webkul\Field\Filament\Forms\Components\ProgressStepper as FormProgressStepper;
 use Webkul\Partner\Filament\Resources\PartnerResource;
 use Webkul\Project\Enums\ProjectVisibility;
 use Webkul\Project\Filament\Clusters\Configurations\Resources\TagResource;
 use Webkul\Project\Filament\Resources\ProjectResource;
+use Webkul\Project\Models\Project;
 use Webkul\Project\Models\ProjectStage;
 use Webkul\Security\Filament\Resources\CompanyResource;
 use Webkul\Security\Filament\Resources\UserResource;
@@ -60,23 +63,49 @@ class ProjectForm
                                     ->createOptionForm(fn (Schema $schema) => UserResource::form($schema)),
                                 Select::make('partner_id')
                                     ->label(__('projects::filament/resources/project.form.sections.additional.fields.customer'))
-                                    ->relationship('partner', 'name')
+                                    ->relationship(
+                                        'partner',
+                                        'name',
+                                        modifyQueryUsing: fn (Builder $query, Get $get): Builder => Project::filterExternalCustomersQuery($query, $get('partner_id')),
+                                    )
                                     ->searchable()
                                     ->preload()
-                                    ->createOptionForm(fn (Schema $schema) => PartnerResource::form($schema))
+                                    ->helperText(__('projects::filament/resources/project.form.sections.additional.fields.customer-helper-text'))
+                                    ->createOptionForm([
+                                        TextInput::make('name')
+                                            ->label(__('projects::filament/resources/project.form.sections.additional.fields.customer'))
+                                            ->required()
+                                            ->maxLength(255),
+                                        TextInput::make('email')
+                                            ->email()
+                                            ->maxLength(255),
+                                        TextInput::make('phone')
+                                            ->tel()
+                                            ->maxLength(255),
+                                    ])
+                                    ->createOptionUsing(fn (array $data): int => Project::createCustomerPartner($data))
                                     ->editOptionForm(fn (Schema $schema) => PartnerResource::form($schema)),
                                 DatePicker::make('start_date')
                                     ->label(__('projects::filament/resources/project.form.sections.additional.fields.start-date'))
                                     ->native(false)
                                     ->suffixIcon('heroicon-o-calendar')
                                     ->requiredWith('end_date')
-                                    ->beforeOrEqual('start_date'),
+                                    ->beforeOrEqual('end_date'),
                                 DatePicker::make('end_date')
                                     ->label(__('projects::filament/resources/project.form.sections.additional.fields.end-date'))
                                     ->native(false)
                                     ->suffixIcon('heroicon-o-calendar')
                                     ->requiredWith('start_date')
-                                    ->afterOrEqual('start_date'),
+                                    ->afterOrEqual('start_date')
+                                    ->helperText(__('projects::filament/resources/project.form.sections.additional.fields.end-date-helper-text')),
+                                TextInput::make('project_value')
+                                    ->label(__('projects::filament/resources/project.form.sections.additional.fields.project-value'))
+                                    ->prefix('Rp')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->default(0)
+                                    ->helperText(__('projects::filament/resources/project.form.sections.additional.fields.project-value-helper-text'))
+                                    ->rules(['nullable', 'numeric', 'min:0']),
                                 TextInput::make('allocated_hours')
                                     ->label(__('projects::filament/resources/project.form.sections.additional.fields.allocated-hours'))
                                     ->suffixIcon('heroicon-o-clock')

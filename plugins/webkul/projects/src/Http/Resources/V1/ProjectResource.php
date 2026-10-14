@@ -22,6 +22,7 @@ class ProjectResource extends JsonResource
             'sort'                    => $this->sort,
             'start_date'              => $this->start_date,
             'end_date'                => $this->end_date,
+            'project_value'           => (float) ($this->project_value ?? 0),
             'allocated_hours'         => (float) $this->allocated_hours,
             'allow_timesheets'        => (bool) $this->allow_timesheets,
             'allow_milestones'        => (bool) $this->allow_milestones,

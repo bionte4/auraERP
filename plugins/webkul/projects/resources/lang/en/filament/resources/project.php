@@ -28,8 +28,12 @@ return [
                 'fields' => [
                     'project-manager'             => 'Project Manager',
                     'customer'                    => 'Customer',
+                    'customer-helper-text'        => 'One customer can have multiple projects.',
                     'start-date'                  => 'Start Date',
                     'end-date'                    => 'End Date',
+                    'end-date-helper-text'        => 'Automatic reminders are sent at 3, 2, and 1 months before the end date.',
+                    'project-value'               => 'Project Value',
+                    'project-value-helper-text'   => 'Contract or budget value of the project.',
                     'allocated-hours'             => 'Allocated Hours',
                     'allocated-hours-helper-text' => 'In hours (Eg. 1.5 hours means 1 hour 30 minutes)',
                     'tags'                        => 'Tags',
@@ -64,6 +68,8 @@ return [
             'start-date'      => 'Start Date',
             'end-date'        => 'End Date',
             'planned-date'    => 'Planned Date',
+            'project-value'   => 'Project Value',
+            'expiry-reminder' => 'End Date Reminder',
             'remaining-hours' => 'Remaining Hours',
             'project-manager' => 'Project Manager',
         ],
@@ -80,6 +86,7 @@ return [
             'visibility'       => 'Visibility',
             'start-date'       => 'Start Date',
             'end-date'         => 'End Date',
+            'project-value'    => 'Project Value',
             'allow-timesheets' => 'Allow Timesheets',
             'allow-milestones' => 'Allow Milestones',
             'allocated-hours'  => 'Allocated Hours',
@@ -150,6 +157,8 @@ return [
                     'project-manager'        => 'Project Manager',
                     'customer'               => 'Customer',
                     'project-timeline'       => 'Project Timeline',
+                    'project-value'          => 'Project Value',
+                    'expiry-reminder'        => 'End Date Reminder',
                     'allocated-hours'        => 'Allocated Hours',
                     'allocated-hours-suffix' => ' Hours',
                     'remaining-hours'        => 'Remaining Hours',
@@ -187,6 +196,34 @@ return [
                     'milestones-enabled' => 'Milestones Enabled',
                 ],
             ],
+        ],
+    ],
+
+    'customer-projects' => [
+        'title'          => 'Customer Projects',
+        'total-projects' => 'Total Projects',
+        'total-value'    => 'Total Project Value',
+        'project-list'   => 'Projects & Timeline',
+    ],
+
+    'notifications' => [
+        'view-project' => 'View Project',
+
+        'stages' => [
+            '3_months' => '3-Month Reminder',
+            '2_months' => '2-Month Reminder',
+            '1_month'  => '1-Month Reminder',
+            'expired'  => 'Project Ended',
+        ],
+
+        'project-expiring' => [
+            'title' => ':stage: Project :name is ending soon',
+            'body'  => '[:stage] Project :name (Customer: :customer | Value: :value) ends in :days day(s) on :date.',
+        ],
+
+        'project-expired' => [
+            'title' => 'Project Period Ended: :name',
+            'body'  => 'Project :name (Customer: :customer | Value: :value) passed its end date on :date.',
         ],
     ],
 ];

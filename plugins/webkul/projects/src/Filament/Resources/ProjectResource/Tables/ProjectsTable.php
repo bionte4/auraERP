@@ -69,9 +69,45 @@ class ProjectsTable
                         TextColumn::make('planned_date')
                             ->icon('heroicon-o-calendar')
                             ->tooltip(__('projects::filament/resources/project.table.columns.planned-date'))
-                            ->state(fn (Project $record): string => $record->start_date->format('d M Y').' - '.$record->end_date->format('d M Y')),
+                            ->state(fn (Project $record): string => ($record->start_date ? $record->start_date->format('d M Y') : '—').' - '.($record->end_date ? $record->end_date->format('d M Y') : '—')),
                     ])
-                        ->visible(fn (Project $record) => filled($record->start_date) && filled($record->end_date)),
+                        ->visible(fn (Project $record) => filled($record->start_date) || filled($record->end_date)),
+                    Stack::make([
+                        TextColumn::make('project_value')
+                            ->label(__('projects::filament/resources/project.table.columns.project-value'))
+                            ->icon('heroicon-o-banknotes')
+                            ->badge()
+                            ->color('success')
+                            ->sortable()
+                            ->state(fn (Project $record): string => $record->formattedProjectValue())
+                            ->tooltip(__('projects::filament/resources/project.table.columns.project-value')),
+                    ])
+                        ->visible(fn (Project $record): bool => (float) ($record->project_value ?? 0) > 0),
+                    Stack::make([
+                        TextColumn::make('expiry_reminder')
+                            ->label(__('projects::filament/resources/project.table.columns.expiry-reminder'))
+                            ->icon('heroicon-m-bell-alert')
+                            ->badge()
+                            ->state(fn (Project $record): ?string => $record->expiryReminderStage())
+                            ->color(fn (Project $record): string => match ($record->expiryReminderStage()) {
+                                'expired', '1_month' => 'danger',
+                                '2_months'           => 'warning',
+                                default              => 'info',
+                            })
+                            ->formatStateUsing(function (?string $state, Project $record): string {
+                                $days = $record->daysUntilEndDate();
+                                $date = $record->end_date?->format('d M Y') ?? '';
+
+                                return match ($state) {
+                                    'expired'  => __('projects::filament/resources/project.notifications.stages.expired')." ({$date})",
+                                    '1_month'  => __('projects::filament/resources/project.notifications.stages.1_month')." ({$days}d)",
+                                    '2_months' => __('projects::filament/resources/project.notifications.stages.2_months')." ({$days}d)",
+                                    '3_months' => __('projects::filament/resources/project.notifications.stages.3_months')." ({$days}d)",
+                                    default    => '',
+                                };
+                            }),
+                    ])
+                        ->visible(fn (Project $record): bool => $record->expiryReminderStage() !== null),
                     Stack::make([
                         TextColumn::make('remaining_hours')
                             ->icon('heroicon-o-clock')
@@ -135,6 +171,9 @@ class ProjectsTable
                             ->label(__('projects::filament/resources/project.table.filters.start-date')),
                         DateConstraint::make('end_date')
                             ->label(__('projects::filament/resources/project.table.filters.end-date')),
+                        NumberConstraint::make('project_value')
+                            ->label(__('projects::filament/resources/project.table.filters.project-value'))
+                            ->icon('heroicon-o-banknotes'),
                         BooleanConstraint::make('allow_timesheets')
                             ->label(__('projects::filament/resources/project.table.filters.allow-timesheets'))
                             ->icon('heroicon-o-clock'),

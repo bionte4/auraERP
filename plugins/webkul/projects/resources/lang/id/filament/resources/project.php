@@ -27,9 +27,13 @@ return [
 
                 'fields' => [
                     'project-manager'             => 'Manajer Proyek',
-                    'customer'                    => 'Pelanggan',
-                    'start-date'                  => 'Tanggal Mulai',
-                    'end-date'                    => 'Tanggal Akhir',
+                    'customer'                    => 'Pelanggan (Customer)',
+                    'customer-helper-text'        => 'Satu pelanggan dapat memiliki banyak proyek.',
+                    'start-date'                  => 'Tanggal Mulai Proyek',
+                    'end-date'                    => 'Tanggal Akhir Proyek',
+                    'end-date-helper-text'        => 'Pengingat otomatis dikirim pada 3, 2, dan 1 bulan sebelum tanggal akhir.',
+                    'project-value'               => 'Nilai Proyek',
+                    'project-value-helper-text'   => 'Nilai kontrak / anggaran proyek dalam Rupiah.',
                     'allocated-hours'             => 'Jam yang Dialokasikan',
                     'allocated-hours-helper-text' => 'Dalam jam (Mis. 1.5 jam berarti 1 jam 30 menit)',
                     'tags'                        => 'Tag',
@@ -63,7 +67,9 @@ return [
             'customer'        => 'Pelanggan',
             'start-date'      => 'Tanggal Mulai',
             'end-date'        => 'Tanggal Akhir',
-            'planned-date'    => 'Tanggal Rencana',
+            'planned-date'    => 'Periode Proyek',
+            'project-value'   => 'Nilai Proyek',
+            'expiry-reminder' => 'Pengingat Akhir Proyek',
             'remaining-hours' => 'Jam Tersisa',
             'project-manager' => 'Manajer Proyek',
         ],
@@ -80,6 +86,7 @@ return [
             'visibility'       => 'Visibilitas',
             'start-date'       => 'Tanggal Mulai',
             'end-date'         => 'Tanggal Akhir',
+            'project-value'    => 'Nilai Proyek',
             'allow-timesheets' => 'Izinkan Lembar Waktu',
             'allow-milestones' => 'Izinkan Tonggak Pencapaian',
             'allocated-hours'  => 'Jam yang Dialokasikan',
@@ -149,7 +156,9 @@ return [
                 'entries' => [
                     'project-manager'        => 'Manajer Proyek',
                     'customer'               => 'Pelanggan',
-                    'project-timeline'       => 'Linimasa Proyek',
+                    'project-timeline'       => 'Periode Proyek',
+                    'project-value'          => 'Nilai Proyek',
+                    'expiry-reminder'        => 'Pengingat Akhir Proyek',
                     'allocated-hours'        => 'Jam yang Dialokasikan',
                     'allocated-hours-suffix' => ' Jam',
                     'remaining-hours'        => 'Jam Tersisa',
@@ -187,6 +196,34 @@ return [
                     'milestones-enabled' => 'Tonggak Diaktifkan',
                 ],
             ],
+        ],
+    ],
+
+    'customer-projects' => [
+        'title'          => 'Daftar Proyek Pelanggan',
+        'total-projects' => 'Total Proyek',
+        'total-value'    => 'Total Nilai Proyek',
+        'project-list'   => 'Proyek & Periode',
+    ],
+
+    'notifications' => [
+        'view-project' => 'Lihat Proyek',
+
+        'stages' => [
+            '3_months' => 'Pengingat 3 Bulan',
+            '2_months' => 'Pengingat 2 Bulan',
+            '1_month'  => 'Pengingat 1 Bulan',
+            'expired'  => 'Proyek Berakhir',
+        ],
+
+        'project-expiring' => [
+            'title' => ':stage: Proyek :name akan segera berakhir',
+            'body'  => '[:stage] Proyek :name (Customer: :customer | Nilai: :value) akan berakhir dalam :days hari pada :date.',
+        ],
+
+        'project-expired' => [
+            'title' => 'Periode Proyek Berakhir: :name',
+            'body'  => 'Proyek :name (Customer: :customer | Nilai: :value) telah melewati tanggal akhir pada :date.',
         ],
     ],
 ];

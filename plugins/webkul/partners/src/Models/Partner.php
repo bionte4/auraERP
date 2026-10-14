@@ -18,6 +18,7 @@ use Webkul\Chatter\Traits\HasLogActivity;
 use Webkul\Field\Traits\HasCustomFields;
 use Webkul\Partner\Database\Factories\PartnerFactory;
 use Webkul\Partner\Enums\AccountType;
+use Webkul\Project\Models\Project;
 use Webkul\Security\Models\User;
 use Webkul\Security\Traits\HasOwnershipScope;
 use Webkul\Support\Models\Company;
@@ -147,6 +148,11 @@ class Partner extends Authenticatable implements FilamentUser
     public function bankAccounts(): HasMany
     {
         return $this->hasMany(BankAccount::class, 'partner_id');
+    }
+
+    public function projects(): HasMany
+    {
+        return $this->hasMany(Project::class, 'partner_id');
     }
 
     public function tags(): BelongsToMany

@@ -480,6 +480,27 @@ class AuraAiAssistantService
             ]),
         ];
 
+        $projects = Project::withoutGlobalScopes()
+            ->with(['partner', 'stage'])
+            ->whereNull('deleted_at')
+            ->orderBy('end_date')
+            ->limit(10)
+            ->get();
+
+        foreach ($projects as $project) {
+            $cust = $project->partner?->name ? " | Customer: {$project->partner->name}" : '';
+            $period = ($project->start_date && $project->end_date)
+                ? ' | '.$project->start_date->format('d M Y').' - '.$project->end_date->format('d M Y')
+                : '';
+            $val = (float) ($project->project_value ?? 0) > 0
+                ? ' | '.$project->formattedProjectValue()
+                : '';
+            $stage = $project->expiryReminderStage();
+            $rem = $stage ? " [{$stage}]" : '';
+
+            $lines[] = "• {$project->name}{$cust}{$period}{$val}{$rem}";
+        }
+
         if (Schema::hasTable('maintenance_equipments') && Schema::hasColumn('maintenance_equipments', 'project_id')) {
             $projectAssets = Equipment::withoutGlobalScopes()
                 ->with(['project', 'customer'])
