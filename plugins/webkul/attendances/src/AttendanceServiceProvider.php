@@ -25,6 +25,7 @@ class AttendanceServiceProvider extends PackageServiceProvider
                 '2026_10_14_120000_add_location_to_attendances_attendances_table',
                 '2026_10_14_130000_create_attendances_face_profiles_table',
                 '2026_10_14_140000_create_attendances_tracks_table',
+                '2026_10_14_160000_create_attendances_sites_table',
             ])
             ->runsMigrations()
             ->hasInstallCommand(function (InstallCommand $command) {

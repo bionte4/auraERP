@@ -150,7 +150,10 @@
             data-loading="{{ __('attendances::filament/pages/clock.face.loading') }}"
             data-scanning="{{ __('attendances::filament/pages/clock.face.scanning') }}"
             data-locating="{{ __('attendances::filament/pages/clock.actions.locating') }}"
-            data-ready="{{ $faceEnrolled ? __('attendances::filament/pages/clock.face.ready') : __('attendances::filament/pages/clock.face.needs-enroll') }}"
+            data-require-face="{{ $requiresFace ? '1' : '0' }}"
+            data-ready="{{ $requiresFace
+                ? ($faceEnrolled ? __('attendances::filament/pages/clock.face.ready') : __('attendances::filament/pages/clock.face.needs-enroll'))
+                : __('attendances::filament/pages/clock.face.desktop') }}"
             data-tracking="{{ $tracking ? '1' : '0' }}"
             data-tracking-label="{{ __('attendances::filament/pages/clock.tracking.active') }}"
             x-data
@@ -163,10 +166,12 @@
                 document.head.appendChild(script);
             "
         >
-            <video id="aura-clock-video" class="aura-clock-video" autoplay muted playsinline></video>
+            @if ($requiresFace)
+                <video id="aura-clock-video" class="aura-clock-video" autoplay muted playsinline></video>
+            @endif
             <p id="aura-clock-face-status" class="aura-clock-status"></p>
 
-            @if (! $faceEnrolled && $canClockIn)
+            @if ($requiresFace && ! $faceEnrolled && $canClockIn)
                 <button
                     type="button"
                     class="aura-clock-btn aura-clock-btn-enroll"
@@ -176,7 +181,7 @@
                 </button>
             @endif
 
-            @if ($faceEnrolled && $canClockIn)
+            @if ((! $requiresFace || $faceEnrolled) && $canClockIn)
                 <button
                     type="button"
                     class="aura-clock-btn aura-clock-btn-in"
@@ -187,7 +192,7 @@
                 </button>
             @endif
 
-            @if ($faceEnrolled && $canClockOut)
+            @if ((! $requiresFace || $faceEnrolled) && $canClockOut)
                 <button
                     type="button"
                     class="aura-clock-btn aura-clock-btn-out"
@@ -199,7 +204,7 @@
                 </button>
             @endif
 
-            @if ($faceEnrolled && $canClockIn)
+            @if ($requiresFace && $faceEnrolled && $canClockIn)
                 <button
                     type="button"
                     class="aura-clock-btn aura-clock-btn-reenroll"
@@ -218,7 +223,16 @@
         @endif
 
         <p class="aura-clock-note">{{ __('attendances::filament/pages/clock.tracking.note') }}</p>
-        <p class="aura-clock-note">{{ __('attendances::filament/pages/clock.face-note') }}</p>
+        @if ($requiresFace)
+            <p class="aura-clock-note">{{ __('attendances::filament/pages/clock.face-note') }}</p>
+        @else
+            <p class="aura-clock-note">{{ __('attendances::filament/pages/clock.desktop-note') }}</p>
+        @endif
+        @if ($sites->isNotEmpty())
+            <p class="aura-clock-note">{{ __('attendances::filament/pages/clock.sites-note', ['sites' => $sites->pluck('name')->join(', ')]) }}</p>
+        @else
+            <p class="aura-clock-note">{{ __('attendances::filament/pages/clock.sites-empty') }}</p>
+        @endif
 
         <div class="aura-clock-links">
             @if ($attendance?->checkInMapUrl())

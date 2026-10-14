@@ -3,6 +3,8 @@
 require_once __DIR__.'/../../../support/tests/Helpers/TestBootstrapHelper.php';
 
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schema;
 use Webkul\Attendance\Data\AttendanceLocation;
 use Webkul\Attendance\Enums\ClockResult;
 use Webkul\Attendance\Models\Attendance;
@@ -13,6 +15,14 @@ use Webkul\Employee\Models\Employee;
 
 beforeEach(function () {
     TestBootstrapHelper::ensurePluginInstalled('attendances');
+
+    if (! Schema::hasTable('attendances_sites')) {
+        Artisan::call('migrate', [
+            '--force'          => true,
+            '--no-interaction' => true,
+            '--path'           => 'plugins/webkul/attendances/database/migrations/2026_10_14_160000_create_attendances_sites_table.php',
+        ]);
+    }
 });
 
 it('keeps a location trail during an open shift and stops after clock-out', function () {

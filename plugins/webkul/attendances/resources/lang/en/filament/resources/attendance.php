@@ -26,6 +26,7 @@ return [
             'employee'           => 'Employee',
             'check-in'           => 'Clock in',
             'check-out'          => 'Clock out',
+            'site'               => 'Work site',
             'check-in-location'  => 'Clock-in location',
             'check-out-location' => 'Clock-out location',
             'worked'             => 'Duration',

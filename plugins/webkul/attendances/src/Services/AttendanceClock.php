@@ -30,7 +30,7 @@ class AttendanceClock
             : AttendanceStatus::Present;
     }
 
-    public function clockIn(Employee $employee, ?Carbon $at = null, ?AttendanceLocation $location = null): ClockResult
+    public function clockIn(Employee $employee, ?Carbon $at = null, ?AttendanceLocation $location = null, ?int $siteId = null): ClockResult
     {
         $at ??= now();
 
@@ -48,7 +48,7 @@ class AttendanceClock
         $attendance->company_id = $employee->company_id;
         $attendance->check_in = $at;
         $attendance->status = $this->statusForArrival($at);
-        $this->applyLocation($attendance, 'check_in', $location);
+        $this->applyLocation($attendance, 'check_in', $location, $siteId);
 
         try {
             $attendance->save();
@@ -61,7 +61,7 @@ class AttendanceClock
         return ClockResult::Recorded;
     }
 
-    public function clockOut(Employee $employee, ?Carbon $at = null, ?AttendanceLocation $location = null): ClockResult
+    public function clockOut(Employee $employee, ?Carbon $at = null, ?AttendanceLocation $location = null, ?int $siteId = null): ClockResult
     {
         $at ??= now();
 
@@ -73,7 +73,7 @@ class AttendanceClock
 
         $this->rememberTrack($attendance, $location, $at);
         $attendance->check_out = $at;
-        $this->applyLocation($attendance, 'check_out', $location);
+        $this->applyLocation($attendance, 'check_out', $location, $siteId);
         $attendance->save();
 
         return ClockResult::Recorded;
@@ -88,7 +88,7 @@ class AttendanceClock
         app(AttendanceTracker::class)->append($attendance, $location, $at, force: true);
     }
 
-    protected function applyLocation(Attendance $attendance, string $prefix, ?AttendanceLocation $location): void
+    protected function applyLocation(Attendance $attendance, string $prefix, ?AttendanceLocation $location, ?int $siteId = null): void
     {
         if ($location === null) {
             return;
@@ -97,6 +97,7 @@ class AttendanceClock
         $attendance->{$prefix.'_latitude'} = $location->latitude;
         $attendance->{$prefix.'_longitude'} = $location->longitude;
         $attendance->{$prefix.'_accuracy'} = $location->accuracyMeters;
+        $attendance->{$prefix.'_site_id'} = $siteId;
     }
 
     protected function today(Employee $employee, Carbon $at): ?Attendance

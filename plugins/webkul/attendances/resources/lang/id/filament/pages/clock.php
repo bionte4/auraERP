@@ -17,6 +17,7 @@ return [
         'scanning'     => 'Mencari wajah...',
         'ready'        => 'Wajah sudah terdaftar. Arahkan wajah ke kamera, lalu absen.',
         'needs-enroll' => 'Arahkan wajah ke kamera, lalu daftarkan sekali.',
+        'desktop'      => 'Laptop tidak memakai kamera. Tekan absen, lalu izinkan lokasi.',
     ],
 
     'status' => [
@@ -32,7 +33,13 @@ return [
 
     'location-note' => 'Ponsel akan meminta izin lokasi. Koordinat disimpan hanya saat Anda absen masuk atau pulang. Di ponsel, buka situs ini lewat HTTPS supaya browser dapat mengirim GPS.',
 
-    'face-note' => 'Kamera depan dipakai hanya saat Anda menekan tombol, untuk mencocokkan wajah dengan data yang didaftarkan. Foto tidak disimpan. Di ponsel, buka situs ini lewat HTTPS supaya kamera dan GPS dapat digunakan. Pencocokan ini dapat tertipu oleh foto wajah, jadi tetap gunakan di tempat kerja yang diawasi.',
+    'face-note' => 'Kamera depan dipakai hanya di ponsel, saat Anda menekan tombol, untuk mencocokkan wajah. Foto tidak disimpan. Buka situs ini lewat HTTPS. Pencocokan ini dapat tertipu oleh foto wajah, jadi tetap gunakan di tempat kerja yang diawasi.',
+
+    'desktop-note' => 'Di laptop atau netbook, absen hanya memakai lokasi. Kamera dan pencocokan wajah dipakai di ponsel.',
+
+    'sites-note' => 'Absen diterima bila lokasi Anda berada di dalam salah satu lokasi kerja: :sites.',
+
+    'sites-empty' => 'Belum ada lokasi kerja. Semua titik lokasi masih diterima sampai admin menambahkan lokasi di menu Lokasi kerja.',
 
     'tracking' => [
         'active' => 'Jejak lokasi aktif. Biarkan halaman ini terbuka. Titik tercatat:',
@@ -76,6 +83,10 @@ return [
         'location-invalid' => [
             'title' => 'Lokasi tidak terbaca',
             'body'  => 'Coba lagi di tempat dengan sinyal GPS yang lebih jelas.',
+        ],
+        'outside-site' => [
+            'title' => 'Di luar lokasi kerja',
+            'body'  => 'Anda berada di luar radius semua lokasi kerja yang aktif. Dekati lokasi proyek, lalu coba lagi.',
         ],
         'forbidden' => [
             'title' => 'Anda tidak dapat mencatat absensi ini',

@@ -108,6 +108,8 @@
 
     const trackingOn = () => document.getElementById('aura-clock-app')?.dataset.tracking === '1';
 
+    const requiresFace = () => document.getElementById('aura-clock-app')?.dataset.requireFace === '1';
+
     const showCount = (count) => {
         const countNode = document.getElementById('aura-clock-track-count');
 
@@ -187,6 +189,12 @@
                 return;
             }
 
+            if (! requiresFace()) {
+                setStatus(root?.dataset.ready ?? '');
+
+                return;
+            }
+
             try {
                 setStatus(root?.dataset.loading ?? '');
                 await ensureModels();
@@ -215,12 +223,16 @@
 
         async clock(component, method) {
             try {
-                const descriptor = await detect();
+                let descriptor = null;
 
-                if (! descriptor) {
-                    await component.faceNotFound();
+                if (requiresFace()) {
+                    descriptor = await detect();
 
-                    return;
+                    if (! descriptor) {
+                        await component.faceNotFound();
+
+                        return;
+                    }
                 }
 
                 const root = document.getElementById('aura-clock-app');

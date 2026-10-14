@@ -27,10 +27,12 @@ class Attendance extends Model
         'check_in_latitude',
         'check_in_longitude',
         'check_in_accuracy',
+        'check_in_site_id',
         'check_out',
         'check_out_latitude',
         'check_out_longitude',
         'check_out_accuracy',
+        'check_out_site_id',
         'status',
         'note',
     ];
@@ -51,10 +53,12 @@ class Attendance extends Model
             'check_in_latitude'    => 'float',
             'check_in_longitude'   => 'float',
             'check_in_accuracy'    => 'integer',
+            'check_in_site_id'     => 'integer',
             'check_out'            => 'datetime',
             'check_out_latitude'   => 'float',
             'check_out_longitude'  => 'float',
             'check_out_accuracy'   => 'integer',
+            'check_out_site_id'    => 'integer',
             'status'               => AttendanceStatus::class,
         ];
     }
@@ -67,6 +71,16 @@ class Attendance extends Model
     public function tracks(): HasMany
     {
         return $this->hasMany(AttendanceTrack::class);
+    }
+
+    public function checkInSite(): BelongsTo
+    {
+        return $this->belongsTo(AttendanceSite::class, 'check_in_site_id');
+    }
+
+    public function checkOutSite(): BelongsTo
+    {
+        return $this->belongsTo(AttendanceSite::class, 'check_out_site_id');
     }
 
     public function checkInMapUrl(): ?string

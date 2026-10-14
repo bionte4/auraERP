@@ -17,6 +17,7 @@ return [
         'scanning'     => 'Looking for a face...',
         'ready'        => 'Face is enrolled. Face the camera, then clock.',
         'needs-enroll' => 'Face the camera, then enroll once.',
+        'desktop'      => 'A laptop does not use the camera. Press clock, then allow location.',
     ],
 
     'status' => [
@@ -32,7 +33,13 @@ return [
 
     'location-note' => 'Your phone will ask for location permission. Coordinates are saved only when you clock in or out. On a phone, open this site over HTTPS so the browser can share GPS.',
 
-    'face-note' => 'The front camera is used only when you press a button, to match your face with the enrolled data. No photo is stored. On a phone, open this site over HTTPS so the camera and GPS can be used. A photo of a face can fool this match, so use it at a supervised workplace.',
+    'face-note' => 'The front camera is used only on a phone, when you press a button, to match your face. No photo is stored. Open this site over HTTPS. A photo of a face can fool this match, so use it at a supervised workplace.',
+
+    'desktop-note' => 'On a laptop or netbook, clocking uses location only. The camera and face match are used on a phone.',
+
+    'sites-note' => 'Clocking is accepted when your location is inside one of these work sites: :sites.',
+
+    'sites-empty' => 'No work sites are configured yet. Any location is still accepted until an administrator adds sites under Work sites.',
 
     'tracking' => [
         'active' => 'Location trail is on. Keep this page open. Points saved:',
@@ -76,6 +83,10 @@ return [
         'location-invalid' => [
             'title' => 'Location could not be read',
             'body'  => 'Try again from a place with a clearer GPS signal.',
+        ],
+        'outside-site' => [
+            'title' => 'Outside every work site',
+            'body'  => 'You are outside the radius of every active work site. Move closer to the project site, then try again.',
         ],
         'forbidden' => [
             'title' => 'You cannot clock this attendance',

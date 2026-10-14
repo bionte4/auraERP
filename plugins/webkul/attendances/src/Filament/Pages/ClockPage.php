@@ -10,8 +10,10 @@ use Livewire\Attributes\Renderless;
 use Webkul\Attendance\Data\AttendanceLocation;
 use Webkul\Attendance\Enums\ClockResult;
 use Webkul\Attendance\Models\Attendance;
+use Webkul\Attendance\Models\AttendanceSite;
 use Webkul\Attendance\Models\FaceProfile;
 use Webkul\Attendance\Services\AttendanceClock;
+use Webkul\Attendance\Services\AttendanceGeofence;
 use Webkul\Attendance\Services\AttendanceTracker;
 use Webkul\Attendance\Services\FaceMatcher;
 use Webkul\Employee\Models\Employee;
@@ -26,6 +28,20 @@ class ClockPage extends Page
     protected static ?string $slug = 'absen';
 
     protected string $view = 'attendances::filament.pages.clock';
+
+    public bool $requiresFace = false;
+
+    public function mount(): void
+    {
+        $this->requiresFace = $this->requestLooksLikePhone();
+    }
+
+    public function hydrate(): void
+    {
+        if ($this->requestLooksLikePhone()) {
+            $this->requiresFace = true;
+        }
+    }
 
     public static function getNavigationLabel(): string
     {
@@ -175,6 +191,8 @@ class ClockPage extends Page
             'trackCount'   => (int) ($attendance?->tracks()->count() ?? 0),
             'canClockIn'   => (bool) $user?->can('create_attendance_attendance'),
             'canClockOut'  => (bool) $user?->can('update_attendance_attendance'),
+            'requiresFace' => $this->requiresFace,
+            'sites'        => AttendanceSite::query()->where('is_active', true)->orderBy('name')->get(),
             'faceScript'   => asset('vendor/face-api/face-api.js'),
             'faceModel'    => asset('vendor/face-api/model'),
             'faceHelper'   => asset('js/aura/clock-face.js'),
@@ -200,28 +218,7 @@ class ClockPage extends Page
             return false;
         }
 
-        $matcher = app(FaceMatcher::class);
-        $probe = $matcher->normalize($descriptor);
-
-        if ($probe === null) {
-            $this->notify('danger', 'face-invalid');
-
-            return $this->trackingActive($employee);
-        }
-
-        $profile = FaceProfile::query()->where('employee_id', $employee->id)->first();
-
-        if ($profile === null) {
-            $this->notify('danger', 'face-missing');
-
-            return $this->trackingActive($employee);
-        }
-
-        $enrolled = $matcher->normalize($profile->descriptor);
-
-        if ($enrolled === null || ! $matcher->matches($probe, $enrolled)) {
-            $this->notify('danger', 'face-mismatch');
-
+        if ($this->requiresFace && ! $this->faceMatches($employee, $descriptor)) {
             return $this->trackingActive($employee);
         }
 
@@ -233,10 +230,19 @@ class ClockPage extends Page
             return $this->trackingActive($employee);
         }
 
+        $decision = app(AttendanceGeofence::class)->decide($location);
+
+        if (! $decision->allowed) {
+            $this->notify('danger', 'outside-site');
+
+            return $this->trackingActive($employee);
+        }
+
         $clock = app(AttendanceClock::class);
+        $siteId = $decision->site?->id;
         $result = $direction === 'in'
-            ? $clock->clockIn($employee, location: $location)
-            : $clock->clockOut($employee, location: $location);
+            ? $clock->clockIn($employee, location: $location, siteId: $siteId)
+            : $clock->clockOut($employee, location: $location, siteId: $siteId);
 
         $key = match ($result) {
             ClockResult::Recorded         => $direction === 'in' ? 'clock-in' : 'clock-out',
@@ -247,6 +253,43 @@ class ClockPage extends Page
         $this->notify($result === ClockResult::Recorded ? 'success' : 'warning', $key);
 
         return $this->trackingActive($employee);
+    }
+
+    protected function requestLooksLikePhone(): bool
+    {
+        $agent = (string) request()->userAgent();
+
+        return preg_match('/android|iphone|ipad|ipod|mobile|webos|blackberry|iemobile|opera mini/i', $agent) === 1;
+    }
+
+    protected function faceMatches(Employee $employee, mixed $descriptor): bool
+    {
+        $matcher = app(FaceMatcher::class);
+        $probe = $matcher->normalize($descriptor);
+
+        if ($probe === null) {
+            $this->notify('danger', 'face-invalid');
+
+            return false;
+        }
+
+        $profile = FaceProfile::query()->where('employee_id', $employee->id)->first();
+
+        if ($profile === null) {
+            $this->notify('danger', 'face-missing');
+
+            return false;
+        }
+
+        $enrolled = $matcher->normalize($profile->descriptor);
+
+        if ($enrolled === null || ! $matcher->matches($probe, $enrolled)) {
+            $this->notify('danger', 'face-mismatch');
+
+            return false;
+        }
+
+        return true;
     }
 
     protected function trackingActive(Employee $employee): bool

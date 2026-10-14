@@ -37,6 +37,9 @@ class AttendancesTable
                 TextColumn::make('check_out')
                     ->label(__('attendances::filament/resources/attendance.table.columns.check-out'))
                     ->dateTime('H:i'),
+                TextColumn::make('checkInSite.name')
+                    ->label(__('attendances::filament/resources/attendance.table.columns.site'))
+                    ->toggleable(),
                 TextColumn::make('check_in_location')
                     ->label(__('attendances::filament/resources/attendance.table.columns.check-in-location'))
                     ->state(fn (Attendance $record): string => $record->checkInMapUrl() ? number_format((float) $record->check_in_latitude, 5).', '.number_format((float) $record->check_in_longitude, 5) : '—')

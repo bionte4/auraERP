@@ -26,6 +26,7 @@ return [
             'employee'           => 'Karyawan',
             'check-in'           => 'Masuk',
             'check-out'          => 'Pulang',
+            'site'               => 'Lokasi kerja',
             'check-in-location'  => 'Lokasi masuk',
             'check-out-location' => 'Lokasi pulang',
             'worked'             => 'Durasi',
