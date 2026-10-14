@@ -307,19 +307,17 @@ This package products is already installed. What would you like to do? [Skip]:
 
 ### Uninstalling a Plugin
 
-To remove a plugin from your system:
+An administrator can remove one business plugin at a time from the plugin card menu, or from the terminal:
 
 ```bash
-php artisan <plugin-name>:uninstall
+php artisan time-off:uninstall --force
 ```
 
-**Example:** Uninstall the Inventories plugin
+`--force` skips the confirmation question. It does not wipe the rest of the ERP.
 
-```bash
-php artisan inventories:uninstall
-```
+The command refuses to continue while another installed plugin still depends on the one you are removing. Uninstall Sales and Purchases before Invoices, and uninstall Invoices, Payments, and Accounting before Accounts. Time Off can be removed on its own, because nothing else depends on it.
 
-⚠️ **Warning:** Uninstalling a plugin will remove its database tables and data. Make sure to backup your data before uninstalling.
+Uninstalling drops that plugin's tables and deletes its data. The action cannot be undone. Core plugins that provide users, roles, and companies are not removed this way.
 
 ### Plugin Dependencies
 
@@ -359,7 +357,26 @@ php artisan migrate --force --no-interaction --path=plugins/webkul/<folder>/data
 | Website | `website:install` | `website` |
 | Blogs | `blogs:install` | `blogs` |
 
-Install a plugin's dependencies first. Purchases needs Invoices, Invoices and Accounting need Accounts, and Accounts needs Products.
+An administrator can install every business plugin. Install dependencies first, then create each plugin's tables with `migrate --force`. One order that satisfies the dependencies is:
+
+1. Employees, Contacts, Products, and Projects.
+2. Inventories, then Barcode and Manufacturing.
+3. Accounts, then Payments, Invoices, and Accounting.
+4. Purchases and Sales, which need Invoices. Sales also needs Payments.
+5. Timesheets, which needs Projects.
+6. Maintenance, Attendances, Performance, Evaluations, Recruitment, and Time Off. The last five need Employees.
+7. Website, then Blogs.
+
+On the server, after the install commands:
+
+```bash
+for folder in employees contacts products projects inventories barcode manufacturing accounts payments invoices accounting purchases sales timesheets maintenance attendances performance evaluations recruitments time-off website blogs
+do
+  php artisan migrate --force --no-interaction --path=plugins/webkul/$folder/database/migrations
+done
+```
+
+Repeat a folder only when its command reports an error. A line that says there is nothing to migrate means that plugin's tables are already in place.
 
 Where a module has sample data, seed it after the tables exist. These seeders replace that module's master rows, so run them on a new database before real records are entered:
 
