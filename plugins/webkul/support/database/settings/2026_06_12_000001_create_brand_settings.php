@@ -8,11 +8,11 @@ return new class extends SettingsMigration
 {
     public function up(): void
     {
-        $this->migrator->add('branding.primary_color', $this->defaultHex(Color::Blue));
-        $this->migrator->add('branding.gray_color', $this->defaultHex(Color::Zinc));
-        $this->migrator->add('branding.danger_color', $this->defaultHex(Color::Red));
-        $this->migrator->add('branding.info_color', $this->defaultHex(Color::Blue));
-        $this->migrator->add('branding.success_color', $this->defaultHex(Color::Green));
+        $this->migrator->add('branding.primary_color', $this->defaultHex(Color::Indigo));
+        $this->migrator->add('branding.gray_color', $this->defaultHex(Color::Slate));
+        $this->migrator->add('branding.danger_color', $this->defaultHex(Color::Rose));
+        $this->migrator->add('branding.info_color', $this->defaultHex(Color::Sky));
+        $this->migrator->add('branding.success_color', $this->defaultHex(Color::Emerald));
         $this->migrator->add('branding.warning_color', $this->defaultHex(Color::Amber));
         $this->migrator->add('branding.light_logo', 'images/logo-full-light.svg');
         $this->migrator->add('branding.dark_logo', 'images/logo-full-dark.svg');

@@ -56,6 +56,8 @@ class ApplyBrandSettings
         try {
             $brand = settings(BrandSettings::class);
 
+            $this->upgradeLegacyDefaultPaletteIfNeeded($brand);
+
             $panelDefaultColors = array_merge(
                 ColorManager::DEFAULT_COLORS,
                 $panel->getColors(),
@@ -122,6 +124,28 @@ class ApplyBrandSettings
     protected function isSameColor(string $a, string $b): bool
     {
         return Color::convertToHex($a) === Color::convertToHex($b);
+    }
+
+    protected function upgradeLegacyDefaultPaletteIfNeeded(BrandSettings $brand): void
+    {
+        $isLegacyDefault = ! empty($brand->primary_color)
+            && ! empty($brand->gray_color)
+            && ! empty($brand->success_color)
+            && $this->isSameColor($brand->primary_color, Color::Blue[600])
+            && $this->isSameColor($brand->gray_color, Color::Zinc[600])
+            && $this->isSameColor($brand->success_color, Color::Green[600]);
+
+        if (! $isLegacyDefault) {
+            return;
+        }
+
+        $brand->primary_color = Color::convertToHex(Color::Indigo[600]);
+        $brand->gray_color = Color::convertToHex(Color::Slate[600]);
+        $brand->danger_color = Color::convertToHex(Color::Rose[600]);
+        $brand->info_color = Color::convertToHex(Color::Sky[600]);
+        $brand->success_color = Color::convertToHex(Color::Emerald[600]);
+        $brand->warning_color = Color::convertToHex(Color::Amber[600]);
+        $brand->save();
     }
 
     protected function paletteFromHex(string $seed): array
