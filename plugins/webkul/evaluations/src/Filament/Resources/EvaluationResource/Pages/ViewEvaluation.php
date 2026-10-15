@@ -22,15 +22,15 @@ class ViewEvaluation extends ViewRecord
     {
         return [
             Action::make('print_pkwt_pdf')
-                ->label('Cetak Form Evaluasi PKWT (PDF)')
+                ->label('Cetak Form Evaluasi (PDF)')
                 ->icon('heroicon-o-printer')
                 ->color('info')
                 ->action(function (Evaluation $record): StreamedResponse {
-                    $record->loadMissing(['employee.department', 'employee.workLocation', 'reviewer', 'gmApprover', 'directorApprover', 'performancePlan', 'ratings']);
+                    $record->loadMissing(['employee.department', 'employee.workLocation', 'reviewer', 'performancePlan', 'ratings']);
                     $pdf = Pdf::loadView('evaluations::pdf.pkwt-evaluation', ['record' => $record])
                         ->setPaper('a4', 'portrait');
 
-                    $filename = 'Evaluasi-PKWT-'.str($record->employee?->name ?? 'Karyawan')->slug().'-'.$record->id.'.pdf';
+                    $filename = 'Evaluasi-Karyawan-'.str($record->employee?->name ?? 'Karyawan')->slug().'-'.$record->id.'.pdf';
 
                     return response()->streamDownload(
                         fn () => print ($pdf->output()),
@@ -47,19 +47,14 @@ class ViewEvaluation extends ViewRecord
                         ->options([
                             'employee' => 'Karyawan yang Dinilai',
                             'reviewer' => 'Penilai (Atasan Langsung)',
-                            'gm'       => 'General Manager',
-                            'director' => 'Direktur Bidang',
                         ])
                         ->required()
                         ->default('reviewer'),
                 ])
                 ->action(function (Evaluation $record, array $data): void {
-                    $column = match ($data['signer_role'] ?? 'reviewer') {
-                        'employee' => 'employee_signed_at',
-                        'gm'       => 'gm_signed_at',
-                        'director' => 'director_signed_at',
-                        default    => 'reviewer_signed_at',
-                    };
+                    $column = ($data['signer_role'] ?? 'reviewer') === 'employee'
+                        ? 'employee_signed_at'
+                        : 'reviewer_signed_at';
 
                     $record->{$column} = now();
 
@@ -67,7 +62,7 @@ class ViewEvaluation extends ViewRecord
                         $record->status = EvaluationStatus::InReview;
                     }
 
-                    if ($record->employee_signed_at && $record->reviewer_signed_at && $record->gm_signed_at) {
+                    if ($record->employee_signed_at && $record->reviewer_signed_at) {
                         $record->status = EvaluationStatus::Completed;
                     }
 

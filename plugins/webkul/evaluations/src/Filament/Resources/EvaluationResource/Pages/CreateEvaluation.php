@@ -15,10 +15,6 @@ class CreateEvaluation extends CreateRecord
         /** @var Evaluation $record */
         $record = $this->getRecord();
 
-        if ($record->ratings()->count() === 0 && ($record->evaluation_type === null || $record->evaluation_type->isPkwt())) {
-            $record->seedDefaultPkwtCriteria();
-        }
-
         if ($record->goal_achievement_percentage === null) {
             $record->syncGoalFromPerformancePlan();
         }

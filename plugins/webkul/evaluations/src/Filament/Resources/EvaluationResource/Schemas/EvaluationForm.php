@@ -24,7 +24,7 @@ class EvaluationForm
     {
         return $schema
             ->components([
-                Section::make('A & B. Identitas Evaluasi & Data Karyawan PKWT')
+                Section::make('A & B. Identitas Evaluasi & Data Karyawan')
                     ->schema([
                         TextInput::make('title')
                             ->label(__('evaluations::filament/resources/evaluation.form.title'))
@@ -117,13 +117,13 @@ class EvaluationForm
                             ->label('Lokasi Kerja')
                             ->maxLength(150),
                         Toggle::make('is_final_period')
-                            ->label('Periode Penilaian Akhir / Keputusan Pengangkatan PKWT')
-                            ->helperText('Aktifkan jika evaluasi ini digunakan untuk keputusan pengangkatan karyawan tetap / perpanjangan / terminasi PKWT.')
+                            ->label('Periode Penilaian Akhir / Keputusan Kontrak')
+                            ->helperText('Aktifkan jika evaluasi ini digunakan untuk keputusan akhir (pengangkatan tetap / perpanjangan / outtask-outsource / terminasi).')
                             ->live(),
                     ])
                     ->columns(2),
 
-                Section::make('C & E. Pencapaian Goal (Goal Setting) & Penilaian Kompetensi')
+                Section::make('C & D. Pencapaian Goal (Goal Setting) & Penilaian Kompetensi')
                     ->schema([
                         Select::make('performance_plan_id')
                             ->label('Link Program Goal Setting (Modul Performance)')
@@ -150,30 +150,30 @@ class EvaluationForm
                             ->maxValue(100)
                             ->step(0.1)
                             ->suffix('%')
-                            ->helperText('Standar kelulusan pengangkatan tetap: minimal 95%. Otomatis terisi bila memilih Program Goal Setting.'),
+                            ->helperText('Standar kelulusan: minimal 95%. Otomatis terisi bila memilih Program Goal Setting.'),
                         TextInput::make('competencies_met_count')
                             ->label('Jumlah Kompetensi Memenuhi Requirement')
                             ->numeric()
                             ->minValue(0)
-                            ->helperText('Bagian E & H: Jumlah kompetensi yang telah memenuhi standar jabatan.'),
+                            ->helperText('Jumlah kompetensi yang telah memenuhi standar jabatan.'),
                         TextInput::make('competencies_total_count')
                             ->label('Total Kompetensi yang Dipersyaratkan')
                             ->numeric()
                             ->minValue(0)
-                            ->helperText('Standar kelulusan pengangkatan tetap: minimal 90% dari total kompetensi.'),
+                            ->helperText('Standar kelulusan: minimal 90% dari total kompetensi.'),
                     ])
                     ->columns(2),
 
-                Section::make('F & G. Catatan Penilai, Usulan Pengembangan & Tanggapan Karyawan')
+                Section::make('E & F. Catatan Penilai, Usulan Pengembangan & Tanggapan Karyawan')
                     ->schema([
                         Textarea::make('strengths')
-                            ->label('F.1 Aspek yang Menjadi Kekuatan')
+                            ->label('Aspek yang Menjadi Kekuatan')
                             ->rows(3),
                         Textarea::make('areas_for_improvement')
-                            ->label('F.2 Aspek yang Perlu Dikembangkan')
+                            ->label('Aspek yang Perlu Dikembangkan')
                             ->rows(3),
                         Textarea::make('development_plan')
-                            ->label('G. Usulan Pengembangan (Training / Coaching / Penugasan)')
+                            ->label('Usulan Pengembangan (Training / Coaching / Penugasan)')
                             ->rows(3)
                             ->columnSpanFull(),
                         Textarea::make('summary')
@@ -188,49 +188,39 @@ class EvaluationForm
                     ])
                     ->columns(2),
 
-                Section::make('H, I & J. Kesimpulan Keputusan PKWT & Kolom Persetujuan')
+                Section::make('G & H. Kesimpulan Keputusan & Kolom Persetujuan')
                     ->schema([
                         Select::make('recommendation_decision')
-                            ->label('I. Kesimpulan Rekomendasi')
+                            ->label('Kesimpulan Rekomendasi')
                             ->options(RecommendationDecision::options())
                             ->live()
-                            ->helperText('Kriteria pengangkatan tetap (minimal 2 dari 3): Goal >= 95%, Rata-rata Manajemen Pekerjaan >= 3.0, Kompetensi >= 90%.'),
+                            ->helperText('Pilih tindak lanjut kontrak karyawan (Diangkat Tetap, Diperpanjang PKWT, Dialihkan ke Outtask / Outsource, atau Terminasi).'),
                         DatePicker::make('permanent_effective_date')
-                            ->label('Efektif Diangkat Tetap Per Tanggal')
+                            ->label('Efektif Per Tanggal')
                             ->native(false)
-                            ->visible(fn (Get $get): bool => $get('recommendation_decision') === RecommendationDecision::AppointPermanent->value),
+                            ->visible(fn (Get $get): bool => in_array($get('recommendation_decision'), [
+                                RecommendationDecision::AppointPermanent->value,
+                                RecommendationDecision::TransferOuttaskOutsource->value,
+                            ], true)),
                         TextInput::make('extension_months')
-                            ->label('Durasi Perpanjangan PKWT (Bulan)')
+                            ->label('Durasi Kontrak / Perpanjangan (Bulan)')
                             ->numeric()
                             ->minValue(1)
                             ->maxValue(24)
                             ->suffix('bulan')
-                            ->visible(fn (Get $get): bool => $get('recommendation_decision') === RecommendationDecision::ExtendPkwt->value),
+                            ->visible(fn (Get $get): bool => in_array($get('recommendation_decision'), [
+                                RecommendationDecision::ExtendPkwt->value,
+                                RecommendationDecision::TransferOuttaskOutsource->value,
+                            ], true)),
                         Textarea::make('recommendation_reason')
-                            ->label('Pertimbangan Perpanjangan / Alasan Terminasi / Catatan Keputusan')
+                            ->label('Pertimbangan / Catatan Penempatan (Outtask/Outsource, Perpanjangan, atau Alasan Terminasi)')
                             ->rows(2)
                             ->columnSpanFull(),
-                        Select::make('gm_approver_id')
-                            ->label('General Manager (Penyetuju)')
-                            ->relationship('gmApprover', 'name')
-                            ->searchable()
-                            ->preload(),
-                        Select::make('director_approver_id')
-                            ->label('Direktur Bidang (Khusus Periode Akhir / Pengangkatan)')
-                            ->relationship('directorApprover', 'name')
-                            ->searchable()
-                            ->preload(),
                         DateTimePicker::make('employee_signed_at')
-                            ->label('Tanggal Tanda Tangan Karyawan')
+                            ->label('Tanggal Tanda Tangan Karyawan yang Dinilai')
                             ->native(false),
                         DateTimePicker::make('reviewer_signed_at')
                             ->label('Tanggal Tanda Tangan Penilai (Atasan Langsung)')
-                            ->native(false),
-                        DateTimePicker::make('gm_signed_at')
-                            ->label('Tanggal Tanda Tangan General Manager')
-                            ->native(false),
-                        DateTimePicker::make('director_signed_at')
-                            ->label('Tanggal Tanda Tangan Direktur Bidang')
                             ->native(false),
                     ])
                     ->columns(2),

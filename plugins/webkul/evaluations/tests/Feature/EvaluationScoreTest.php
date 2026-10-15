@@ -93,7 +93,7 @@ it('ignores criteria that have not been scored', function () {
     expect($evaluation->fresh()->finalScore())->toEqual(5.0);
 });
 
-it('seeds the 10 standard PKWT work management aspects, syncs Goal score, evaluates 2-of-3 permanent appointment criteria, and renders the PKWT PDF', function () {
+it('syncs Goal score, supports Outtask/Outsource recommendation decision, 2-party approval (Employee & Reviewer), and renders the PDF cleanly', function () {
     $manager = Employee::withoutGlobalScopes()->create([
         'name'              => 'Atasan Penilai PKWT',
         'identification_id' => 'NIK-MGR-001',
@@ -132,45 +132,36 @@ it('seeds the 10 standard PKWT work management aspects, syncs Goal score, evalua
         'period_start'             => now()->startOfQuarter()->toDateString(),
         'period_end'               => now()->endOfQuarter()->toDateString(),
         'performance_plan_id'      => $plan->id,
-        'competencies_met_count'   => 8,
-        'competencies_total_count' => 10, // 80% (< 90% threshold)
+        'competencies_met_count'   => 9,
+        'competencies_total_count' => 10,
         'strengths'                => 'Disiplin tinggi dan eksekusi tugas sangat cepat.',
         'areas_for_improvement'    => 'Presentasi di depan publik.',
         'development_plan'         => 'Ikuti pelatihan komunikasi efektif.',
-        'recommendation_decision'  => RecommendationDecision::AppointPermanent,
+        'recommendation_decision'  => RecommendationDecision::TransferOuttaskOutsource,
         'permanent_effective_date' => now()->addMonth()->startOfMonth()->toDateString(),
+        'extension_months'         => 12,
+        'recommendation_reason'    => 'Penyesuaian alokasi fungsi operasional ke skema Outtask / Outsource.',
+        'employee_signed_at'       => now(),
+        'reviewer_signed_at'       => now(),
     ]);
 
-    // 1. Metadata auto-populated from Employee
+    // 1. Metadata auto-populated from Employee and no 10-point default ratings auto-seeded
     expect($evaluation->reviewer_id)->toBe($manager->id)
         ->and($evaluation->employee_nik)->toBe('NIK-PKWT-099')
         ->and($evaluation->job_title_snapshot)->toBe('Software Engineer')
-        ->and($evaluation->is_final_period)->toBeTrue();
+        ->and($evaluation->is_final_period)->toBeTrue()
+        ->and($evaluation->ratings()->count())->toBe(0)
+        ->and($evaluation->recommendation_decision)->toBe(RecommendationDecision::TransferOuttaskOutsource)
+        ->and($evaluation->recommendation_decision->getLabel())->toBe('Dialihkan ke Outtask / Outsource');
 
-    // 2. Seed 10 standard PKWT work management aspects
-    $addedCount = $evaluation->seedDefaultPkwtCriteria();
-    expect($addedCount)->toBe(10)
-        ->and($evaluation->ratings()->count())->toBe(10);
-
-    // Score all 10 aspects with 4 (average = 4.0 >= 3.0, total = 40)
-    $evaluation->ratings()->update(['score' => 4, 'comment' => 'Melebihi standar yang ditetapkan']);
-    $evaluation->refresh();
-
-    // 3. Sync Goal score from PerformancePlan (96% >= 95%)
+    // 2. Sync Goal score from PerformancePlan (96% >= 95%) and Competency (90% >= 90%)
     $syncedGoal = $evaluation->syncGoalFromPerformancePlan();
     expect($syncedGoal)->toEqual(96.0)
-        ->and($evaluation->totalRatingScore())->toBe(40)
-        ->and($evaluation->finalScore())->toEqual(4.0)
-        ->and($evaluation->competencyAchievementPercentage())->toEqual(80.0);
+        ->and($evaluation->competencyAchievementPercentage())->toEqual(90.0)
+        ->and($evaluation->meetsGoalCriterion())->toBeTrue()
+        ->and($evaluation->meetsCompetencyCriterion())->toBeTrue();
 
-    // 4. Verify 2-of-3 Criteria Calculation (Goal = 96% [PASS], Work Management = 4.0 [PASS], Competency = 80% [FAIL] => 2/3 PASS => ELIGIBLE!)
-    expect($evaluation->meetsGoalCriterion())->toBeTrue()
-        ->and($evaluation->meetsWorkManagementCriterion())->toBeTrue()
-        ->and($evaluation->meetsCompetencyCriterion())->toBeFalse()
-        ->and($evaluation->criteriaMetCount())->toBe(2)
-        ->and($evaluation->isEligibleForPermanentAppointment())->toBeTrue();
-
-    // 5. Verify PDF generation renders cleanly
+    // 3. Verify PDF generation renders cleanly with Outtask/Outsource decision and 2-party signatures
     $evaluation->load(['employee', 'reviewer', 'performancePlan', 'ratings']);
     $pdfOutput = Pdf::loadView('evaluations::pdf.pkwt-evaluation', ['record' => $evaluation])->output();
 
