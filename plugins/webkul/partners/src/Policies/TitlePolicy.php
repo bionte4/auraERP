@@ -19,6 +19,15 @@ class TitlePolicy
     }
 
     /**
+     * Determine whether the user can view the model.
+     */
+    public function view(User $user, Title $title): bool
+    {
+        return $user->can('view_partner_title')
+            || $user->can('view_any_partner_title');
+    }
+
+    /**
      * Determine whether the user can create models.
      */
     public function create(User $user): bool

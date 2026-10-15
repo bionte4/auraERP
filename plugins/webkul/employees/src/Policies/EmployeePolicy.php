@@ -98,4 +98,12 @@ class EmployeePolicy
 
         return $this->hasAccess($user, $employee, 'coach');
     }
+
+    /**
+     * Determine whether the user can bulk restore.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->can('restore_any_employee_employee');
+    }
 }

@@ -15,7 +15,8 @@ class LeaveAllocationPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_time_off_my::allocation');
+        return $user->can('view_any_time_off_allocation')
+            || $user->can('view_any_time_off_my::allocation');
     }
 
     /**
@@ -23,7 +24,8 @@ class LeaveAllocationPolicy
      */
     public function view(User $user, LeaveAllocation $leaveAllocation): bool
     {
-        return $user->can('view_time_off_my::allocation');
+        return $user->can('view_time_off_allocation')
+            || $user->can('view_time_off_my::allocation');
     }
 
     /**
@@ -31,7 +33,8 @@ class LeaveAllocationPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_time_off_my::allocation');
+        return $user->can('create_time_off_allocation')
+            || $user->can('create_time_off_my::allocation');
     }
 
     /**
@@ -39,7 +42,8 @@ class LeaveAllocationPolicy
      */
     public function update(User $user, LeaveAllocation $leaveAllocation): bool
     {
-        return $user->can('update_time_off_my::allocation');
+        return $user->can('update_time_off_allocation')
+            || $user->can('update_time_off_my::allocation');
     }
 
     /**
@@ -47,7 +51,8 @@ class LeaveAllocationPolicy
      */
     public function delete(User $user, LeaveAllocation $leaveAllocation): bool
     {
-        return $user->can('delete_time_off_my::allocation');
+        return $user->can('delete_time_off_allocation')
+            || $user->can('delete_time_off_my::allocation');
     }
 
     /**
@@ -55,6 +60,7 @@ class LeaveAllocationPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_time_off_my::allocation');
+        return $user->can('delete_any_time_off_allocation')
+            || $user->can('delete_any_time_off_my::allocation');
     }
 }

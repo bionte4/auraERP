@@ -9,6 +9,7 @@ use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 use Throwable;
+use Webkul\Security\Filament\Resources\RoleResource;
 
 class RolePermissionSynchronizer
 {
@@ -36,7 +37,7 @@ class RolePermissionSynchronizer
                     '--no-interaction' => true,
                 ]);
             } catch (Throwable) {
-                // Continue with explicit permission seeding if shield:generate is unavailable in context.
+                // Continue with explicit + RoleResource permission seeding if shield:generate is unavailable in context.
             }
         }
 
@@ -58,13 +59,21 @@ class RolePermissionSynchronizer
             'view_any_attendance_attendance::site', 'create_attendance_attendance::site', 'update_attendance_attendance::site', 'delete_attendance_attendance::site', 'delete_any_attendance_attendance::site',
             'page_attendance_clock_page',
 
+            // Time Off (Cuti / Izin)
+            'view_any_time_off_time::off', 'view_time_off_time::off', 'create_time_off_time::off', 'update_time_off_time::off', 'delete_time_off_time::off', 'delete_any_time_off_time::off',
+            'view_any_time_off_my::time::off', 'view_time_off_my::time::off', 'create_time_off_my::time::off', 'update_time_off_my::time::off', 'delete_time_off_my::time::off', 'delete_any_time_off_my::time::off',
+            'view_any_time_off_by::employee', 'view_time_off_by::employee', 'create_time_off_by::employee', 'update_time_off_by::employee', 'delete_time_off_by::employee', 'delete_any_time_off_by::employee',
+            'view_any_time_off_allocation', 'view_time_off_allocation', 'create_time_off_allocation', 'update_time_off_allocation', 'delete_time_off_allocation', 'delete_any_time_off_allocation',
+            'view_any_time_off_my::allocation', 'view_time_off_my::allocation', 'create_time_off_my::allocation', 'update_time_off_my::allocation', 'delete_time_off_my::allocation', 'delete_any_time_off_my::allocation',
+
             // Performance & Evaluation
             'view_any_performance_performance::plan', 'view_performance_performance::plan', 'create_performance_performance::plan', 'update_performance_performance::plan', 'delete_performance_performance::plan', 'delete_any_performance_performance::plan',
             'view_any_evaluation_evaluation', 'view_evaluation_evaluation', 'create_evaluation_evaluation', 'update_evaluation_evaluation', 'delete_evaluation_evaluation', 'delete_any_evaluation_evaluation',
 
-            // Projects
+            // Projects & Timesheets
             'view_any_project_project', 'view_project_project', 'create_project_project', 'update_project_project', 'delete_project_project', 'delete_any_project_project',
             'view_any_project_task', 'view_project_task', 'create_project_task', 'update_project_task', 'delete_project_task', 'delete_any_project_task',
+            'view_any_project_timesheet', 'create_project_timesheet', 'update_project_timesheet', 'delete_project_timesheet', 'delete_any_project_timesheet',
 
             // Partners / Contacts
             'view_any_partner_partner', 'view_partner_partner', 'create_partner_partner', 'update_partner_partner', 'delete_partner_partner', 'delete_any_partner_partner',
@@ -82,6 +91,13 @@ class RolePermissionSynchronizer
             'view_any_pos_pos::session', 'view_pos_pos::session', 'create_pos_pos::session', 'update_pos_pos::session', 'delete_pos_pos::session', 'delete_any_pos_pos::session',
             'view_any_pos_pos::order', 'view_pos_pos::order', 'create_pos_pos::order', 'update_pos_pos::order', 'delete_pos_pos::order', 'delete_any_pos_pos::order',
         ];
+
+        try {
+            $discoveredPermissions = RoleResource::getAllFormPermissions()->all();
+            $explicitPermissions = array_values(array_unique(array_merge($explicitPermissions, $discoveredPermissions)));
+        } catch (Throwable) {
+            // Safely fallback to explicit permissions if Filament panel context is not booted.
+        }
 
         foreach ($explicitPermissions as $permName) {
             Permission::query()->firstOrCreate([
@@ -146,11 +162,21 @@ class RolePermissionSynchronizer
             'page_attendance_clock_page',
             'view_any_attendance_attendance',
             'create_attendance_attendance',
+            'view_any_time_off_my::time::off',
+            'view_time_off_my::time::off',
+            'create_time_off_my::time::off',
+            'update_time_off_my::time::off',
+            'delete_time_off_my::time::off',
+            'view_any_time_off_my::allocation',
+            'view_time_off_my::allocation',
             'view_any_project_project',
             'view_project_project',
             'view_any_project_task',
             'view_project_task',
             'update_project_task',
+            'view_any_project_timesheet',
+            'create_project_timesheet',
+            'update_project_timesheet',
         ], true));
         $staffRole->givePermissionTo($staffPermissions);
         $rolesSynced[] = $staffRole->name;

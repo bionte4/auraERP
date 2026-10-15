@@ -75,7 +75,7 @@ class LeaveType extends Model implements Sortable
         static::creating(function ($leaveType) {
             $authUser = Auth::user();
 
-            $leaveType->creator_id = $authUser->id;
+            $leaveType->creator_id ??= $authUser?->id;
 
             $leaveType->company_id ??= current_company_id();
         });

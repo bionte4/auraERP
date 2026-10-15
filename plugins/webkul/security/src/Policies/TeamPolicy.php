@@ -49,4 +49,12 @@ class TeamPolicy
     {
         return $user->can('delete_security_team');
     }
+
+    /**
+     * Determine whether the user can bulk delete.
+     */
+    public function deleteAny(User $user): bool
+    {
+        return $user->can('delete_any_security_team');
+    }
 }

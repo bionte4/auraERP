@@ -16,7 +16,18 @@ class TimesheetPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_timesheet_timesheet');
+        return $user->can('view_any_timesheet_timesheet')
+            || $user->can('view_any_project_timesheet');
+    }
+
+    /**
+     * Determine whether the user can view the model.
+     */
+    public function view(User $user, Timesheet $timesheet): bool
+    {
+        return $user->can('view_timesheet_timesheet')
+            || $user->can('view_project_timesheet')
+            || $this->viewAny($user);
     }
 
     /**
@@ -24,7 +35,8 @@ class TimesheetPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_timesheet_timesheet');
+        return $user->can('create_timesheet_timesheet')
+            || $user->can('create_project_timesheet');
     }
 
     /**
@@ -32,11 +44,11 @@ class TimesheetPolicy
      */
     public function update(User $user, Timesheet $timesheet): bool
     {
-        if (! $user->can('update_timesheet_timesheet')) {
+        if (! $user->can('update_timesheet_timesheet') && ! $user->can('update_project_timesheet')) {
             return false;
         }
 
-        return $this->hasAccess($user, $timesheet, 'users');
+        return $this->hasAccess($user, $timesheet, 'user');
     }
 
     /**
@@ -44,11 +56,11 @@ class TimesheetPolicy
      */
     public function delete(User $user, Timesheet $timesheet): bool
     {
-        if (! $user->can('delete_timesheet_timesheet')) {
+        if (! $user->can('delete_timesheet_timesheet') && ! $user->can('delete_project_timesheet')) {
             return false;
         }
 
-        return $this->hasAccess($user, $timesheet, 'users');
+        return $this->hasAccess($user, $timesheet, 'user');
     }
 
     /**
@@ -56,6 +68,7 @@ class TimesheetPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_timesheet_timesheet');
+        return $user->can('delete_any_timesheet_timesheet')
+            || $user->can('delete_any_project_timesheet');
     }
 }

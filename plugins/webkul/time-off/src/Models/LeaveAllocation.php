@@ -154,7 +154,7 @@ class LeaveAllocation extends Model
         static::creating(function ($leaveAllocation) {
             $authUser = Auth::user();
 
-            $leaveAllocation->creator_id = $authUser->id;
+            $leaveAllocation->creator_id ??= $authUser?->id;
 
             $leaveAllocation->employee_company_id ??= Employee::withoutGlobalScope(CompanyScope::class)->find($leaveAllocation->employee_id)?->company_id ?? current_company_id();
 

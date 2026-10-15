@@ -72,7 +72,7 @@ class LeaveAccrualPlan extends Model
         static::creating(function ($leaveAccrualPlan) {
             $authUser = Auth::user();
 
-            $leaveAccrualPlan->creator_id = $authUser->id;
+            $leaveAccrualPlan->creator_id ??= $authUser?->id;
 
             $leaveAccrualPlan->company_id ??= current_company_id();
         });

@@ -49,4 +49,52 @@ class CompanyPolicy
     {
         return $user->can('delete_security_company');
     }
+
+    /**
+     * Determine whether the user can bulk delete.
+     */
+    public function deleteAny(User $user): bool
+    {
+        return $user->can('delete_any_security_company');
+    }
+
+    /**
+     * Determine whether the user can permanently delete.
+     */
+    public function forceDelete(User $user, Company $company): bool
+    {
+        return $user->can('force_delete_security_company');
+    }
+
+    /**
+     * Determine whether the user can permanently bulk delete.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->can('force_delete_any_security_company');
+    }
+
+    /**
+     * Determine whether the user can restore.
+     */
+    public function restore(User $user, Company $company): bool
+    {
+        return $user->can('restore_security_company');
+    }
+
+    /**
+     * Determine whether the user can bulk restore.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->can('restore_any_security_company');
+    }
+
+    /**
+     * Determine whether the user can reorder.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->can('reorder_security_company');
+    }
 }

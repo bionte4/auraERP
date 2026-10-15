@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Models\Role;
 use Webkul\Attendance\Models\AttendanceSite;
+use Webkul\Employee\Models\Employee;
 use Webkul\Pos\Models\PosOrder;
 use Webkul\Pos\Models\PosRegister;
 use Webkul\Pos\Services\PosService;
@@ -13,6 +14,13 @@ use Webkul\Security\Filament\Resources\UserResource;
 use Webkul\Security\Models\Team;
 use Webkul\Security\Models\User;
 use Webkul\Security\Services\RolePermissionSynchronizer;
+use Webkul\Support\Models\Bank;
+use Webkul\Support\Models\Company;
+use Webkul\Support\Models\Sequence;
+use Webkul\TimeOff\Enums\LeaveValidationType;
+use Webkul\TimeOff\Enums\State;
+use Webkul\TimeOff\Models\Leave;
+use Webkul\TimeOff\Models\LeaveType;
 
 beforeEach(function (): void {
     $posMigration = include __DIR__.'/../../../pos/database/migrations/2026_10_15_100000_create_pos_tables.php';
@@ -198,4 +206,108 @@ it('enforces RBAC policies on POS and AttendanceSite resources for Kasir, HRD, a
     expect(Gate::forUser($hrdUser)->allows('viewAny', AttendanceSite::class))->toBeTrue()
         ->and(Gate::forUser($hrdUser)->allows('create', AttendanceSite::class))->toBeTrue()
         ->and(Gate::forUser($kasirUser)->allows('create', AttendanceSite::class))->toBeFalse();
+});
+
+it('resolves Employee, Leave, Bank, and Sequence policies accurately across Individual and Group org-hierarchy scopes', function (): void {
+    $company = Company::query()->first() ?? Company::query()->create([
+        'name' => 'PT Aura Audit',
+    ]);
+
+    $managerUser = User::query()->create([
+        'name'                => 'Branch Manager',
+        'email'               => 'branch.mgr@example.com',
+        'password'            => bcrypt('password123'),
+        'is_active'           => true,
+        'default_company_id'  => $company->id,
+        'resource_permission' => PermissionType::GROUP,
+    ]);
+    $managerUser->assignRole('HRD');
+
+    $staffUser = User::query()->create([
+        'name'                => 'Staff Bawahan',
+        'email'               => 'staff.bawahan@example.com',
+        'password'            => bcrypt('password123'),
+        'is_active'           => true,
+        'default_company_id'  => $company->id,
+        'resource_permission' => PermissionType::INDIVIDUAL,
+    ]);
+    $staffUser->assignRole('Staff');
+
+    $outsiderUser = User::query()->create([
+        'name'                => 'Staff Cabang Lain',
+        'email'               => 'staff.outsider@example.com',
+        'password'            => bcrypt('password123'),
+        'is_active'           => true,
+        'default_company_id'  => $company->id,
+        'resource_permission' => PermissionType::INDIVIDUAL,
+    ]);
+    $outsiderUser->assignRole('Staff');
+
+    $managerEmp = Employee::withoutGlobalScopes()->create([
+        'name'       => 'Branch Manager Emp',
+        'user_id'    => $managerUser->id,
+        'company_id' => $company->id,
+        'is_active'  => true,
+    ]);
+
+    // Ensure staff employee ID differs from staff user ID and has coach_id = null
+    $staffEmp = Employee::withoutGlobalScopes()->create([
+        'name'       => 'Staff Bawahan Emp',
+        'user_id'    => $staffUser->id,
+        'parent_id'  => $managerEmp->id,
+        'coach_id'   => null,
+        'company_id' => $company->id,
+        'is_active'  => true,
+    ]);
+
+    $outsiderEmp = Employee::withoutGlobalScopes()->create([
+        'name'       => 'Outsider Emp',
+        'user_id'    => $outsiderUser->id,
+        'parent_id'  => null,
+        'coach_id'   => null,
+        'company_id' => $company->id,
+        'is_active'  => true,
+    ]);
+
+    $leaveStatus = LeaveType::withoutGlobalScopes()->create([
+        'name'                  => 'Izin Audit',
+        'leave_validation_type' => LeaveValidationType::BOTH->value,
+        'company_id'            => $company->id,
+    ]);
+
+    $staffLeave = Leave::withoutGlobalScopes()->create([
+        'user_id'           => $staffUser->id,
+        'employee_id'       => $staffEmp->id,
+        'company_id'        => $company->id,
+        'holiday_status_id' => $leaveStatus->id,
+        'state'             => State::CONFIRM->value,
+        'request_date_from' => now()->toDateString(),
+        'request_date_to'   => now()->toDateString(),
+        'number_of_days'    => 1,
+    ]);
+
+    // 1. Staff (Individual scope, with my::time::off permissions) can view, create, and update their own Leave, but NOT outsider's or manager's
+    expect(Gate::forUser($staffUser)->allows('viewAny', Leave::class))->toBeTrue()
+        ->and(Gate::forUser($staffUser)->allows('create', Leave::class))->toBeTrue()
+        ->and(Gate::forUser($staffUser)->allows('update', $staffLeave))->toBeTrue()
+        ->and(Gate::forUser($outsiderUser)->allows('update', $staffLeave))->toBeFalse();
+
+    // 2. Group Manager can update subordinate Employee (even with coach_id = null) and subordinate Leave (without crashing on Employee->teams), but NOT outsider Employee
+    expect(Gate::forUser($managerUser)->allows('update', $staffEmp))->toBeTrue()
+        ->and(Gate::forUser($managerUser)->allows('update', $staffLeave))->toBeTrue()
+        ->and(Gate::forUser($managerUser)->allows('update', $outsiderEmp))->toBeFalse();
+
+    // 3. Admin role has full access to Support Bank and Sequence policies
+    $adminUser = User::query()->create([
+        'name'                => 'Admin Audit',
+        'email'               => 'admin.audit@example.com',
+        'password'            => bcrypt('password123'),
+        'is_active'           => true,
+        'resource_permission' => PermissionType::GLOBAL,
+    ]);
+    $adminUser->assignRole('Admin');
+
+    expect(Gate::forUser($adminUser)->allows('viewAny', Bank::class))->toBeTrue()
+        ->and(Gate::forUser($adminUser)->allows('viewAny', Sequence::class))->toBeTrue()
+        ->and(Gate::forUser($staffUser)->allows('viewAny', Sequence::class))->toBeFalse();
 });
