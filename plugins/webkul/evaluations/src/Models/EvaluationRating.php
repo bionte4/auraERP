@@ -16,6 +16,7 @@ class EvaluationRating extends Model
     protected $fillable = [
         'evaluation_id',
         'title',
+        'description',
         'weight',
         'score',
         'comment',
@@ -42,5 +43,17 @@ class EvaluationRating extends Model
     public function evaluation(): BelongsTo
     {
         return $this->belongsTo(Evaluation::class);
+    }
+
+    public static function scoreScaleLabel(?int $score): string
+    {
+        return match ($score) {
+            5       => '5 - Secara konsisten melampaui standar yang diharapkan',
+            4       => '4 - Secara signifikan melebihi standar yang diharapkan',
+            3       => '3 - Memenuhi standar yang diharapkan',
+            2       => '2 - Kurang dari standar yang diharapkan',
+            1       => '1 - Sama sekali tidak memenuhi standar yang diharapkan',
+            default => '—',
+        };
     }
 }

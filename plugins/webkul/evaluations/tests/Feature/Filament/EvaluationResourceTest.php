@@ -15,6 +15,9 @@ require_once __DIR__.'/../../../../support/tests/Helpers/FilamentHelper.php';
 beforeEach(function () {
     TestBootstrapHelper::ensurePluginInstalled('evaluations');
 
+    $pkwtMigration = include __DIR__.'/../../../database/migrations/2026_10_15_140000_add_pkwt_quarterly_fields_to_evaluations_tables.php';
+    $pkwtMigration->up();
+
     URL::resolveMissingNamedRoutesUsing(fn () => '/');
 
     $panel = Filament::getPanel('admin');
