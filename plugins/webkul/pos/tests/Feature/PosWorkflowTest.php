@@ -218,6 +218,7 @@ it('supports barcode scanning, hold bill recall, and checkout via PosTerminalPag
         ['email' => 'kasir.livewire@example.com'],
         ['name' => 'Siti Kasir', 'password' => bcrypt('secret')]
     );
+    $cashier->assignRole('Kasir');
 
     $this->actingAs($cashier);
 

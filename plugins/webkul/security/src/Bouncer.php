@@ -8,34 +8,47 @@ use Webkul\Security\Models\User;
 class Bouncer
 {
     /**
-     * Cached authorized user IDs.
+     * Cached authorized user IDs keyed by user ID and permission type.
+     *
+     * @var array<string, array<int, int>|null>
      */
-    protected static ?array $authorizedUserIdsCache = null;
+    protected static array $authorizedUserIdsCache = [];
+
+    public static function flushCache(): void
+    {
+        static::$authorizedUserIdsCache = [];
+    }
 
     /**
      * Return user IDs authorized for the current user.
      */
     public function getAuthorizedUserIds(): ?array
     {
-        if (static::$authorizedUserIdsCache !== null) {
-            return static::$authorizedUserIdsCache;
-        }
-
         $user = auth()->user();
 
-        if (! $user) {
-            return static::$authorizedUserIdsCache = null;
+        if (! $user instanceof User) {
+            return null;
+        }
+
+        $permissionValue = $user->resource_permission instanceof PermissionType
+            ? $user->resource_permission->value
+            : (string) $user->resource_permission;
+
+        $cacheKey = $user->id.':'.$permissionValue;
+
+        if (array_key_exists($cacheKey, static::$authorizedUserIdsCache)) {
+            return static::$authorizedUserIdsCache[$cacheKey];
         }
 
         if ($user->resource_permission == PermissionType::GLOBAL) {
-            static::$authorizedUserIdsCache = null;
+            static::$authorizedUserIdsCache[$cacheKey] = null;
         } elseif ($user->resource_permission == PermissionType::GROUP) {
-            static::$authorizedUserIdsCache = $this->getCurrentAccessibleUserIds($user);
+            static::$authorizedUserIdsCache[$cacheKey] = $this->getCurrentAccessibleUserIds($user);
         } else {
-            static::$authorizedUserIdsCache = [$user->id];
+            static::$authorizedUserIdsCache[$cacheKey] = [$user->id];
         }
 
-        return static::$authorizedUserIdsCache;
+        return static::$authorizedUserIdsCache[$cacheKey];
     }
 
     /**
@@ -43,12 +56,23 @@ class Bouncer
      */
     protected function getCurrentAccessibleUserIds(User $user): array
     {
+        $teamIds = $user->teams()->pluck('teams.id')->toArray();
+
+        if (empty($teamIds)) {
+            return [$user->id];
+        }
+
         return User::query()
+            ->withoutGlobalScopes()
             ->select('users.id')
             ->leftJoin('user_team', 'users.id', '=', 'user_team.user_id')
-            ->leftJoin('teams', 'user_team.team_id', '=', 'teams.id')
-            ->whereIn('teams.id', $user->teams()->pluck('id'))
+            ->where(function ($query) use ($teamIds, $user): void {
+                $query->whereIn('user_team.team_id', $teamIds)
+                    ->orWhere('users.id', $user->id);
+            })
             ->pluck('users.id')
+            ->unique()
+            ->values()
             ->toArray();
     }
 }

@@ -24,6 +24,7 @@ use Illuminate\Database\QueryException;
 use Spatie\Permission\Models\Role;
 use Webkul\Security\Enums\PermissionType;
 use Webkul\Security\Filament\Resources\UserResource;
+use Webkul\Security\Models\Team;
 use Webkul\Security\Models\User;
 use Webkul\Support\Models\Scopes\AllowedCompanyScope;
 
@@ -96,7 +97,7 @@ class UsersTable
                 SelectFilter::make('teams')
                     ->relationship('teams', 'name')
                     ->label(__('security::filament/resources/user.table.filters.teams'))
-                    ->options(fn (): array => Role::query()->pluck('name', 'id')->all())
+                    ->options(fn (): array => Team::query()->pluck('name', 'id')->all())
                     ->multiple()
                     ->searchable()
                     ->preload(),
@@ -152,7 +153,11 @@ class UsersTable
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
-                        ->visible(fn (?User $record) => $record && UserResource::canDeleteUser($record))
+                        ->action(function (Collection $records): void {
+                            $records
+                                ->filter(fn (User $record): bool => UserResource::canDeleteUser($record))
+                                ->each(fn (User $record): ?bool => $record->delete());
+                        })
                         ->successNotification(
                             Notification::make()
                                 ->success()
@@ -162,7 +167,9 @@ class UsersTable
                     ForceDeleteBulkAction::make()
                         ->action(function (Collection $records) {
                             try {
-                                $records->each(fn (Model $record) => $record->forceDelete());
+                                $records
+                                    ->filter(fn (User $record): bool => UserResource::canDeleteUser($record))
+                                    ->each(fn (Model $record) => $record->forceDelete());
                             } catch (QueryException $e) {
                                 Notification::make()
                                     ->danger()

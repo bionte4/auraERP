@@ -11,6 +11,7 @@ use Webkul\PluginManager\Models\Plugin;
 use Webkul\PluginManager\Package;
 use Webkul\PluginManager\PackageServiceProvider;
 use Webkul\Pos\Services\PosService;
+use Webkul\Security\Services\RolePermissionSynchronizer;
 
 class PosServiceProvider extends PackageServiceProvider
 {
@@ -65,6 +66,10 @@ class PosServiceProvider extends PackageServiceProvider
 
             if (Schema::hasTable('pos_registers') && Schema::hasTable('pos_payment_methods')) {
                 app(PosService::class)->ensureDefaultSetup();
+            }
+
+            if (Schema::hasTable('permissions') && Schema::hasTable('roles')) {
+                app(RolePermissionSynchronizer::class)->syncAll(false);
             }
         } catch (Throwable) {
             // Safely ignore during early boot / before database is ready.

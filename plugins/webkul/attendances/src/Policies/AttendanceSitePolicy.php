@@ -12,31 +12,37 @@ class AttendanceSitePolicy
 
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_attendance_attendance');
+        return $user->can('view_any_attendance_attendance::site')
+            || $user->can('view_any_attendance_attendance');
     }
 
     public function view(User $user, AttendanceSite $site): bool
     {
-        return $user->can('view_any_attendance_attendance');
+        return $user->can('view_any_attendance_attendance::site')
+            || $user->can('view_any_attendance_attendance');
     }
 
     public function create(User $user): bool
     {
-        return $user->can('create_attendance_attendance');
+        return $user->can('create_attendance_attendance::site')
+            || $user->can('create_attendance_attendance');
     }
 
     public function update(User $user, AttendanceSite $site): bool
     {
-        return $user->can('update_attendance_attendance');
+        return $user->can('update_attendance_attendance::site')
+            || $user->can('update_attendance_attendance');
     }
 
     public function delete(User $user, AttendanceSite $site): bool
     {
-        return $user->can('delete_attendance_attendance');
+        return $user->can('delete_attendance_attendance::site')
+            || $user->can('delete_attendance_attendance');
     }
 
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_attendance_attendance');
+        return $user->can('delete_any_attendance_attendance::site')
+            || $user->can('delete_any_attendance_attendance');
     }
 }

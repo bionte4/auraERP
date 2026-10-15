@@ -119,4 +119,27 @@ class EditUser extends EditRecord
 
         return $data;
     }
+
+    protected function beforeSave(): void
+    {
+        $rawState = $this->form->getRawState();
+
+        if (! array_key_exists('roles', $rawState) && ! array_key_exists('roles', $this->data ?? [])) {
+            return;
+        }
+
+        $roleIds = $rawState['roles'] ?? $this->data['roles'] ?? $this->record->roles()->pluck('id')->all();
+
+        try {
+            UserResource::ensureAdminRoleConstraints($this->record, (array) $roleIds);
+        } catch (ValidationException $exception) {
+            Notification::make()
+                ->danger()
+                ->title(__('security::filament/resources/user.form.sections.permissions.fields.roles'))
+                ->body(implode("\n", $exception->errors()['roles'] ?? []))
+                ->send();
+
+            $this->halt();
+        }
+    }
 }

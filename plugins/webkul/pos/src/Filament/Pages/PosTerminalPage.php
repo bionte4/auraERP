@@ -7,6 +7,7 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema;
+use Spatie\Permission\Models\Permission;
 use Throwable;
 use UnitEnum;
 use Webkul\Partner\Models\Partner;
@@ -22,6 +23,27 @@ use Webkul\Support\Enums\NavigationGroup;
 
 class PosTerminalPage extends Page
 {
+    public static function canAccess(): bool
+    {
+        $user = auth()->user();
+
+        if (! $user) {
+            return false;
+        }
+
+        if (method_exists($user, 'hasRole') && $user->hasRole(['Admin', 'super_admin', 'Kasir'])) {
+            return true;
+        }
+
+        if (Permission::query()->where('name', 'page_pos_pos_terminal_page')->exists()) {
+            return $user->can('page_pos_pos_terminal_page')
+                || $user->can('view_any_pos_pos::order')
+                || $user->can('create_pos_pos::order');
+        }
+
+        return true;
+    }
+
     protected string $view = 'pos::filament.pages.pos-terminal';
 
     protected static ?string $slug = 'pos/terminal';

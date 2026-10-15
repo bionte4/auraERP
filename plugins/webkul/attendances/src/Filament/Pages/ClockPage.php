@@ -71,7 +71,8 @@ class ClockPage extends Page
             return false;
         }
 
-        return $user->can('view_any_attendance_attendance')
+        return $user->can('page_attendance_clock_page')
+            || $user->can('view_any_attendance_attendance')
             || $user->can('create_attendance_attendance');
     }
 

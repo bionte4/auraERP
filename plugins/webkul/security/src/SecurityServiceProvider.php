@@ -7,6 +7,7 @@ use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\Facades\Gate;
 use Webkul\PluginManager\Package;
 use Webkul\PluginManager\PackageServiceProvider;
+use Webkul\Security\Console\Commands\SyncRbacPermissionsCommand;
 use Webkul\Security\Facades\Bouncer as BouncerFacade;
 
 class SecurityServiceProvider extends PackageServiceProvider
@@ -40,7 +41,10 @@ class SecurityServiceProvider extends PackageServiceProvider
                 '2024_11_05_042358_create_user_settings',
                 '2025_07_29_064223_create_currency_settings',
             ])
-            ->runsSettings();
+            ->runsSettings()
+            ->hasCommands([
+                SyncRbacPermissionsCommand::class,
+            ]);
     }
 
     public function packageBooted(): void
