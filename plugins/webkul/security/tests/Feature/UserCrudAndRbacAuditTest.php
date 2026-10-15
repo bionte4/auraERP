@@ -58,10 +58,11 @@ it('synchronizes standard RBAC roles (Admin, HRD, Kasir, Staff) and assigns appr
     $result = app(RolePermissionSynchronizer::class)->syncAll(false);
 
     expect($result['permissions_count'])->toBeGreaterThan(20)
-        ->and($result['roles_synced'])->toContain('Admin', 'HRD', 'Kasir', 'Staff');
+        ->and($result['roles_synced'])->toContain('Admin', 'HRD', 'Operation Manager', 'Kasir', 'Staff');
 
     $adminRole = Role::query()->where('name', 'Admin')->firstOrFail();
     $hrdRole = Role::query()->where('name', 'HRD')->firstOrFail();
+    $opMgrRole = Role::query()->where('name', 'Operation Manager')->firstOrFail();
     $kasirRole = Role::query()->where('name', 'Kasir')->firstOrFail();
     $staffRole = Role::query()->where('name', 'Staff')->firstOrFail();
 
@@ -69,6 +70,9 @@ it('synchronizes standard RBAC roles (Admin, HRD, Kasir, Staff) and assigns appr
         ->and($adminRole->hasPermissionTo('view_any_pos_pos::order'))->toBeTrue()
         ->and($hrdRole->hasPermissionTo('view_any_employee_employee'))->toBeTrue()
         ->and($hrdRole->hasPermissionTo('view_any_attendance_attendance::site'))->toBeTrue()
+        ->and($opMgrRole->hasPermissionTo('view_any_project_project'))->toBeTrue()
+        ->and($opMgrRole->hasPermissionTo('create_evaluation_evaluation'))->toBeTrue()
+        ->and($opMgrRole->hasPermissionTo('delete_security_user'))->toBeFalse()
         ->and($kasirRole->hasPermissionTo('page_pos_pos_terminal_page'))->toBeTrue()
         ->and($kasirRole->hasPermissionTo('create_pos_pos::order'))->toBeTrue()
         ->and($kasirRole->hasPermissionTo('delete_security_user'))->toBeFalse()

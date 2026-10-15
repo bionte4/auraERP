@@ -135,7 +135,38 @@ class RolePermissionSynchronizer
         $hrdRole->givePermissionTo($hrdPermissions);
         $rolesSynced[] = $hrdRole->name;
 
-        // 3. Kasir (POS) Role
+        // 3. Operation Manager Role — manages Projects, Tasks, Timesheets, Inventory/Warehouse, Maintenance, Purchases, Sales, and Team HR/Evaluations/Approvals
+        $operationManagerRole = Role::query()->firstOrCreate(
+            ['name' => 'Operation Manager', 'guard_name' => $guard],
+            ['is_default' => false]
+        );
+        $operationManagerPermissions = $allPermissions->filter(fn (Permission $p): bool => str_contains($p->name, 'project')
+            || str_contains($p->name, 'timesheet')
+            || str_contains($p->name, 'inventory')
+            || str_contains($p->name, 'product')
+            || str_contains($p->name, 'maintenance')
+            || str_contains($p->name, 'purchase')
+            || str_contains($p->name, 'sale')
+            || str_contains($p->name, 'partner')
+            || str_contains($p->name, 'contact')
+            || str_contains($p->name, 'performance')
+            || str_contains($p->name, 'evaluation')
+            || str_contains($p->name, 'time_off')
+            || str_contains($p->name, 'attendance')
+            || in_array($p->name, [
+                'view_any_employee_employee',
+                'view_employee_employee',
+                'view_any_employee_department',
+                'view_employee_department',
+                'page_project_dashboard',
+                'page_evaluation_performance_evaluation_dashboard',
+                'page_attendance_clock_page',
+            ], true)
+        );
+        $operationManagerRole->givePermissionTo($operationManagerPermissions);
+        $rolesSynced[] = $operationManagerRole->name;
+
+        // 4. Kasir (POS) Role
         $kasirRole = Role::query()->firstOrCreate(
             ['name' => 'Kasir', 'guard_name' => $guard],
             ['is_default' => false]
