@@ -93,7 +93,7 @@ it('ignores criteria that have not been scored', function () {
     expect($evaluation->fresh()->finalScore())->toEqual(5.0);
 });
 
-it('syncs Goal score, supports Outtask/Outsource recommendation decision, 2-party approval (Employee & Reviewer), and renders the PDF cleanly', function () {
+it('renders Section D (10 Work Management aspects in the form), syncs Goal score, supports Outtask/Outsource recommendation decision, 2-party approval (Employee & Reviewer), and renders the PDF cleanly', function () {
     $manager = Employee::withoutGlobalScopes()->create([
         'name'              => 'Atasan Penilai PKWT',
         'identification_id' => 'NIK-MGR-001',
@@ -145,23 +145,32 @@ it('syncs Goal score, supports Outtask/Outsource recommendation decision, 2-part
         'reviewer_signed_at'       => now(),
     ]);
 
-    // 1. Metadata auto-populated from Employee and no 10-point default ratings auto-seeded
+    // 1. Metadata auto-populated from Employee & seed 10 Work Management items
+    $addedCount = $evaluation->seedDefaultPkwtCriteria();
     expect($evaluation->reviewer_id)->toBe($manager->id)
         ->and($evaluation->employee_nik)->toBe('NIK-PKWT-099')
         ->and($evaluation->job_title_snapshot)->toBe('Software Engineer')
         ->and($evaluation->is_final_period)->toBeTrue()
-        ->and($evaluation->ratings()->count())->toBe(0)
+        ->and($addedCount)->toBe(10)
+        ->and($evaluation->ratings()->count())->toBe(10)
         ->and($evaluation->recommendation_decision)->toBe(RecommendationDecision::TransferOuttaskOutsource)
         ->and($evaluation->recommendation_decision->getLabel())->toBe('Dialihkan ke Outtask / Outsource');
 
-    // 2. Sync Goal score from PerformancePlan (96% >= 95%) and Competency (90% >= 90%)
+    $evaluation->ratings()->update(['score' => 4, 'comment' => 'Memenuhi dan melampaui target triwulan']);
+    $evaluation->refresh();
+
+    // 2. Sync Goal score from PerformancePlan (96% >= 95%), Work Management (4.0 >= 3.0), and Competency (90% >= 90%)
     $syncedGoal = $evaluation->syncGoalFromPerformancePlan();
     expect($syncedGoal)->toEqual(96.0)
+        ->and($evaluation->totalRatingScore())->toBe(40)
+        ->and($evaluation->finalScore())->toEqual(4.0)
         ->and($evaluation->competencyAchievementPercentage())->toEqual(90.0)
         ->and($evaluation->meetsGoalCriterion())->toBeTrue()
-        ->and($evaluation->meetsCompetencyCriterion())->toBeTrue();
+        ->and($evaluation->meetsWorkManagementCriterion())->toBeTrue()
+        ->and($evaluation->meetsCompetencyCriterion())->toBeTrue()
+        ->and($evaluation->criteriaMetCount())->toBe(3);
 
-    // 3. Verify PDF generation renders cleanly with Outtask/Outsource decision and 2-party signatures
+    // 3. Verify PDF generation renders cleanly with Section D, Outtask/Outsource decision, and 2-party signatures
     $evaluation->load(['employee', 'reviewer', 'performancePlan', 'ratings']);
     $pdfOutput = Pdf::loadView('evaluations::pdf.pkwt-evaluation', ['record' => $evaluation])->output();
 

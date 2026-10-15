@@ -4,6 +4,8 @@ namespace Webkul\Evaluation\Filament\Resources\EvaluationResource\Schemas;
 
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -16,6 +18,7 @@ use Webkul\Employee\Models\Employee;
 use Webkul\Evaluation\Enums\EvaluationStatus;
 use Webkul\Evaluation\Enums\EvaluationType;
 use Webkul\Evaluation\Enums\RecommendationDecision;
+use Webkul\Evaluation\Models\Evaluation;
 use Webkul\Performance\Models\PerformancePlan;
 
 class EvaluationForm
@@ -24,7 +27,7 @@ class EvaluationForm
     {
         return $schema
             ->components([
-                Section::make('A & B. Identitas Evaluasi & Data Karyawan')
+                Section::make('A & B. Identitas Evaluasi & Data Karyawan PKWT')
                     ->schema([
                         TextInput::make('title')
                             ->label(__('evaluations::filament/resources/evaluation.form.title'))
@@ -123,7 +126,7 @@ class EvaluationForm
                     ])
                     ->columns(2),
 
-                Section::make('C & D. Pencapaian Goal (Goal Setting) & Penilaian Kompetensi')
+                Section::make('C. Pencapaian Goal Karyawan')
                     ->schema([
                         Select::make('performance_plan_id')
                             ->label('Link Program Goal Setting (Modul Performance)')
@@ -150,30 +153,86 @@ class EvaluationForm
                             ->maxValue(100)
                             ->step(0.1)
                             ->suffix('%')
-                            ->helperText('Standar kelulusan: minimal 95%. Otomatis terisi bila memilih Program Goal Setting.'),
+                            ->helperText('Standar kelulusan pengangkatan tetap: minimal 95%. Otomatis terisi bila memilih Program Goal Setting.'),
+                    ])
+                    ->columns(2),
+
+                Section::make('D. Manajemen Pekerjaan (Poin 1 – 10)')
+                    ->description('Berikan nilai Rating skala 1 s/d 5 beserta Komentar justifikasi untuk setiap aspek penilaian manajemen pekerjaan di bawah ini.')
+                    ->schema([
+                        Repeater::make('ratings')
+                            ->relationship('ratings')
+                            ->label('Aspek Penilaian Manajemen Pekerjaan')
+                            ->default(fn (): array => Evaluation::defaultPkwtCriteria())
+                            ->orderColumn('sort')
+                            ->itemLabel(fn (array $state): ?string => isset($state['sort'], $state['title'])
+                                ? "{$state['sort']}. {$state['title']}"
+                                : ($state['title'] ?? 'Aspek Penilaian'))
+                            ->schema([
+                                Hidden::make('sort')
+                                    ->default(1),
+                                Hidden::make('weight')
+                                    ->default(10),
+                                TextInput::make('title')
+                                    ->label('Aspek Penilaian')
+                                    ->required()
+                                    ->maxLength(255)
+                                    ->columnSpan(1),
+                                Select::make('score')
+                                    ->label('Rating (Skala 1 – 5)')
+                                    ->options([
+                                        5 => '5 — Secara konsisten melampaui standar yang diharapkan',
+                                        4 => '4 — Secara signifikan melebihi standar yang diharapkan',
+                                        3 => '3 — Memenuhi standar yang diharapkan',
+                                        2 => '2 — Kurang dari standar yang diharapkan',
+                                        1 => '1 — Sama sekali tidak memenuhi standar yang diharapkan',
+                                    ])
+                                    ->native(false)
+                                    ->placeholder('Pilih Rating 1 - 5')
+                                    ->columnSpan(1),
+                                Textarea::make('description')
+                                    ->label('Acuan / Deskripsi Aspek')
+                                    ->rows(2)
+                                    ->disabled()
+                                    ->dehydrated()
+                                    ->columnSpanFull(),
+                                Textarea::make('comment')
+                                    ->label('Komentar / Justifikasi Penilai')
+                                    ->placeholder('Tuliskan komentar sebagai justifikasi atas rating yang diberikan pada aspek ini...')
+                                    ->rows(2)
+                                    ->columnSpanFull(),
+                            ])
+                            ->columns(2)
+                            ->addActionLabel('Tambah Aspek Penilaian Lainnya')
+                            ->collapsible()
+                            ->columnSpanFull(),
+                    ]),
+
+                Section::make('E. Penilaian Kompetensi Karyawan')
+                    ->schema([
                         TextInput::make('competencies_met_count')
-                            ->label('Jumlah Kompetensi Memenuhi Requirement')
+                            ->label('Jumlah Kompetensi yang Memenuhi Requirement')
                             ->numeric()
                             ->minValue(0)
-                            ->helperText('Jumlah kompetensi yang telah memenuhi standar jabatan.'),
+                            ->helperText('Jumlah kompetensi yang telah memenuhi standar requirement jabatan.'),
                         TextInput::make('competencies_total_count')
                             ->label('Total Kompetensi yang Dipersyaratkan')
                             ->numeric()
                             ->minValue(0)
-                            ->helperText('Standar kelulusan: minimal 90% dari total kompetensi.'),
+                            ->helperText('Standar kelulusan pengangkatan tetap: minimal 90% dari total kompetensi.'),
                     ])
                     ->columns(2),
 
-                Section::make('E & F. Catatan Penilai, Usulan Pengembangan & Tanggapan Karyawan')
+                Section::make('F & G. Catatan Penilai, Usulan Pengembangan & Tanggapan Karyawan')
                     ->schema([
                         Textarea::make('strengths')
-                            ->label('Aspek yang Menjadi Kekuatan')
+                            ->label('F.1 Aspek yang Menjadi Kekuatan')
                             ->rows(3),
                         Textarea::make('areas_for_improvement')
-                            ->label('Aspek yang Perlu Dikembangkan')
+                            ->label('F.2 Aspek yang Perlu Dikembangkan')
                             ->rows(3),
                         Textarea::make('development_plan')
-                            ->label('Usulan Pengembangan (Training / Coaching / Penugasan)')
+                            ->label('G. Usulan Pengembangan (Training / Coaching / Penugasan)')
                             ->rows(3)
                             ->columnSpanFull(),
                         Textarea::make('summary')
@@ -188,13 +247,13 @@ class EvaluationForm
                     ])
                     ->columns(2),
 
-                Section::make('G & H. Kesimpulan Keputusan & Kolom Persetujuan')
+                Section::make('H, I & J. Kesimpulan Keputusan & Kolom Persetujuan')
                     ->schema([
                         Select::make('recommendation_decision')
-                            ->label('Kesimpulan Rekomendasi')
+                            ->label('I. Kesimpulan Rekomendasi')
                             ->options(RecommendationDecision::options())
                             ->live()
-                            ->helperText('Pilih tindak lanjut kontrak karyawan (Diangkat Tetap, Diperpanjang PKWT, Dialihkan ke Outtask / Outsource, atau Terminasi).'),
+                            ->helperText('Kriteria pengangkatan tetap (minimal 2 dari 3): Pencapaian Goal >= 95%, Rata-rata Manajemen Pekerjaan (Kolom D) >= 3.0, Kompetensi >= 90%.'),
                         DatePicker::make('permanent_effective_date')
                             ->label('Efektif Per Tanggal')
                             ->native(false)

@@ -13,7 +13,7 @@ class EvaluationInfolist
     {
         return $schema
             ->components([
-                Section::make('A & B. Identitas Evaluasi & Data Karyawan')
+                Section::make('A & B. Identitas Evaluasi & Data Karyawan PKWT')
                     ->schema([
                         TextEntry::make('title')
                             ->label(__('evaluations::filament/resources/evaluation.form.title')),
@@ -44,7 +44,7 @@ class EvaluationInfolist
                     ])
                     ->columns(3),
 
-                Section::make('C, D & G. Ringkasan Pencapaian Goal, Kompetensi & Kesimpulan Rekomendasi')
+                Section::make('H & I. Ringkasan Penilaian Akhir & Kriteria Kelulusan (Minimal 2 dari 3 Kriteria)')
                     ->schema([
                         TextEntry::make('goal_criterion')
                             ->label('1. Pencapaian Goal (Min. 95%)')
@@ -58,15 +58,15 @@ class EvaluationInfolist
                                     : number_format($goal, 1).'% ('.($record->meetsGoalCriterion() ? 'MEMENUHI' : 'BELUM MEMENUHI').')';
                             }),
                         TextEntry::make('score')
-                            ->label('2. Nilai Kriteria Tambahan (Skala 1-5)')
+                            ->label('2. Rata-rata D. Manajemen Pekerjaan (Min. 3.0)')
                             ->badge()
-                            ->color(fn (Evaluation $record): string => $record->meetsWorkManagementCriterion() ? 'success' : 'gray')
+                            ->color(fn (Evaluation $record): string => $record->meetsWorkManagementCriterion() ? 'success' : 'warning')
                             ->state(function (Evaluation $record): string {
                                 $score = $record->finalScore();
 
                                 return $score === null
                                     ? '—'
-                                    : number_format($score, 2).' / 5.00';
+                                    : number_format($score, 2).' / 5.00 [Total Nilai: '.$record->totalRatingScore().'] ('.($record->meetsWorkManagementCriterion() ? 'MEMENUHI' : 'BELUM MEMENUHI').')';
                             }),
                         TextEntry::make('competency_criterion')
                             ->label('3. Pemenuhan Kompetensi (Min. 90%)')
@@ -79,13 +79,17 @@ class EvaluationInfolist
                                     ? 'Belum Diisi'
                                     : ($record->competencies_met_count ?? 0).'/'.($record->competencies_total_count ?? 0).' — '.number_format($comp, 1).'% ('.($record->meetsCompetencyCriterion() ? 'MEMENUHI' : 'BELUM MEMENUHI').')';
                             }),
+                        TextEntry::make('eligibility_status')
+                            ->label('Status Kelayakan Pengangkatan Tetap (Min. 2/3)')
+                            ->badge()
+                            ->color(fn (Evaluation $record): string => $record->isEligibleForPermanentAppointment() ? 'success' : 'danger')
+                            ->state(fn (Evaluation $record): string => $record->criteriaMetCount().' dari 3 Kriteria Terpenuhi — '.($record->isEligibleForPermanentAppointment() ? 'LAYAK DIANGKAT TETAP' : 'BELUM MEMENUHI SYARAT PENGANGKATAN')),
                         TextEntry::make('recommendation_decision')
-                            ->label('Kesimpulan Rekomendasi')
+                            ->label('I. Kesimpulan Rekomendasi')
                             ->badge()
                             ->placeholder('Belum ditentukan'),
                         TextEntry::make('recommendation_reason')
                             ->label('Detail Pertimbangan / Tanggal Efektif')
-                            ->columnSpan(2)
                             ->state(function (Evaluation $record): string {
                                 $parts = [];
                                 if ($record->permanent_effective_date) {
@@ -103,16 +107,16 @@ class EvaluationInfolist
                     ])
                     ->columns(3),
 
-                Section::make('E, F & H. Catatan Penilai, Pengembangan & Status Persetujuan')
+                Section::make('F, G & J. Catatan Penilai, Pengembangan & Status Persetujuan')
                     ->schema([
                         TextEntry::make('strengths')
-                            ->label('Aspek yang Menjadi Kekuatan')
+                            ->label('F.1 Aspek yang Menjadi Kekuatan')
                             ->placeholder('—'),
                         TextEntry::make('areas_for_improvement')
-                            ->label('Aspek yang Perlu Dikembangkan')
+                            ->label('F.2 Aspek yang Perlu Dikembangkan')
                             ->placeholder('—'),
                         TextEntry::make('development_plan')
-                            ->label('Usulan Pengembangan')
+                            ->label('G. Usulan Pengembangan')
                             ->placeholder('—')
                             ->columnSpanFull(),
                         TextEntry::make('summary')
@@ -122,7 +126,7 @@ class EvaluationInfolist
                             ->label(__('evaluations::filament/resources/evaluation.form.employee-comment'))
                             ->placeholder('—'),
                         TextEntry::make('signatures_summary')
-                            ->label('Status Persetujuan (Karyawan & Penilai)')
+                            ->label('J. Status Persetujuan (Karyawan & Penilai)')
                             ->columnSpanFull()
                             ->state(function (Evaluation $record): string {
                                 return collect([

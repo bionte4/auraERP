@@ -16,27 +16,41 @@ class EditEvaluation extends EditRecord
 {
     protected static string $resource = EvaluationResource::class;
 
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        /** @var Evaluation $record */
+        $record = $this->getRecord();
+
+        if ($record->ratings()->count() === 0) {
+            $record->seedDefaultPkwtCriteria();
+        }
+
+        return $data;
+    }
+
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('sync_goal')
-                ->label('Sinkronkan Goal Setting')
+            Action::make('sync_goal_and_criteria')
+                ->label('Muat Ulang 10 Aspek & Sinkronkan Goal')
                 ->icon('heroicon-o-arrow-path')
                 ->color('warning')
                 ->action(function (Evaluation $record): void {
+                    $added = $record->seedDefaultPkwtCriteria(false);
                     $goalScore = $record->syncGoalFromPerformancePlan();
 
                     Notification::make()
                         ->success()
-                        ->title('Sinkronisasi Goal Selesai')
+                        ->title('Sinkronisasi Selesai')
                         ->body(
-                            $goalScore !== null
+                            "Aspek Manajemen Pekerjaan ditambahkan: {$added}. ".
+                            ($goalScore !== null
                                 ? "Pencapaian Goal berhasil disinkronkan: {$goalScore}%."
-                                : 'Belum ada data Goal Setting yang terhubung.'
+                                : 'Belum ada data Goal Setting yang terhubung.')
                         )
                         ->send();
 
-                    $this->refreshFormData(['goal_achievement_percentage', 'performance_plan_id']);
+                    $this->refreshFormData(['goal_achievement_percentage', 'performance_plan_id', 'ratings']);
                 }),
             Action::make('print_pkwt_pdf')
                 ->label('Cetak Form Evaluasi (PDF)')
