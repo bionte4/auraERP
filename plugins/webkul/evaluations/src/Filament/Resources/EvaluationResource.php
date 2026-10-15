@@ -17,6 +17,10 @@ use Webkul\Evaluation\Filament\Resources\EvaluationResource\RelationManagers\Rat
 use Webkul\Evaluation\Filament\Resources\EvaluationResource\Schemas\EvaluationForm;
 use Webkul\Evaluation\Filament\Resources\EvaluationResource\Schemas\EvaluationInfolist;
 use Webkul\Evaluation\Filament\Resources\EvaluationResource\Tables\EvaluationsTable;
+use Webkul\Evaluation\Filament\Widgets\EvaluationApprovalProgressWidget;
+use Webkul\Evaluation\Filament\Widgets\EvaluationByTypeChart;
+use Webkul\Evaluation\Filament\Widgets\EvaluationRecommendationChart;
+use Webkul\Evaluation\Filament\Widgets\EvaluationStatsOverviewWidget;
 use Webkul\Evaluation\Models\Evaluation;
 use Webkul\PluginManager\Package;
 use Webkul\Support\Enums\NavigationGroup;
@@ -96,6 +100,16 @@ class EvaluationResource extends Resource
     public static function table(Table $table): Table
     {
         return EvaluationsTable::configure($table);
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            EvaluationStatsOverviewWidget::class,
+            EvaluationByTypeChart::class,
+            EvaluationRecommendationChart::class,
+            EvaluationApprovalProgressWidget::class,
+        ];
     }
 
     public static function getRelations(): array

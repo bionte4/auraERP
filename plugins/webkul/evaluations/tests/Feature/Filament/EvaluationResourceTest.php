@@ -6,6 +6,7 @@ use Filament\Facades\Filament;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
 use Livewire\Livewire;
+use Webkul\Evaluation\Filament\Pages\PerformanceEvaluationDashboard;
 use Webkul\Evaluation\Filament\Resources\EvaluationResource;
 use Webkul\Evaluation\Filament\Resources\EvaluationResource\Pages\CreateEvaluation;
 use Webkul\Evaluation\Filament\Resources\EvaluationResource\Pages\ListEvaluations;
@@ -37,4 +38,6 @@ it('shows the evaluation list and create pages', function () {
     Livewire::test(ListEvaluations::class)->assertOk();
 
     Livewire::test(CreateEvaluation::class)->assertOk();
+
+    Livewire::test(PerformanceEvaluationDashboard::class)->assertOk();
 });
