@@ -5,6 +5,7 @@ use Webkul\Chatter\Services\AuraAiAssistantService;
 use Webkul\Inventory\Models\Location;
 use Webkul\Inventory\Models\ProductQuantity;
 use Webkul\Partner\Models\Partner;
+use Webkul\PluginManager\Models\Plugin;
 use Webkul\Pos\Filament\Pages\PosTerminalPage;
 use Webkul\Pos\Models\PosCashMovement;
 use Webkul\Pos\Models\PosOrder;
@@ -252,4 +253,24 @@ it('supports barcode scanning, hold bill recall, and checkout via PosTerminalPag
         ->and((float) $paidOrder->total_amount)->toBe(12000.0)
         ->and((float) $paidOrder->paid_amount)->toBe(20000.0)
         ->and((float) $paidOrder->change_amount)->toBe(8000.0);
+});
+
+it('resolves the POS package metadata in PluginManager for install and uninstall', function (): void {
+    $plugin = Plugin::query()->firstOrCreate(
+        ['name' => 'pos'],
+        [
+            'author'         => 'auraERP',
+            'summary'        => 'Retail Point of Sale (POS)',
+            'description'    => 'Retail Point of Sale (POS)',
+            'latest_version' => '1.0.0',
+            'license'        => 'MIT',
+            'is_installed'   => true,
+            'is_active'      => true,
+        ]
+    );
+
+    expect($plugin->package)->not->toBeNull()
+        ->and($plugin->package->shortName())->toBe('pos')
+        ->and($plugin->package->isCore)->toBeFalse()
+        ->and($plugin->package->migrationFileNames)->toContain('2026_10_15_100000_create_pos_tables');
 });

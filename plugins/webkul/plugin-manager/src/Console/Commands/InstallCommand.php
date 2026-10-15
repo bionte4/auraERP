@@ -261,7 +261,8 @@ class InstallCommand extends Command
             $this->info("⚙️ Running <comment>{$this->package->shortName()}</comment> database migrations...");
 
             $this->call('migrate', [
-                '--path' => $migrationsToRun->toArray(),
+                '--path'  => $migrationsToRun->toArray(),
+                '--force' => true,
             ]);
 
             $this->info("✅ Migrations <comment>{$this->package->shortName()}</comment> completed successfully.");

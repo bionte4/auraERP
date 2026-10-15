@@ -4,6 +4,7 @@ namespace Webkul\Pos;
 
 use Filament\Contracts\Plugin;
 use Filament\Panel;
+use Webkul\PluginManager\Package;
 
 class PosPlugin implements Plugin
 {
@@ -19,6 +20,10 @@ class PosPlugin implements Plugin
 
     public function register(Panel $panel): void
     {
+        if (! Package::isPluginInstalled($this->getId()) && ! app()->runningUnitTests()) {
+            return;
+        }
+
         $panel
             ->when($panel->getId() === 'admin', function (Panel $panel): void {
                 $panel
