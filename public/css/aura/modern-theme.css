@@ -1,0 +1,270 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* ==========================================================================
+   auraERP Modern SaaS Theme (Linear / Stripe / Vercel inspired)
+   ========================================================================== */
+
+html.fi {
+    --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --mono-font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-family: var(--font-family);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+/* Subtle ambient background gradient for light & dark mode */
+html.fi body.fi-body {
+    background-color: #f8fafc;
+    background-image:
+        radial-gradient(at 0% 0%, color-mix(in oklab, var(--primary-500, #4f46e5) 6%, transparent) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, color-mix(in oklab, var(--info-500, #0ea5e9) 5%, transparent) 0px, transparent 45%);
+    background-attachment: fixed;
+}
+
+html.fi.dark body.fi-body {
+    background-color: #090d16;
+    background-image:
+        radial-gradient(at 0% 0%, color-mix(in oklab, var(--primary-500, #6366f1) 12%, transparent) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, color-mix(in oklab, var(--info-500, #0ea5e9) 8%, transparent) 0px, transparent 45%);
+    background-attachment: fixed;
+}
+
+/* ==========================================================================
+   1. Glassmorphism Topbar & Navigation Pills
+   ========================================================================== */
+
+html.fi .fi-topbar {
+    background-color: rgba(255, 255, 255, 0.82) !important;
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.85);
+    box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.03);
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+html.fi.dark .fi-topbar {
+    background-color: rgba(15, 23, 42, 0.78) !important;
+    border-bottom: 1px solid rgba(51, 65, 85, 0.65);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.25);
+}
+
+html.fi .fi-topbar-item-btn {
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html.fi .fi-topbar-item-btn:hover {
+    background-color: rgba(241, 245, 249, 0.9);
+    transform: translateY(-0.5px);
+}
+
+html.fi.dark .fi-topbar-item-btn:hover {
+    background-color: rgba(30, 41, 59, 0.85);
+}
+
+html.fi .fi-topbar-item.fi-active > .fi-topbar-item-btn {
+    background-color: color-mix(in oklab, var(--primary-500, #4f46e5) 10%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--primary-500, #4f46e5) 22%, transparent);
+    font-weight: 600;
+}
+
+html.fi.dark .fi-topbar-item.fi-active > .fi-topbar-item-btn {
+    background-color: color-mix(in oklab, var(--primary-400, #818cf8) 16%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--primary-400, #818cf8) 28%, transparent);
+}
+
+/* ==========================================================================
+   2. Cards, Sections, Stats Overview & Widgets
+   ========================================================================== */
+
+html.fi .fi-section:not(.fi-section-not-contained),
+html.fi .fi-wi-stats-overview-stat,
+html.fi .fi-ta-ctn {
+    border-radius: 0.875rem;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    background-color: rgba(255, 255, 255, 0.96);
+    box-shadow:
+        0 1px 2px 0 rgba(15, 23, 42, 0.03),
+        0 4px 12px -2px rgba(15, 23, 42, 0.025);
+    transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+html.fi.dark .fi-section:not(.fi-section-not-contained),
+html.fi.dark .fi-wi-stats-overview-stat,
+html.fi.dark .fi-ta-ctn {
+    border: 1px solid rgba(51, 65, 85, 0.75);
+    background-color: rgba(15, 23, 42, 0.88);
+    box-shadow:
+        0 1px 2px 0 rgba(0, 0, 0, 0.2),
+        0 4px 16px -2px rgba(0, 0, 0, 0.25);
+}
+
+html.fi .fi-wi-stats-overview-stat {
+    position: relative;
+    overflow: hidden;
+}
+
+html.fi .fi-wi-stats-overview-stat:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 8px 20px -4px rgba(15, 23, 42, 0.06),
+        0 2px 6px -1px rgba(15, 23, 42, 0.04);
+    border-color: color-mix(in oklab, var(--primary-500, #4f46e5) 30%, rgba(226, 232, 240, 0.9));
+}
+
+html.fi.dark .fi-wi-stats-overview-stat:hover {
+    box-shadow:
+        0 8px 24px -4px rgba(0, 0, 0, 0.4),
+        0 2px 6px -1px rgba(0, 0, 0, 0.3);
+    border-color: color-mix(in oklab, var(--primary-400, #818cf8) 38%, rgba(51, 65, 85, 0.8));
+}
+
+html.fi .fi-wi-stats-overview-stat-value {
+    font-weight: 700;
+    letter-spacing: -0.025em;
+}
+
+/* Section Headers */
+html.fi .fi-section-header-heading {
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+/* ==========================================================================
+   3. Page Headings & Typography
+   ========================================================================== */
+
+html.fi .fi-header-heading {
+    font-weight: 700;
+    letter-spacing: -0.025em;
+}
+
+/* ==========================================================================
+   4. Tables & Data Grids
+   ========================================================================== */
+
+html.fi .fi-ta-ctn {
+    overflow: hidden;
+}
+
+html.fi .fi-ta-header-ctn {
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+html.fi.dark .fi-ta-header-ctn {
+    border-bottom: 1px solid rgba(51, 65, 85, 0.7);
+}
+
+html.fi .fi-ta-table thead tr {
+    background-color: rgba(248, 250, 252, 0.9);
+}
+
+html.fi.dark .fi-ta-table thead tr {
+    background-color: rgba(30, 41, 59, 0.55);
+}
+
+html.fi .fi-ta-header-cell-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #475569;
+}
+
+html.fi.dark .fi-ta-header-cell-label {
+    color: #94a3b8;
+}
+
+html.fi .fi-ta-row {
+    transition: background-color 0.12s ease;
+}
+
+html.fi .fi-ta-row:hover {
+    background-color: color-mix(in oklab, var(--primary-500, #4f46e5) 3.5%, rgba(248, 250, 252, 0.8)) !important;
+}
+
+html.fi.dark .fi-ta-row:hover {
+    background-color: color-mix(in oklab, var(--primary-400, #818cf8) 7%, rgba(30, 41, 59, 0.5)) !important;
+}
+
+/* ==========================================================================
+   5. Buttons, Badges, Inputs & Dropdowns
+   ========================================================================== */
+
+html.fi .fi-btn {
+    border-radius: 0.55rem;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html.fi .fi-btn:not(.fi-disabled):active {
+    transform: scale(0.985);
+}
+
+html.fi .fi-input-wrp {
+    border-radius: 0.55rem;
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+html.fi .fi-badge {
+    border-radius: 0.425rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+html.fi .fi-dropdown-panel,
+html.fi .fi-modal-window {
+    border-radius: 0.875rem;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    box-shadow:
+        0 10px 25px -5px rgba(15, 23, 42, 0.1),
+        0 8px 10px -6px rgba(15, 23, 42, 0.06);
+}
+
+html.fi.dark .fi-dropdown-panel,
+html.fi.dark .fi-modal-window {
+    border: 1px solid rgba(51, 65, 85, 0.8);
+    box-shadow:
+        0 15px 30px -5px rgba(0, 0, 0, 0.5),
+        0 8px 12px -6px rgba(0, 0, 0, 0.4);
+}
+
+/* Tabs */
+html.fi .fi-tabs:not(.fi-contained) {
+    border-radius: 0.65rem;
+    background-color: rgba(241, 245, 249, 0.85);
+    border: 1px solid rgba(226, 232, 240, 0.7);
+}
+
+html.fi.dark .fi-tabs:not(.fi-contained) {
+    background-color: rgba(30, 41, 59, 0.65);
+    border: 1px solid rgba(51, 65, 85, 0.65);
+}
+
+html.fi .fi-tabs-item {
+    border-radius: 0.45rem;
+    font-weight: 500;
+    transition: all 0.15s ease;
+}
+
+/* Auth / Login Card */
+html.fi .fi-simple-main {
+    border-radius: 1.125rem;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    background-color: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(16px);
+    box-shadow:
+        0 20px 35px -10px rgba(15, 23, 42, 0.07),
+        0 8px 16px -6px rgba(15, 23, 42, 0.04);
+}
+
+html.fi.dark .fi-simple-main {
+    border: 1px solid rgba(51, 65, 85, 0.8);
+    background-color: rgba(15, 23, 42, 0.88);
+    box-shadow:
+        0 20px 40px -10px rgba(0, 0, 0, 0.55),
+        0 8px 16px -6px rgba(0, 0, 0, 0.4);
+}

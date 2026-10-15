@@ -48,7 +48,8 @@ class AdminPanelProvider extends PanelProvider
             ->emailVerification()
             ->profile()
             ->colors([
-                'primary' => Color::Blue,
+                'primary' => Color::Indigo,
+                'gray'    => Color::Slate,
             ])
             ->unsavedChangesAlerts()
             ->topNavigation()
@@ -62,7 +63,8 @@ class AdminPanelProvider extends PanelProvider
             )
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
-                fn (): string => '<link rel="stylesheet" href="'.e(asset('css/aura/density.css')).'?v='.filemtime(public_path('css/aura/density.css')).'">',
+                fn (): string => '<link rel="stylesheet" href="'.e(asset('css/aura/density.css')).'?v='.filemtime(public_path('css/aura/density.css')).'">'
+                    .'<link rel="stylesheet" href="'.e(asset('css/aura/modern-theme.css')).'?v='.filemtime(public_path('css/aura/modern-theme.css')).'">',
             )
             ->maxContentWidth(Width::Full)
             ->databaseNotifications()

@@ -113,6 +113,41 @@ class ManageBranding extends SettingsPage
                     ->description(__('support::filament/clusters/manage-branding.form.sections.colors.description'))
                     ->columns(3)
                     ->headerActions([
+                        Action::make('preset_indigo')
+                            ->label('Aura Indigo')
+                            ->icon('heroicon-o-sparkles')
+                            ->color('primary')
+                            ->button()
+                            ->size('sm')
+                            ->action(fn (Set $set) => $this->applyPreset($set, 'indigo')),
+                        Action::make('preset_emerald')
+                            ->label('Emerald FinTech')
+                            ->icon('heroicon-o-banknotes')
+                            ->color('success')
+                            ->button()
+                            ->size('sm')
+                            ->action(fn (Set $set) => $this->applyPreset($set, 'emerald')),
+                        Action::make('preset_ocean')
+                            ->label('Ocean SaaS')
+                            ->icon('heroicon-o-globe-alt')
+                            ->color('info')
+                            ->button()
+                            ->size('sm')
+                            ->action(fn (Set $set) => $this->applyPreset($set, 'ocean')),
+                        Action::make('preset_violet')
+                            ->label('Royal Violet')
+                            ->icon('heroicon-o-swatch')
+                            ->color('warning')
+                            ->button()
+                            ->size('sm')
+                            ->action(fn (Set $set) => $this->applyPreset($set, 'violet')),
+                        Action::make('preset_slate')
+                            ->label('Minimal Monochrome')
+                            ->icon('heroicon-o-cube-transparent')
+                            ->color('gray')
+                            ->button()
+                            ->size('sm')
+                            ->action(fn (Set $set) => $this->applyPreset($set, 'slate')),
                         Action::make('reset')
                             ->label(__('support::filament/clusters/manage-branding.actions.reset.label'))
                             ->icon('heroicon-o-arrow-path')
@@ -148,14 +183,64 @@ class ManageBranding extends SettingsPage
             ]);
     }
 
+    private function applyPreset(Set $set, string $preset): void
+    {
+        $presets = [
+            'indigo' => [
+                'primary_color' => Color::convertToHex(Color::Indigo[600]),
+                'gray_color'    => Color::convertToHex(Color::Slate[600]),
+                'danger_color'  => Color::convertToHex(Color::Rose[600]),
+                'info_color'    => Color::convertToHex(Color::Sky[600]),
+                'success_color' => Color::convertToHex(Color::Emerald[600]),
+                'warning_color' => Color::convertToHex(Color::Amber[600]),
+            ],
+            'emerald' => [
+                'primary_color' => Color::convertToHex(Color::Emerald[600]),
+                'gray_color'    => Color::convertToHex(Color::Slate[600]),
+                'danger_color'  => Color::convertToHex(Color::Rose[600]),
+                'info_color'    => Color::convertToHex(Color::Teal[600]),
+                'success_color' => Color::convertToHex(Color::Green[600]),
+                'warning_color' => Color::convertToHex(Color::Amber[600]),
+            ],
+            'ocean' => [
+                'primary_color' => Color::convertToHex(Color::Sky[600]),
+                'gray_color'    => Color::convertToHex(Color::Slate[600]),
+                'danger_color'  => Color::convertToHex(Color::Red[600]),
+                'info_color'    => Color::convertToHex(Color::Cyan[600]),
+                'success_color' => Color::convertToHex(Color::Emerald[600]),
+                'warning_color' => Color::convertToHex(Color::Amber[600]),
+            ],
+            'violet' => [
+                'primary_color' => Color::convertToHex(Color::Violet[600]),
+                'gray_color'    => Color::convertToHex(Color::Zinc[600]),
+                'danger_color'  => Color::convertToHex(Color::Rose[600]),
+                'info_color'    => Color::convertToHex(Color::Indigo[600]),
+                'success_color' => Color::convertToHex(Color::Emerald[600]),
+                'warning_color' => Color::convertToHex(Color::Amber[600]),
+            ],
+            'slate' => [
+                'primary_color' => Color::convertToHex(Color::Slate[800]),
+                'gray_color'    => Color::convertToHex(Color::Zinc[600]),
+                'danger_color'  => Color::convertToHex(Color::Red[600]),
+                'info_color'    => Color::convertToHex(Color::Blue[600]),
+                'success_color' => Color::convertToHex(Color::Emerald[600]),
+                'warning_color' => Color::convertToHex(Color::Amber[600]),
+            ],
+        ];
+
+        foreach ($presets[$preset] ?? $this->getDefaultColors() as $field => $hex) {
+            $set($field, $hex);
+        }
+    }
+
     private function getDefaultColors(): array
     {
         return [
-            'primary_color' => Color::convertToHex(Color::Blue[600]),
-            'gray_color'    => Color::convertToHex(Color::Zinc[600]),
-            'danger_color'  => Color::convertToHex(Color::Red[600]),
-            'info_color'    => Color::convertToHex(Color::Blue[600]),
-            'success_color' => Color::convertToHex(Color::Green[600]),
+            'primary_color' => Color::convertToHex(Color::Indigo[600]),
+            'gray_color'    => Color::convertToHex(Color::Slate[600]),
+            'danger_color'  => Color::convertToHex(Color::Rose[600]),
+            'info_color'    => Color::convertToHex(Color::Sky[600]),
+            'success_color' => Color::convertToHex(Color::Emerald[600]),
             'warning_color' => Color::convertToHex(Color::Amber[600]),
         ];
     }
