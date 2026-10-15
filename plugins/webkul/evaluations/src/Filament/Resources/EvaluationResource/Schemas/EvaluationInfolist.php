@@ -67,15 +67,15 @@ class EvaluationInfolist
                                     : number_format($goal, 1).'% ('.($record->meetsGoalCriterion() ? 'MEMENUHI' : 'BELUM MEMENUHI').')';
                             }),
                         TextEntry::make('score')
-                            ->label('Rata-rata D. Manajemen Pekerjaan (Min. 3.0)')
+                            ->label('Total Nilai (Σ Rating) / Rata-rata Nilai (Σ Rating / 10)')
                             ->badge()
                             ->color(fn (Evaluation $record): string => $record->meetsWorkManagementCriterion() ? 'success' : 'warning')
                             ->state(function (Evaluation $record): string {
                                 $score = $record->finalScore();
 
                                 return $score === null
-                                    ? '—'
-                                    : number_format($score, 2).' / 5.00 [Total Nilai: '.$record->totalRatingScore().'] ('.($record->meetsWorkManagementCriterion() ? 'MEMENUHI' : 'BELUM MEMENUHI').')';
+                                    ? '0 / —'
+                                    : $record->totalRatingScore().' / '.number_format($score, 2).' ('.($record->meetsWorkManagementCriterion() ? 'MEMENUHI' : 'BELUM MEMENUHI').')';
                             }),
                         TextEntry::make('competency_criterion')
                             ->label('Pemenuhan Kompetensi (Min. 90%)')

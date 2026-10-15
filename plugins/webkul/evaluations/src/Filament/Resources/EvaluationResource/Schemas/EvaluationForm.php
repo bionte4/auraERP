@@ -5,6 +5,7 @@ namespace Webkul\Evaluation\Filament\Resources\EvaluationResource\Schemas;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -14,6 +15,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
+use Illuminate\Support\HtmlString;
 use Webkul\Employee\Models\Employee;
 use Webkul\Evaluation\Enums\EvaluationStatus;
 use Webkul\Evaluation\Enums\EvaluationType;
@@ -231,6 +233,7 @@ class EvaluationForm
                             ->label('Aspek Penilaian Manajemen Pekerjaan')
                             ->default(fn (): array => Evaluation::defaultPkwtCriteria())
                             ->orderColumn('sort')
+                            ->live()
                             ->itemLabel(fn (array $state): ?string => isset($state['sort'], $state['title'])
                                 ? "{$state['sort']}. {$state['title']}"
                                 : ($state['title'] ?? 'Aspek Penilaian'))
@@ -254,6 +257,7 @@ class EvaluationForm
                                         1 => '1 — Sama sekali tidak memenuhi standar yang diharapkan',
                                     ])
                                     ->native(false)
+                                    ->live()
                                     ->placeholder('Pilih Rating 1 - 5')
                                     ->columnSpan(1),
                                 Textarea::make('description')
@@ -271,6 +275,38 @@ class EvaluationForm
                             ->columns(2)
                             ->addActionLabel('Tambah Aspek Penilaian Lainnya')
                             ->collapsible()
+                            ->columnSpanFull(),
+                        Placeholder::make('work_management_total_average')
+                            ->label('Total Nilai (Σ Rating) / Rata-rata Nilai (Σ Rating / 10)')
+                            ->content(function (Get $get): HtmlString {
+                                $ratings = collect($get('ratings') ?? []);
+                                $count = max(1, $ratings->count() ?: 10);
+                                $scoredItems = $ratings
+                                    ->map(fn ($item): ?float => isset($item['score']) && $item['score'] !== '' && $item['score'] !== null ? (float) $item['score'] : null)
+                                    ->filter(fn (?float $score): bool => $score !== null);
+
+                                $total = $scoredItems->sum();
+                                $average = $scoredItems->isNotEmpty()
+                                    ? round($total / $count, 2)
+                                    : 0.0;
+
+                                $formattedTotal = number_format($total, 0);
+                                $formattedAverage = number_format($average, 2);
+                                $meetsStandard = $average >= 3.0;
+                                $badgeColor = $meetsStandard ? '#166534' : '#9a3412';
+                                $badgeBg = $meetsStandard ? '#dcfce7' : '#ffedd5';
+                                $statusText = $meetsStandard ? 'Memenuhi Standar (≥ 3.00)' : 'Belum Memenuhi Standar (< 3.00)';
+
+                                return new HtmlString(
+                                    '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border:1px solid #d1d5db;border-radius:8px;background-color:#f9fafb;font-weight:600;">'
+                                    .'<span>Total Nilai (&Sigma; Rating) / Rata-rata Nilai (&Sigma; Rating / '.$count.')</span>'
+                                    .'<span style="display:flex;align-items:center;gap:12px;font-size:1.05rem;">'
+                                    .'<strong>'.$formattedTotal.' / '.$formattedAverage.'</strong>'
+                                    .'<span style="font-size:0.75rem;padding:2px 8px;border-radius:9999px;background-color:'.$badgeBg.';color:'.$badgeColor.';">'.$statusText.'</span>'
+                                    .'</span>'
+                                    .'</div>'
+                                );
+                            })
                             ->columnSpanFull(),
                     ]),
 
