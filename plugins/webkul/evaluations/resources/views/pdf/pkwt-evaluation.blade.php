@@ -120,13 +120,12 @@
         }
         .signature-table td {
             border: 1px solid #374151;
-            padding: 10px;
+            padding: 8px;
             text-align: center;
             vertical-align: top;
-            width: 50%;
         }
         .sig-space {
-            height: 56px;
+            height: 52px;
             display: block;
         }
         .small-note {
@@ -146,6 +145,7 @@
     @php
         $employee = $record->employee;
         $reviewer = $record->reviewer;
+        $levelTwoApprover = $record->gmApprover;
         $ratings = $record->ratings;
         $summary = $record->criteriaSummary();
         $decision = $record->recommendation_decision?->value;
@@ -367,12 +367,12 @@
             <td>
                 <div style="margin-bottom: 6px;">
                     <span class="checkbox">{{ $decision === 'appoint_permanent' ? 'V' : '' }}</span>
-                    <strong>Direkomendasikan untuk diangkat sebagai karyawan tetap</strong>, efektif per tanggal:
+                    <strong>Diangkat Sebagai Karyawan Tetap</strong>, efektif per tanggal:
                     <u>{{ $decision === 'appoint_permanent' && $record->permanent_effective_date ? $record->permanent_effective_date->format('d M Y') : '……………………' }}</u>
                 </div>
                 <div style="margin-bottom: 6px;">
                     <span class="checkbox">{{ $decision === 'extend_pkwt' ? 'V' : '' }}</span>
-                    <strong>Diperpanjang masa PKWT-nya selama</strong>
+                    <strong>Diperpanjang Masa PKWT</strong> selama
                     <u>{{ $decision === 'extend_pkwt' && $record->extension_months ? $record->extension_months : '……' }}</u> bulan,
                     dengan pertimbangan:
                     <u>{{ $decision === 'extend_pkwt' && filled($record->recommendation_reason) ? $record->recommendation_reason : '………………………………………………………………' }}</u>
@@ -390,8 +390,20 @@
                     <u>{{ $decision === 'transfer_outtask_outsource' && filled($record->recommendation_reason) ? $record->recommendation_reason : '………………………………………………………………' }}</u>
                 </div>
                 <div style="margin-bottom: 6px;">
+                    <span class="checkbox">{{ $decision === 'extend_outtask_outsource' ? 'V' : '' }}</span>
+                    <strong>Diperpanjang Masa Outtask/Outsource</strong> selama
+                    <u>{{ $decision === 'extend_outtask_outsource' && $record->extension_months ? $record->extension_months : '……' }}</u> bulan,
+                    dengan pertimbangan:
+                    <u>{{ $decision === 'extend_outtask_outsource' && filled($record->recommendation_reason) ? $record->recommendation_reason : '………………………………………………………………' }}</u>
+                </div>
+                <div style="margin-bottom: 6px;">
+                    <span class="checkbox">{{ $decision === 'terminate_outtask_outsource' ? 'V' : '' }}</span>
+                    <strong>Tidak Diperpanjang Outtask/Outsource</strong>, dengan alasan:
+                    <u>{{ $decision === 'terminate_outtask_outsource' && filled($record->recommendation_reason) ? $record->recommendation_reason : '………………………………………………………………' }}</u>
+                </div>
+                <div style="margin-bottom: 6px;">
                     <span class="checkbox">{{ $decision === 'terminate_pkwt' ? 'V' : '' }}</span>
-                    <strong>Tidak direkomendasikan untuk diangkat sebagai karyawan tetap / masa PKWT diterminasi</strong>, dengan alasan:
+                    <strong>Tidak Direkomendasikan / Terminasi PKWT</strong>, dengan alasan:
                     <u>{{ $decision === 'terminate_pkwt' && filled($record->recommendation_reason) ? $record->recommendation_reason : '………………………………………………………………' }}</u>
                 </div>
                 <div class="small-note" style="border-top: 1px solid #d1d5db; padding-top: 4px;">
@@ -402,11 +414,11 @@
         </tr>
     </table>
 
-    <!-- J. KOLOM PERSETUJUAN (KARYAWAN & PENILAI) -->
-    <div class="section-heading">J. KOLOM PERSETUJUAN</div>
+    <!-- J. KOLOM PERSETUJUAN BERJENJANG -->
+    <div class="section-heading">J. KOLOM PERSETUJUAN BERJENJANG</div>
     <table class="signature-table">
         <tr>
-            <td>
+            <td style="width: {{ $levelTwoApprover ? '33.33%' : '50%' }};">
                 <strong>KARYAWAN YANG DINILAI,</strong>
                 <span class="sig-space">
                     @if ($record->employee_signed_at)
@@ -419,8 +431,8 @@
                     TGL: {{ $record->employee_signed_at?->format('d/m/Y') ?? '____________' }}
                 </div>
             </td>
-            <td>
-                <strong>PENILAI (ATASAN LANGSUNG),</strong>
+            <td style="width: {{ $levelTwoApprover ? '33.33%' : '50%' }};">
+                <strong>PENILAI / ATASAN LANGSUNG (L1),</strong>
                 <span class="sig-space">
                     @if ($record->reviewer_signed_at)
                         <br><em style="font-size: 8pt; color: #065f46;">[Disetujui Digital]</em>
@@ -432,6 +444,21 @@
                     TGL: {{ $record->reviewer_signed_at?->format('d/m/Y') ?? '____________' }}
                 </div>
             </td>
+            @if ($levelTwoApprover || $record->gm_signed_at)
+                <td style="width: 33.33%;">
+                    <strong>ATASAN PENILAI / KEPALA DEPT (L2),</strong>
+                    <span class="sig-space">
+                        @if ($record->gm_signed_at)
+                            <br><em style="font-size: 8pt; color: #065f46;">[Disetujui Digital]</em>
+                        @endif
+                    </span>
+                    ( <strong>{{ $levelTwoApprover?->name ?? '____________________' }}</strong> )<br>
+                    <div style="text-align: left; font-size: 8.5pt; margin-top: 4px;">
+                        NIK: {{ $levelTwoApprover?->identification_id ?? '—' }}<br>
+                        TGL: {{ $record->gm_signed_at?->format('d/m/Y') ?? '____________' }}
+                    </div>
+                </td>
+            @endif
         </tr>
     </table>
 </body>

@@ -71,8 +71,17 @@ class EvaluationForm
                                     return;
                                 }
 
-                                if ($employee->parent_id) {
+                                $levelOne = $employee->resolveLevelOneApproverEmployee();
+                                $levelTwo = $employee->resolveLevelTwoApproverEmployee();
+
+                                if ($levelOne) {
+                                    $set('reviewer_id', $levelOne->id);
+                                } elseif ($employee->parent_id) {
                                     $set('reviewer_id', $employee->parent_id);
+                                }
+
+                                if ($levelTwo) {
+                                    $set('gm_approver_id', $levelTwo->id);
                                 }
 
                                 $set('employee_nik', $employee->identification_id);
@@ -82,10 +91,17 @@ class EvaluationForm
                                 $set('work_location_name', $employee->workLocation?->name);
                             }),
                         Select::make('reviewer_id')
-                            ->label('Penilai (Atasan Langsung / Pembimbing)')
+                            ->label('Approver Level 1: Penilai (Atasan Langsung / Pembimbing)')
                             ->relationship('reviewer', 'name')
                             ->searchable()
-                            ->preload(),
+                            ->preload()
+                            ->helperText('Otomatis terisi dari Atasan Langsung karyawan di struktur organisasi.'),
+                        Select::make('gm_approver_id')
+                            ->label('Approver Level 2: Atasan Penilai / Kepala Departemen (Berjenjang)')
+                            ->relationship('gmApprover', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->helperText('Otomatis terisi dari Atasan Level 2 / Manager Departemen di struktur organisasi.'),
                         DatePicker::make('period_start')
                             ->label(__('evaluations::filament/resources/evaluation.form.period-start'))
                             ->required()
@@ -247,7 +263,7 @@ class EvaluationForm
                     ])
                     ->columns(2),
 
-                Section::make('H, I & J. Kesimpulan Keputusan & Kolom Persetujuan')
+                Section::make('H, I & J. Kesimpulan Keputusan & Approval Berjenjang')
                     ->schema([
                         Select::make('recommendation_decision')
                             ->label('I. Kesimpulan Rekomendasi')
@@ -260,6 +276,7 @@ class EvaluationForm
                             ->visible(fn (Get $get): bool => in_array($get('recommendation_decision'), [
                                 RecommendationDecision::AppointPermanent->value,
                                 RecommendationDecision::TransferOuttaskOutsource->value,
+                                RecommendationDecision::ExtendOuttaskOutsource->value,
                             ], true)),
                         TextInput::make('extension_months')
                             ->label('Durasi Kontrak / Perpanjangan (Bulan)')
@@ -270,16 +287,20 @@ class EvaluationForm
                             ->visible(fn (Get $get): bool => in_array($get('recommendation_decision'), [
                                 RecommendationDecision::ExtendPkwt->value,
                                 RecommendationDecision::TransferOuttaskOutsource->value,
+                                RecommendationDecision::ExtendOuttaskOutsource->value,
                             ], true)),
                         Textarea::make('recommendation_reason')
-                            ->label('Pertimbangan / Catatan Penempatan (Outtask/Outsource, Perpanjangan, atau Alasan Terminasi)')
+                            ->label('Pertimbangan / Catatan Keputusan (PKWT, Outtask/Outsource, atau Alasan Terminasi)')
                             ->rows(2)
                             ->columnSpanFull(),
-                        DateTimePicker::make('employee_signed_at')
-                            ->label('Tanggal Tanda Tangan Karyawan yang Dinilai')
-                            ->native(false),
                         DateTimePicker::make('reviewer_signed_at')
-                            ->label('Tanggal Tanda Tangan Penilai (Atasan Langsung)')
+                            ->label('Tahap 1: Tgl Approval Penilai / Atasan Langsung (Level 1)')
+                            ->native(false),
+                        DateTimePicker::make('employee_signed_at')
+                            ->label('Tahap 2: Tgl Konfirmasi / Tanda Tangan Karyawan')
+                            ->native(false),
+                        DateTimePicker::make('gm_signed_at')
+                            ->label('Tahap 3: Tgl Approval Atasan Penilai / Kepala Dept (Level 2)')
                             ->native(false),
                     ])
                     ->columns(2),

@@ -33,7 +33,10 @@ class EvaluationInfolist
                             ->label('Departemen / Divisi')
                             ->state(fn (Evaluation $record): string => collect([$record->division_name, $record->department_name ?: $record->employee?->department?->name])->filter()->join(' / ') ?: '—'),
                         TextEntry::make('reviewer.name')
-                            ->label('Penilai (Atasan Langsung)')
+                            ->label('Approver Level 1 (Atasan Langsung)')
+                            ->placeholder('—'),
+                        TextEntry::make('gmApprover.name')
+                            ->label('Approver Level 2 (Atasan Penilai / Kepala Dept)')
                             ->placeholder('—'),
                         TextEntry::make('period')
                             ->label(__('evaluations::filament/resources/evaluation.table.columns.period'))
@@ -41,6 +44,11 @@ class EvaluationInfolist
                         TextEntry::make('status')
                             ->label(__('evaluations::filament/resources/evaluation.form.status'))
                             ->badge(),
+                        TextEntry::make('approval_stage')
+                            ->label('Tahapan Approval Berjenjang')
+                            ->badge()
+                            ->color(fn (Evaluation $record): string => str_contains($record->approvalStageLabel(), 'Selesai') ? 'success' : 'info')
+                            ->state(fn (Evaluation $record): string => $record->approvalStageLabel()),
                     ])
                     ->columns(3),
 
@@ -107,7 +115,7 @@ class EvaluationInfolist
                     ])
                     ->columns(3),
 
-                Section::make('F, G & J. Catatan Penilai, Pengembangan & Status Persetujuan')
+                Section::make('F, G & J. Catatan Penilai, Pengembangan & Status Approval Berjenjang')
                     ->schema([
                         TextEntry::make('strengths')
                             ->label('F.1 Aspek yang Menjadi Kekuatan')
@@ -126,12 +134,13 @@ class EvaluationInfolist
                             ->label(__('evaluations::filament/resources/evaluation.form.employee-comment'))
                             ->placeholder('—'),
                         TextEntry::make('signatures_summary')
-                            ->label('J. Status Persetujuan (Karyawan & Penilai)')
+                            ->label('J. Status Approval Berjenjang (Tahap 1 -> Tahap 2 -> Tahap 3)')
                             ->columnSpanFull()
                             ->state(function (Evaluation $record): string {
                                 return collect([
-                                    'Karyawan yang Dinilai: '.($record->employee_signed_at ? $record->employee_signed_at->format('d/m/Y H:i') : 'Belum Tanda Tangan'),
-                                    'Penilai (Atasan Langsung): '.($record->reviewer_signed_at ? $record->reviewer_signed_at->format('d/m/Y H:i') : 'Belum Tanda Tangan'),
+                                    '1. Penilai / Atasan Langsung (L1 - '.($record->reviewer?->name ?? '—').'): '.($record->reviewer_signed_at ? $record->reviewer_signed_at->format('d/m/Y H:i') : 'Belum Disetujui'),
+                                    '2. Karyawan ('.($record->employee?->name ?? '—').'): '.($record->employee_signed_at ? $record->employee_signed_at->format('d/m/Y H:i') : 'Belum Dikonfirmasi'),
+                                    '3. Atasan Penilai / Kepala Dept (L2 - '.($record->gmApprover?->name ?? 'Opsional').'): '.($record->gm_signed_at ? $record->gm_signed_at->format('d/m/Y H:i') : ($record->gm_approver_id ? 'Menunggu Approval L2' : '—')),
                                 ])->join('  •  ');
                             }),
                     ])

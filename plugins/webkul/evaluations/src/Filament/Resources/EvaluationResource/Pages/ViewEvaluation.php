@@ -9,8 +9,8 @@ use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use Webkul\Evaluation\Enums\EvaluationStatus;
 use Webkul\Evaluation\Filament\Resources\EvaluationResource;
 use Webkul\Evaluation\Models\Evaluation;
 
@@ -26,7 +26,7 @@ class ViewEvaluation extends ViewRecord
                 ->icon('heroicon-o-printer')
                 ->color('info')
                 ->action(function (Evaluation $record): StreamedResponse {
-                    $record->loadMissing(['employee.department', 'employee.workLocation', 'reviewer', 'performancePlan', 'ratings']);
+                    $record->loadMissing(['employee.department', 'employee.workLocation', 'reviewer', 'gmApprover', 'performancePlan', 'ratings']);
                     $pdf = Pdf::loadView('evaluations::pdf.pkwt-evaluation', ['record' => $record])
                         ->setPaper('a4', 'portrait');
 
@@ -38,40 +38,28 @@ class ViewEvaluation extends ViewRecord
                     );
                 }),
             Action::make('sign_evaluation')
-                ->label('Tanda Tangani / Setujui')
+                ->label('Approve / Tanda Tangani Berjenjang')
                 ->icon('heroicon-o-check-badge')
                 ->color('success')
                 ->schema([
                     Select::make('signer_role')
-                        ->label('Tanda Tangani Sebagai')
+                        ->label('Tahap Persetujuan Berjenjang')
                         ->options([
-                            'employee' => 'Karyawan yang Dinilai',
-                            'reviewer' => 'Penilai (Atasan Langsung)',
+                            'auto'     => 'Otomatis Sesuai Akun / Tahap Saat Ini',
+                            'reviewer' => 'Tahap 1: Penilai / Atasan Langsung (Level 1)',
+                            'employee' => 'Tahap 2: Konfirmasi Karyawan yang Dinilai',
+                            'level2'   => 'Tahap 3: Atasan Penilai / Kepala Departemen (Level 2)',
                         ])
                         ->required()
-                        ->default('reviewer'),
+                        ->default('auto'),
                 ])
                 ->action(function (Evaluation $record, array $data): void {
-                    $column = ($data['signer_role'] ?? 'reviewer') === 'employee'
-                        ? 'employee_signed_at'
-                        : 'reviewer_signed_at';
-
-                    $record->{$column} = now();
-
-                    if ($record->reviewer_signed_at && $record->status === EvaluationStatus::Draft) {
-                        $record->status = EvaluationStatus::InReview;
-                    }
-
-                    if ($record->employee_signed_at && $record->reviewer_signed_at) {
-                        $record->status = EvaluationStatus::Completed;
-                    }
-
-                    $record->save();
+                    $stageLabel = $record->signByRole($data['signer_role'] ?? 'auto', Auth::user());
 
                     Notification::make()
                         ->success()
-                        ->title('Persetujuan Evaluasi Tercatat')
-                        ->body('Tanda tangan digital berhasil disimpan pada lembar evaluasi.')
+                        ->title('Approval Berjenjang Tercatat')
+                        ->body("Status tahapan saat ini: {$stageLabel}.")
                         ->send();
                 }),
             EditAction::make(),

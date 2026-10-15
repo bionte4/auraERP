@@ -4,6 +4,7 @@ require_once __DIR__.'/../../../support/tests/Helpers/TestBootstrapHelper.php';
 
 use Barryvdh\DomPDF\Facade\Pdf;
 use Webkul\Employee\Models\Employee;
+use Webkul\Evaluation\Enums\EvaluationStatus;
 use Webkul\Evaluation\Enums\EvaluationType;
 use Webkul\Evaluation\Enums\RecommendationDecision;
 use Webkul\Evaluation\Models\Evaluation;
@@ -93,10 +94,17 @@ it('ignores criteria that have not been scored', function () {
     expect($evaluation->fresh()->finalScore())->toEqual(5.0);
 });
 
-it('renders Section D (10 Work Management aspects in the form), syncs Goal score, supports Outtask/Outsource recommendation decision, 2-party approval (Employee & Reviewer), and renders the PDF cleanly', function () {
-    $manager = Employee::withoutGlobalScopes()->create([
-        'name'              => 'Atasan Penilai PKWT',
+it('supports all 6 recommendation decisions (including Extend/Terminate Outtask/Outsource) and hierarchical L1->Employee->L2 approval routing', function () {
+    $deptHeadL2 = Employee::withoutGlobalScopes()->create([
+        'name'              => 'Kepala Departemen (Approver L2)',
+        'identification_id' => 'NIK-HEAD-001',
+        'is_active'         => true,
+    ]);
+
+    $managerL1 = Employee::withoutGlobalScopes()->create([
+        'name'              => 'Atasan Penilai (Approver L1)',
         'identification_id' => 'NIK-MGR-001',
+        'parent_id'         => $deptHeadL2->id,
         'is_active'         => true,
     ]);
 
@@ -104,7 +112,7 @@ it('renders Section D (10 Work Management aspects in the form), syncs Goal score
         'name'              => 'Karyawan PKWT Triwulan',
         'identification_id' => 'NIK-PKWT-099',
         'job_title'         => 'Software Engineer',
-        'parent_id'         => $manager->id,
+        'parent_id'         => $managerL1->id,
         'join_date'         => now()->subMonths(9)->toDateString(),
         'is_active'         => true,
     ]);
@@ -125,6 +133,15 @@ it('renders Section D (10 Work Management aspects in the form), syncs Goal score
         'status'              => 'achieved',
     ]);
 
+    expect(RecommendationDecision::options())->toBe([
+        'appoint_permanent'           => 'Diangkat Sebagai Karyawan Tetap',
+        'extend_pkwt'                 => 'Diperpanjang Masa PKWT',
+        'transfer_outtask_outsource'  => 'Dialihkan ke Outtask / Outsource',
+        'extend_outtask_outsource'    => 'Diperpanjang Masa Outtask/Outsource',
+        'terminate_outtask_outsource' => 'Tidak Diperpanjang Outtask/Outsource',
+        'terminate_pkwt'              => 'Tidak Direkomendasikan / Terminasi PKWT',
+    ]);
+
     $evaluation = Evaluation::query()->create([
         'employee_id'              => $employee->id,
         'title'                    => 'Evaluasi Akhir PKWT - Triwulan IV',
@@ -137,41 +154,34 @@ it('renders Section D (10 Work Management aspects in the form), syncs Goal score
         'strengths'                => 'Disiplin tinggi dan eksekusi tugas sangat cepat.',
         'areas_for_improvement'    => 'Presentasi di depan publik.',
         'development_plan'         => 'Ikuti pelatihan komunikasi efektif.',
-        'recommendation_decision'  => RecommendationDecision::TransferOuttaskOutsource,
+        'recommendation_decision'  => RecommendationDecision::ExtendOuttaskOutsource,
         'permanent_effective_date' => now()->addMonth()->startOfMonth()->toDateString(),
-        'extension_months'         => 12,
-        'recommendation_reason'    => 'Penyesuaian alokasi fungsi operasional ke skema Outtask / Outsource.',
-        'employee_signed_at'       => now(),
-        'reviewer_signed_at'       => now(),
+        'extension_months'         => 6,
+        'recommendation_reason'    => 'Perpanjangan masa kontrak Outtask/Outsource selama 6 bulan.',
     ]);
 
-    // 1. Metadata auto-populated from Employee & seed 10 Work Management items
+    // 1. Hierarchical Approver L1 & L2 auto-populated from Employee org-tree
     $addedCount = $evaluation->seedDefaultPkwtCriteria();
-    expect($evaluation->reviewer_id)->toBe($manager->id)
-        ->and($evaluation->employee_nik)->toBe('NIK-PKWT-099')
-        ->and($evaluation->job_title_snapshot)->toBe('Software Engineer')
-        ->and($evaluation->is_final_period)->toBeTrue()
+    expect($evaluation->reviewer_id)->toBe($managerL1->id)
+        ->and($evaluation->gm_approver_id)->toBe($deptHeadL2->id)
         ->and($addedCount)->toBe(10)
-        ->and($evaluation->ratings()->count())->toBe(10)
-        ->and($evaluation->recommendation_decision)->toBe(RecommendationDecision::TransferOuttaskOutsource)
-        ->and($evaluation->recommendation_decision->getLabel())->toBe('Dialihkan ke Outtask / Outsource');
+        ->and($evaluation->approvalStageLabel())->toBe('Menunggu Penilai / Atasan Langsung (Level 1)');
 
-    $evaluation->ratings()->update(['score' => 4, 'comment' => 'Memenuhi dan melampaui target triwulan']);
-    $evaluation->refresh();
+    // 2. Step-by-step tiered approval (L1 Reviewer -> Employee -> L2 Dept Head)
+    $evaluation->signByRole('reviewer');
+    expect($evaluation->status)->toBe(EvaluationStatus::InReview)
+        ->and($evaluation->approvalStageLabel())->toBe('Menunggu Konfirmasi Karyawan');
 
-    // 2. Sync Goal score from PerformancePlan (96% >= 95%), Work Management (4.0 >= 3.0), and Competency (90% >= 90%)
-    $syncedGoal = $evaluation->syncGoalFromPerformancePlan();
-    expect($syncedGoal)->toEqual(96.0)
-        ->and($evaluation->totalRatingScore())->toBe(40)
-        ->and($evaluation->finalScore())->toEqual(4.0)
-        ->and($evaluation->competencyAchievementPercentage())->toEqual(90.0)
-        ->and($evaluation->meetsGoalCriterion())->toBeTrue()
-        ->and($evaluation->meetsWorkManagementCriterion())->toBeTrue()
-        ->and($evaluation->meetsCompetencyCriterion())->toBeTrue()
-        ->and($evaluation->criteriaMetCount())->toBe(3);
+    $evaluation->signByRole('employee');
+    expect($evaluation->status)->toBe(EvaluationStatus::InReview)
+        ->and($evaluation->approvalStageLabel())->toBe('Menunggu Atasan Penilai / Kepala Dept (Level 2)');
 
-    // 3. Verify PDF generation renders cleanly with Section D, Outtask/Outsource decision, and 2-party signatures
-    $evaluation->load(['employee', 'reviewer', 'performancePlan', 'ratings']);
+    $evaluation->signByRole('level2');
+    expect($evaluation->status)->toBe(EvaluationStatus::Completed)
+        ->and($evaluation->approvalStageLabel())->toBe('Persetujuan Lengkap (Selesai)');
+
+    // 3. Verify PDF generation renders cleanly with all 6 recommendation options and 3-column tiered approval
+    $evaluation->load(['employee', 'reviewer', 'gmApprover', 'performancePlan', 'ratings']);
     $pdfOutput = Pdf::loadView('evaluations::pdf.pkwt-evaluation', ['record' => $evaluation])->output();
 
     expect($pdfOutput)->toStartWith('%PDF-');

@@ -14,6 +14,7 @@ use Webkul\Evaluation\Enums\EvaluationStatus;
 use Webkul\Evaluation\Enums\EvaluationType;
 use Webkul\Evaluation\Enums\RecommendationDecision;
 use Webkul\Performance\Models\PerformancePlan;
+use Webkul\Security\Models\User;
 use Webkul\Support\Traits\BelongsToCompany;
 
 class Evaluation extends Model
@@ -107,6 +108,9 @@ class Evaluation extends Model
         return $this->belongsTo(Employee::class, 'reviewer_id');
     }
 
+    /**
+     * Level 2 Hierarchical Approver (Atasan dari Penilai / Kepala Departemen) stored in gm_approver_id.
+     */
     public function gmApprover(): BelongsTo
     {
         return $this->belongsTo(Employee::class, 'gm_approver_id');
@@ -408,6 +412,79 @@ class Evaluation extends Model
         ];
     }
 
+    /**
+     * Determine current stage label in the hierarchical approval workflow:
+     * Tahap 1: Penilai (Atasan Langsung - L1) -> Tahap 2: Karyawan (Konfirmasi Hasil Diskusi) -> Tahap 3: Atasan Penilai / Kepala Dept (L2) jika ditetapkan.
+     */
+    public function approvalStageLabel(): string
+    {
+        if (! $this->reviewer_signed_at) {
+            return 'Menunggu Penilai / Atasan Langsung (Level 1)';
+        }
+
+        if (! $this->employee_signed_at) {
+            return 'Menunggu Konfirmasi Karyawan';
+        }
+
+        if ($this->gm_approver_id && ! $this->gm_signed_at) {
+            return 'Menunggu Atasan Penilai / Kepala Dept (Level 2)';
+        }
+
+        return 'Persetujuan Lengkap (Selesai)';
+    }
+
+    /**
+     * Execute sequential/tiered approval by role or automatically detect from the given User.
+     */
+    public function signByRole(string $role, ?User $user = null): string
+    {
+        $now = now();
+
+        if ($role === 'auto' && $user) {
+            $empIds = Employee::withoutGlobalScopes()
+                ->where('user_id', $user->id)
+                ->pluck('id')
+                ->map(fn ($id) => (int) $id)
+                ->all();
+
+            if (! $this->reviewer_signed_at && in_array((int) $this->reviewer_id, $empIds, true)) {
+                $role = 'reviewer';
+            } elseif (! $this->employee_signed_at && in_array((int) $this->employee_id, $empIds, true)) {
+                $role = 'employee';
+            } elseif ($this->gm_approver_id && ! $this->gm_signed_at && in_array((int) $this->gm_approver_id, $empIds, true)) {
+                $role = 'level2';
+            } elseif (! $this->reviewer_signed_at) {
+                $role = 'reviewer';
+            } elseif (! $this->employee_signed_at) {
+                $role = 'employee';
+            } else {
+                $role = 'level2';
+            }
+        }
+
+        match ($role) {
+            'employee' => $this->employee_signed_at = $now,
+            'level2'   => $this->gm_signed_at = $now,
+            default    => $this->reviewer_signed_at = $now,
+        };
+
+        $this->recalculateStatusFromSignatures();
+        $this->save();
+
+        return $this->approvalStageLabel();
+    }
+
+    public function recalculateStatusFromSignatures(): void
+    {
+        $l2Complete = ! $this->gm_approver_id || $this->gm_signed_at !== null;
+
+        if ($this->reviewer_signed_at && $this->employee_signed_at && $l2Complete) {
+            $this->status = EvaluationStatus::Completed;
+        } elseif ($this->reviewer_signed_at || $this->employee_signed_at || $this->gm_signed_at) {
+            $this->status = EvaluationStatus::InReview;
+        }
+    }
+
     public function periodLabel(): string
     {
         $start = $this->period_start?->format('d M Y') ?? '—';
@@ -434,7 +511,11 @@ class Evaluation extends Model
             $this->company_id = $employee->company_id;
         }
 
-        $this->reviewer_id ??= $employee->parent_id;
+        $levelOne = $employee->resolveLevelOneApproverEmployee();
+        $levelTwo = $employee->resolveLevelTwoApproverEmployee();
+
+        $this->reviewer_id ??= $levelOne?->id ?? $employee->parent_id;
+        $this->gm_approver_id ??= $levelTwo?->id;
         $this->employee_nik ??= $employee->identification_id;
         $this->join_date ??= $employee->join_date;
         $this->department_name ??= $employee->department?->name;
