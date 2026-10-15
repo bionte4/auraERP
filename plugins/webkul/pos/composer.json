@@ -1,0 +1,24 @@
+{
+    "name": "webkul/pos",
+    "description": "Retail Point of Sale (POS) module with cashier terminal, shifts, stock deduction, multi-payment, and thermal receipts",
+    "authors": [
+        {
+            "name": "auraERP",
+            "email": "support@aureuserp.in"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Webkul\\Pos\\PosServiceProvider"
+            ],
+            "aliases": {}
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Webkul\\Pos\\": "src/",
+            "Webkul\\Pos\\Database\\Seeders\\": "database/seeders/"
+        }
+    }
+}

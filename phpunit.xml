@@ -47,6 +47,9 @@
         <testsuite name="EvaluationFeature">
             <directory>plugins/webkul/evaluations/tests/Feature</directory>
         </testsuite>
+        <testsuite name="PosFeature">
+            <directory>plugins/webkul/pos/tests/Feature</directory>
+        </testsuite>
     </testsuites>
     <source>
         <include>

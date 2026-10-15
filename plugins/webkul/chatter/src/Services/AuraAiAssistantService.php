@@ -17,6 +17,8 @@ use Webkul\Maintenance\Models\Equipment;
 use Webkul\Maintenance\Models\EquipmentMovement;
 use Webkul\Performance\Models\PerformancePlan;
 use Webkul\PluginManager\Package;
+use Webkul\Pos\Models\PosOrder;
+use Webkul\Pos\Models\PosSession;
 use Webkul\Project\Models\Project;
 use Webkul\Project\Models\Task;
 use Webkul\Security\Models\User;
@@ -243,6 +245,10 @@ class AuraAiAssistantService
 
         if (preg_match('/(proyek|project|task|tugas)/u', $q)) {
             return $this->projectInsights();
+        }
+
+        if (preg_match('/(pos|kasir|struk|shift|z-report|omzet|penjualan toko|qris)/u', $q)) {
+            return $this->posInsights();
         }
 
         if (preg_match('/(karyawan|employee|departemen|department|staf|staff|hr)/u', $q)) {
@@ -609,6 +615,44 @@ class AuraAiAssistantService
         ];
 
         return implode("\n\n", array_filter($sections));
+    }
+
+    protected function posInsights(): string
+    {
+        if (! Schema::hasTable('pos_orders') || ! Schema::hasTable('pos_sessions')) {
+            return 'Modul Kasir (POS) belum memiliki data transaksi.';
+        }
+
+        $todayOrders = PosOrder::query()
+            ->where('status', PosOrder::STATUS_PAID)
+            ->whereDate('created_at', now()->toDateString());
+
+        $todayCount = (clone $todayOrders)->count();
+        $todayRevenue = (float) (clone $todayOrders)->sum('total_amount');
+
+        $allPaidCount = PosOrder::query()->where('status', PosOrder::STATUS_PAID)->count();
+        $allPaidRevenue = (float) PosOrder::query()->where('status', PosOrder::STATUS_PAID)->sum('total_amount');
+
+        $openSessions = PosSession::query()
+            ->with(['register', 'user'])
+            ->where('status', PosSession::STATUS_OPEN)
+            ->get();
+
+        $lines = [
+            'Ringkasan Kasir Retail (POS):',
+            '• Transaksi Hari Ini: '.$todayCount.' struk (Omzet: Rp '.number_format($todayRevenue, 0, ',', '.').')',
+            '• Total Kumulatif Lunas: '.$allPaidCount.' struk (Total: Rp '.number_format($allPaidRevenue, 0, ',', '.').')',
+            '• Sesi Kasir (Shift) Aktif Saat Ini: '.$openSessions->count().' sesi',
+        ];
+
+        foreach ($openSessions as $session) {
+            $regName = $session->register?->name ?? 'Register';
+            $cashierName = $session->user?->name ?? '-';
+            $expected = number_format((float) $session->expected_closing_cash, 0, ',', '.');
+            $lines[] = "  - {$session->name} ({$regName} | Kasir: {$cashierName}) — Kas Laci Diharapkan: Rp {$expected}";
+        }
+
+        return implode("\n", $lines);
     }
 
     protected function helpSummary(): string

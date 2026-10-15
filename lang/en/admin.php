@@ -20,5 +20,6 @@ return [
         'setting'       => 'Settings',
         'help'          => 'Help',
         'barcode'       => 'Barcode',
+        'pos'           => 'Point of Sale (POS)',
     ],
 ];

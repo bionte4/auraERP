@@ -23,6 +23,7 @@ use Webkul\Partner\PartnerServiceProvider;
 use Webkul\Payment\PaymentServiceProvider;
 use Webkul\Performance\PerformanceServiceProvider;
 use Webkul\PluginManager\PluginManagerServiceProvider;
+use Webkul\Pos\PosServiceProvider;
 use Webkul\Product\ProductServiceProvider;
 use Webkul\Project\ProjectServiceProvider;
 use Webkul\Purchase\PurchaseServiceProvider;
@@ -57,6 +58,7 @@ return [
     PartnerServiceProvider::class,
     PaymentServiceProvider::class,
     PerformanceServiceProvider::class,
+    PosServiceProvider::class,
     ProductServiceProvider::class,
     ProjectServiceProvider::class,
     PurchaseServiceProvider::class,

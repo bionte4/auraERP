@@ -20,5 +20,6 @@ return [
         'setting'       => 'Pengaturan',
         'help'          => 'Bantuan',
         'barcode'       => 'Barcode',
+        'pos'           => 'Kasir (POS)',
     ],
 ];
