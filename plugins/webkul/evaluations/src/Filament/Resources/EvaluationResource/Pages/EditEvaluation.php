@@ -9,6 +9,7 @@ use Filament\Actions\ViewAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Webkul\Evaluation\Enums\EvaluationStatus;
 use Webkul\Evaluation\Filament\Resources\EvaluationResource;
 use Webkul\Evaluation\Models\Evaluation;
 
@@ -26,6 +27,32 @@ class EditEvaluation extends EditRecord
         }
 
         return $data;
+    }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        /** @var Evaluation $record */
+        $record = $this->getRecord();
+
+        if ($record->status === EvaluationStatus::Draft || ($data['status'] ?? null) === EvaluationStatus::Draft->value) {
+            $data['status'] = EvaluationStatus::InReview->value;
+        }
+
+        return $data;
+    }
+
+    protected function afterSave(): void
+    {
+        /** @var Evaluation $record */
+        $record = $this->getRecord();
+
+        $record->recalculateStatusFromSignatures();
+
+        if ($record->status === EvaluationStatus::Draft) {
+            $record->status = EvaluationStatus::InReview;
+        }
+
+        $record->saveQuietly();
     }
 
     protected function getHeaderActions(): array

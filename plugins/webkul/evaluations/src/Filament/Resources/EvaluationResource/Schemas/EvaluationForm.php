@@ -74,7 +74,7 @@ class EvaluationForm
                             ->placeholder('Contoh: Evaluasi Triwulan I PKWT - Okt s/d Des 2026')
                             ->required()
                             ->maxLength(255)
-                            ->columnSpan(2),
+                            ->columnSpan(1),
                         Select::make('evaluation_type')
                             ->label('Jenis / Periode Evaluasi')
                             ->options(EvaluationType::options())
@@ -91,13 +91,21 @@ class EvaluationForm
                                     $set('goal_achievement_percentage', null);
                                 }
                             }),
-                        Select::make('status')
-                            ->label(__('evaluations::filament/resources/evaluation.form.status'))
-                            ->options(EvaluationStatus::options())
+                        Hidden::make('status')
+                            ->default(EvaluationStatus::InReview->value),
+                        DatePicker::make('period_start')
+                            ->label('Periode Mulai (Period Start)')
                             ->required()
-                            ->default(EvaluationStatus::Draft->value),
+                            ->native(false)
+                            ->default(now()->startOfQuarter()->toDateString()),
+                        DatePicker::make('period_end')
+                            ->label('Periode Selesai (Period End)')
+                            ->required()
+                            ->native(false)
+                            ->default(now()->endOfQuarter()->toDateString())
+                            ->minDate(fn (Get $get): mixed => $get('period_start')),
                         Select::make('employee_id')
-                            ->label(__('evaluations::filament/resources/evaluation.form.employee'))
+                            ->label('Karyawan yang Dinilai (Employee)')
                             ->relationship('employee', 'name')
                             ->searchable()
                             ->preload()
@@ -141,6 +149,9 @@ class EvaluationForm
                                 $set('job_title_snapshot', $employee->job_title ?: $employee->job?->name);
                                 $set('work_location_name', $employee->workLocation?->name);
                             }),
+                        TextInput::make('employee_nik')
+                            ->label('NIK Karyawan')
+                            ->maxLength(100),
                         Select::make('reviewer_id')
                             ->label('Approver Level 1: Penilai (Atasan Langsung / Pembimbing)')
                             ->relationship('reviewer', 'name')
@@ -153,20 +164,6 @@ class EvaluationForm
                             ->searchable()
                             ->preload()
                             ->helperText('Otomatis terisi dari Atasan Level 2 / Manager Departemen di struktur organisasi.'),
-                        DatePicker::make('period_start')
-                            ->label(__('evaluations::filament/resources/evaluation.form.period-start'))
-                            ->required()
-                            ->native(false)
-                            ->default(now()->startOfQuarter()->toDateString()),
-                        DatePicker::make('period_end')
-                            ->label(__('evaluations::filament/resources/evaluation.form.period-end'))
-                            ->required()
-                            ->native(false)
-                            ->default(now()->endOfQuarter()->toDateString())
-                            ->minDate(fn (Get $get): mixed => $get('period_start')),
-                        TextInput::make('employee_nik')
-                            ->label('NIK Karyawan')
-                            ->maxLength(100),
                         DatePicker::make('join_date')
                             ->label('Tanggal Masuk')
                             ->native(false),
@@ -189,6 +186,7 @@ class EvaluationForm
                         Toggle::make('is_final_period')
                             ->label('Periode Penilaian Akhir / Keputusan Kontrak')
                             ->helperText('Aktifkan jika evaluasi ini digunakan untuk keputusan akhir (pengangkatan tetap / perpanjangan / outtask-outsource / terminasi).')
+                            ->columnSpanFull()
                             ->live(),
                     ])
                     ->columns(2),

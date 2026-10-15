@@ -2,6 +2,6 @@
 
 return [
     'draft'     => 'Draft',
-    'in_review' => 'In review',
+    'in_review' => 'In Progress',
     'completed' => 'Completed',
 ];

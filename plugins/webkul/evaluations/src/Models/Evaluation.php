@@ -543,7 +543,7 @@ class Evaluation extends Model
 
         if ($this->reviewer_signed_at && $this->employee_signed_at && $l2Complete) {
             $this->status = EvaluationStatus::Completed;
-        } elseif ($this->reviewer_signed_at || $this->employee_signed_at || $this->gm_signed_at) {
+        } else {
             $this->status = EvaluationStatus::InReview;
         }
     }
