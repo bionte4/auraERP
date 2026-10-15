@@ -9,6 +9,9 @@ use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Webkul\Evaluation\Exports\EvaluationsMonitoringExport;
 use Webkul\Evaluation\Filament\Resources\EvaluationResource;
 use Webkul\Evaluation\Models\Evaluation;
 
@@ -32,7 +35,7 @@ class EvaluationApprovalProgressWidget extends BaseWidget
      */
     protected function buildQuery(): Builder
     {
-        $query = Evaluation::query()->with(['employee', 'reviewer', 'gmApprover', 'ratings']);
+        $query = Evaluation::query()->with(['employee.department', 'employee.employmentType', 'reviewer', 'gmApprover', 'ratings']);
 
         if (! empty($this->pageFilters['evaluation_type'])) {
             $query->whereIn('evaluation_type', (array) $this->pageFilters['evaluation_type']);
@@ -58,6 +61,18 @@ class EvaluationApprovalProgressWidget extends BaseWidget
         return $table
             ->query($this->buildQuery())
             ->defaultPaginationPageOption(10)
+            ->headerActions([
+                Action::make('export_excel')
+                    ->label('Download Excel (.xlsx)')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('success')
+                    ->action(function (): BinaryFileResponse {
+                        $records = $this->buildQuery()->get();
+                        $filename = 'Monitoring-Evaluasi-Karyawan-'.now()->format('Y-m-d_His').'.xlsx';
+
+                        return Excel::download(new EvaluationsMonitoringExport($records), $filename);
+                    }),
+            ])
             ->columns([
                 TextColumn::make('employee.name')
                     ->label('Karyawan')
