@@ -1,53 +1,62 @@
 # WORKING INSTRUCTION (WI) — AURA ERP
 
-Dokumen ini berisi panduan operasional lengkap untuk seluruh modul kustom yang telah dibangun di **auraERP** (`https://opsora.my.id` / `https://auraerp.my.id`).
+Dokumen ini berisi panduan operasional lengkap untuk seluruh modul kustom, sistem hak akses berjenjang (**RBAC & Struktur Organisasi**), **Evaluasi Kinerja PKWT & Outtask/Outsource**, **Dashboard Evaluasi**, **Point of Sale (POS)**, **Manajemen Proyek**, **Manajemen Aset**, serta **auraAI** di **auraERP** (`https://opsora.my.id` / `https://auraerp.my.id`).
 
 ---
 
-## 1. Akun Login & Hak Akses
+## 1. Akun Login, Peran Standar (RBAC) & Level Akses Struktur Organisasi
 
 Halaman login Admin Panel: **`/admin/login`**
 
-| Peran | Email | Password | Hak Akses Utama |
-| :--- | :--- | :--- | :--- |
-| **HRD / Manajemen** | `hrd@opsora.my.id` | `Demo-hrd-2026` | Mengelola Karyawan, Kontrak, Departemen, Lokasi Kerja (Geofence), Rekap Absensi, Rencana Kinerja (KPI), Evaluasi Kinerja, Customer/Vendor, Proyek & Nilai Proyek, Aset/Peralatan, Bulk Import Excel/CSV, dan `auraAI` seluruh perusahaan. |
-| **Karyawan (Staf)** | `karyawan@opsora.my.id` | `Demo-karyawan-2026` | Melakukan Absensi (`/admin/absen`), melihat riwayat absensi pribadi, melihat peralatan milik sendiri, dan menggunakan `auraAI` khusus untuk data pribadinya sendiri. |
+### A. 5 Role Standar Sistem (`php artisan security:sync-rbac`)
 
-*(Untuk membuat ulang akun demo kapan saja di server: `php8.4 artisan db:seed --class="Webkul\\Security\\Database\\Seeders\\DemoUserSeeder" --no-interaction`)*
+| Role | Hak Akses Utama |
+| :--- | :--- |
+| **Admin** | Akses penuh ke seluruh modul, pengaturan perusahaan, manajemen User, Role & Permission, dan instalasi plugin. |
+| **HRD** | Mengelola Karyawan, Kontrak, Departemen, Lokasi Kerja (Geofence), Rekap Absensi, Cuti/Izin (`Time Off`), Rencana Kinerja (`Performance Plans`), Evaluasi Kinerja (`Evaluations`), Dashboard Evaluasi + Export Excel/PDF, Rekrutmen, dan Aset Karyawan. |
+| **Operation Manager** | Mengelola Proyek (`Projects`), Tugas (`Tasks`), `Timesheets`, Gudang & Stok (`Inventory` & `Products`), Perawatan & Aset (`Maintenance` & `Equipment`), Pembelian (`Purchases`), Penjualan (`Sales`), Mitra (`Partners`), serta melakukan **Penilaian Kinerja (L1/L2)** dan **Approval Cuti/Absensi** untuk tim/bawahannya. |
+| **Kasir** | Mengoperasikan **POS Terminal** (`/admin/pos-terminal`), membuka/menutup sesi shift kasir (`POS Sessions`), membuat transaksi penjualan kasir (`POS Orders`), melihat katalog produk & pelanggan, serta melakukan absensi (`/admin/absen`). |
+| **Staff (Karyawan)** | Self-service karyawan: melakukan Absensi (`/admin/absen`), mengajukan & memantau Cuti/Izin pribadi (`My Time Off` & `My Allocations`), mengisi `Timesheet` & tugas proyek, melihat `Performance Plan` & mengonfirmasi hasil `Evaluation` miliknya sendiri, serta menggunakan `auraAI` untuk data pribadinya. |
+
+### B. 3 Tingkatan Scope Data (`Resource Permission` pada Menu Settings → Users)
+Saat membuat atau mengedit User di **Settings → Users**, terdapat pengaturan **Resource Permission**:
+1. **`Global`**: User dapat melihat dan mengelola seluruh data di perusahaan sesuai izin modulnya (cocok untuk Direksi, HRD Pusat, Admin).
+2. **`Group` (Tim & Hirarki Struktur Organisasi)**: User otomatis dapat mengakses data milik:
+   - Dirinya sendiri,
+   - Rekan satu tim (`Teams`), **DAN**
+   - **Seluruh bawahan langsung (Level 1) maupun bawahan tidak langsung (Level 2 dst.)** berdasarkan pohon struktur organisasi karyawan (`Manager / parent_id` serta `Department Manager`).
+3. **`Individual`**: User hanya dapat melihat dan mengelola data miliknya sendiri (*Self-Service*).
+
+*(Akun Demo: `hrd@opsora.my.id` / `Demo-hrd-2026` dan `karyawan@opsora.my.id` / `Demo-karyawan-2026`. Untuk menyinkronkan ulang seluruh Role & Permission kapan saja: `sudo -u www-data php artisan security:sync-rbac`)*
 
 ---
 
-## 2. Pengelolaan Karyawan, Tipe Karyawan, Alert Kontrak (≤ 30 Hari) & Bulk Import
+## 2. Pengelolaan Karyawan, Struktur Organisasi, Alert Kontrak (≤ 30 Hari) & Bulk Import
 
-### A. Mengatur Departemen
-1. Buka menu **Employees → Configurations → Departments** (`/admin/employees/departments`).
-2. Klik **New Department** untuk membuat departemen baru atau klik **Edit** pada departemen yang ada untuk mengatur *Manager* dan *Parent Department*.
+### A. Mengatur Departemen & Hirarki Atasan Berjenjang
+1. Buka menu **Employees → Configurations → Departments** (`/admin/employees/departments`) untuk mengatur *Manager* Kepala Departemen dan *Parent Department*.
+2. Buka menu **Employees → Employees** (`/admin/employees/employees`), pilih karyawan, lalu pada bagian **Work Information**:
+   - **Manager (`Atasan Langsung / Level 1`)**: Pilih atasan langsung karyawan tersebut.
+   - Sistem secara otomatis mengenali **Atasan dari Manager** (atau Kepala Departemen) sebagai **Approver Level 2** untuk keperluan persetujuan cuti berjenjang dan evaluasi kinerja.
 
 ### B. Mengisi Tipe Karyawan & Masa Kontrak
-1. Buka menu **Employees → Employees** (`/admin/employees/employees`).
-2. Klik **New Employee** atau pilih **Edit** pada karyawan yang sudah ada.
-3. Masuk ke tab **Work Information (Informasi Kerja)** → bagian **Organization Details (Detail Organisasi)**:
-   - **Employment Type (Tipe Karyawan):** Pilih salah satu dari:
-     - `Permanent`
-     - `Contract`
-     - `Konsultan`
-     - `Freelance`
+1. Masuk ke tab **Work Information (Informasi Kerja)** → bagian **Organization Details (Detail Organisasi)**:
+   - **Employment Type (Tipe Karyawan):** Pilih salah satu (`Permanent`, `Contract` / PKWT, `Konsultan`, `Freelance`, atau `Outsource / Outtask`).
    - **Start Join Date (Tanggal Mulai Bergabung):** Pilih tanggal mulai bekerja.
-   - **End Contract Date (Tanggal Berakhir Kontrak):** Isi tanggal berakhir kontrak (khusus karyawan *Contract / Konsultan / Freelance*; kosongkan untuk *Permanent*).
-4. Klik **Save Changes**.
+   - **End Contract Date (Tanggal Berakhir Kontrak):** Isi tanggal berakhir kontrak (kosongkan untuk *Permanent*).
+2. Klik **Save Changes**.
 
 ### C. Bulk Import Karyawan (Excel `.xlsx` / CSV)
 1. Buka menu **Employees → Employees** (`/admin/employees/employees`).
 2. Klik tombol **`Unduh Template` (`Download Template`)** di pojok kanan atas untuk mengunduh file `template-import-employees.xlsx`.
 3. Isi kolom: `name`, `work_email`, `work_phone`, `mobile_phone`, `job_title`, `department`, `employment_type`, `join_date`, `contract_end_date`, `identification_id`.
-4. Klik tombol **`Impor Excel / CSV` (`Import Excel / CSV`)**, unggah file yang sudah diisi, lalu klik **Submit**. Jika `work_email` sudah ada, data karyawan tersebut akan diperbarui otomatis.
+4. Klik tombol **`Impor Excel / CSV` (`Import Excel / CSV`)**, unggah file yang sudah diisi, lalu klik **Submit**.
 
-### D. Memantau Kontrak yang Akan Habis (Alert 30 Hari)
-- **Tab Filter Cepat:** Di halaman daftar **Employees**, klik tab **`Kontrak Segera Berakhir` (`Expiring Contracts`)** untuk menampilkan seluruh karyawan aktif yang masa kontraknya tersisa `≤ 30 hari` atau sudah terlewat.
-- **Badge Peringatan:** Pada kartu karyawan akan muncul badge kuning (**`X hari lagi`**) bila sisa kontrak `≤ 30 hari`, dan badge merah bila kontrak telah berakhir.
-- **Notifikasi Otomatis:**
-  - Muncul *toast* peringatan otomatis saat HRD/Admin membuka halaman **Employees**.
-  - Dikirimkan otomatis ke **Lonceng Notifikasi** di pojok kanan atas setiap hari pukul **08:00** pagi melalui scheduler Laravel (`php8.4 artisan employees:notify-expiring-contracts`).
+### D. Memantau Kontrak yang Akan Habis (Alert 30 Hari) & Approval Cuti Berjenjang (SLA 24 Jam)
+- **Tab Filter Cepat Kontrak:** Klik tab **`Kontrak Segera Berakhir` (`Expiring Contracts`)** di daftar **Employees** untuk melihat karyawan dengan sisa kontrak `≤ 30 hari`.
+- **Approval Cuti/Izin Berjenjang & Eskalasi Otomatis 24 Jam (`Time Off`):**
+  - Saat karyawan mengajukan izin/cuti di **Time Off → My Time Off**, sistem otomatis menetapkan **Approver Level 1 (Atasan Langsung)** dan **Approver Level 2 (Atasan dari Atasan / Kepala Dept)**.
+  - Apabila dalam **24 jam** Approver Level 1 belum memberikan persetujuan, scheduler (`php artisan time-off:escalate-pending-approvals`) otomatis mengeskalasi pengajuan tersebut ke **Approver Level 2 & HRD**.
 
 ---
 
@@ -55,162 +64,156 @@ Halaman login Admin Panel: **`/admin/login`**
 
 ### A. Mendaftarkan Lokasi Kerja / Proyek (Oleh HRD / Admin)
 1. Buka menu **Employees → Attendance ▾ → Lokasi kerja (`Work sites`)** (`/admin/employees/attendance-sites`).
-2. Klik **Lokasi kerja baru (`New work site`)**.
-3. Lengkapi data lokasi:
-   - **Nama lokasi:** Contoh: *Kantor Pusat*, *Site Proyek Pelanggan A*.
-   - **Latitude & Longitude:** Klik tombol **Gunakan posisi GPS saat ini** bila Anda sedang berada di lokasi tersebut, atau tempel koordinat dari Google Maps.
-   - **Radius diizinkan (meter):** Jarak maksimal yang diperbolehkan untuk absen (antara `20` s/d `5000` meter, misal `150` m).
-   - **Aktif:** Pastikan toggle dalam keadaan aktif.
-4. Klik **Save**.
+2. Klik **Lokasi kerja baru (`New work site`)**, isi **Nama lokasi**, **Latitude & Longitude** (bisa klik **Gunakan posisi GPS saat ini**), dan **Radius diizinkan (meter)** (`20` s/d `5000` meter).
+3. Pastikan toggle **Aktif** menyala, lalu klik **Save**.
 
 ### B. Cara Karyawan Melakukan Clock In / Clock Out
 1. Buka menu **Employees → Attendance ▾ → Absen (`Clock`)** (`/admin/absen`).
-2. Izinkan akses **Lokasi (GPS)** pada browser. Sistem otomatis menghitung jarak (*Haversine*) ke seluruh **Lokasi Kerja** aktif dan memilih titik terdekat.
+2. Izinkan akses **Lokasi (GPS)** pada browser. Sistem otomatis menghitung jarak ke lokasi kerja aktif terdekat.
 3. **Aturan Kamera Otomatis Berdasarkan Perangkat:**
-   - **HP / Smartphone / Tablet:** Kamera depan otomatis menyala. Sistem melakukan verifikasi kecocokan wajah (*Face Matching*) dan mengambil foto selfie sebelum tombol **Clock In / Clock Out** diaktifkan.
-   - **Laptop / PC / Netbook:** Kamera **tidak dibuka**. Karyawan cukup berada di dalam radius GPS lokasi kerja untuk langsung menekan tombol **Clock In / Clock Out**.
+   - **HP / Smartphone / Tablet:** Kamera depan otomatis menyala untuk verifikasi wajah (*Face Matching*) dan foto selfie sebelum tombol **Clock In / Clock Out** aktif.
+   - **Laptop / PC / Netbook:** Kamera **tidak dibuka**; karyawan cukup berada di dalam radius GPS lokasi kerja untuk langsung menekan tombol **Clock In / Clock Out**.
 
 ---
 
-## 4. Rencana Kinerja (KPI) & Evaluasi Kinerja
+## 4. Goal Setting (KPI), Evaluasi Kinerja Triwulan PKWT & Outsource/Outtask, serta Dashboard Evaluasi
 
-1. **Rencana Kinerja (KPI / Target):**
-   - Buka menu **Employees → Performance ▾ → Performance plans** (`/admin/performance/plans`).
-   - Buat rencana kinerja untuk karyawan dan tentukan periode tanggalnya.
-   - Pada bagian bawah (**Goals / Sasaran**), tambahkan butir-butir KPI beserta **Weight (Bobot %)** dan **Progress (%)**. Skor tertimbang dihitung otomatis.
-2. **Evaluasi Kinerja (Penilaian 1–5):**
-   - Buka menu **Employees → Performance ▾ → Performance evaluation** (`/admin/evaluations/evaluations`).
-   - Buat dokumen evaluasi karyawan, lalu isi nilai kriteria pada tabel **Ratings** (skala `1` s/d `5` beserta bobot).
+### A. Rencana Kinerja / Goal Setting (`Performance Plans`)
+1. Buka menu **Employees → Performance Plans** (`/admin/performance/plans`).
+2. Buat program Goal Setting karyawan, tentukan periode mulai & selesai, lalu tambahkan butir-butir **Goals / Sasaran** beserta **Weight (Bobot %)** dan **Progress (%)**.
+3. Sistem menghitung **Skor Tertimbang (%)** secara otomatis yang langsung terhubung ke form Evaluasi Kinerja.
 
----
+### B. Formulir Evaluasi Kinerja Karyawan (`Evaluations`)
+Buka menu **Employees → Performance Plans → Evaluations** (`/admin/evaluations/evaluations`) lalu klik **New Evaluation**:
 
-## 5. Pengelolaan Customer & Vendor (Beserta Bulk Import)
+1. **Bagian A & B — Identitas Evaluasi & Data Karyawan (Layout 2 Kolom Simetris & Status Otomatis):**
+   - **Baris 1:** `Judul Evaluasi` (Kiri) & `Jenis / Periode Evaluasi` (Kanan: `Triwulan I PKWT`, `Triwulan II PKWT`, `Triwulan III PKWT`, `Triwulan IV PKWT`, `Penilaian Akhir PKWT`, `Evaluasi Karyawan Outtask / Outsource`, atau `Evaluasi Tahunan / Reguler`).
+   - **Baris 2:** `Periode Mulai (Period Start)` (Kiri) & `Periode Selesai (Period End)` (Kanan) — berdampingan sejajar.
+   - **Baris 3:** `Karyawan yang Dinilai (Employee)` (Kiri) & `NIK Karyawan` (Kanan).
+   - **Baris 4:** `Approver Level 1: Penilai (Atasan Langsung / Pembimbing)` (Kiri) & `Approver Level 2: Atasan Penilai / Kepala Departemen (Berjenjang)` (Kanan).
+   - Saat Anda memilih **Karyawan**, sistem **otomatis mengisi** `NIK`, `Tanggal Masuk`, `Jabatan`, `Departemen`, `Lokasi Kerja`, serta **`Approver Level 1`** dan **`Approver Level 2`** langsung dari pohon struktur organisasi.
+   - **Status Otomatis `In Progress`:** Penilai tidak perlu memilih status `Draft`. Begitu evaluasi dibuat (**Create**) atau disimpan (**Save**), status otomatis menjadi **`In Progress`** dan akan berubah menjadi **`Completed`** secara otomatis setelah seluruh tanda tangan berjenjang lengkap.
 
-### A. Lokasi Menu Customer & Vendor
-- **Semua Kontak (Customer & Vendor):** Menu **Contact → Contacts** (`/admin/contact/contacts`).
-- **Khusus Customer:** Menu **Sales → Orders → Customers** (`/admin/sales/orders/customers`) atau **Invoices → Customers** (`/admin/invoices/customers`).
+2. **Bagian C — Pencapaian Goal Karyawan (Khusus Non-Outsource / PKWT):**
+   - Pilih **Link Program Goal Setting**, maka **Rata-rata Pencapaian Goal (%)** terisi otomatis (Standar kelulusan pengangkatan tetap: **minimal 95%**).
+   - **Aturan Otomatis Karyawan Outsource / Outtask:** Apabila karyawan yang dinilai berstatus **Outsource / Outtask** (atau jenis evaluasi/rekomendasi dipilih untuk *Outtask / Outsource*), **Bagian C (Pencapaian Goal Karyawan) otomatis disembunyikan/dihilangkan** dari form, halaman detail, dan cetakan PDF.
 
-### B. Bulk Import Customer & Vendor (Excel `.xlsx` / CSV)
-1. Buka halaman **Contacts** (`/admin/contact/contacts`) atau **Customers** (`/admin/sales/orders/customers`).
-2. Klik **`Unduh Template` (`Download Template`)** untuk mengunduh file `template-import-customers-vendors.xlsx`.
-3. Isi kolom: `name`, `role` (`customer`, `vendor`, atau `both`), `account_type` (`company` / `individual`), `email`, `phone`, `mobile`, `tax_id`, `website`, `street1`, `city`, `zip`, `reference`.
-4. Klik **`Impor Excel / CSV` (`Import Excel / CSV`)** dan unggah file Anda.
+3. **Bagian D — Manajemen Pekerjaan (Poin 1 – 10) & Bar Total/Rata-rata Live:**
+   - Form langsung menampilkan **10 Aspek Penilaian Manajemen Pekerjaan standar** (Kualitas Hasil Kerja, Kuantitas Hasil Kerja, Pengetahuan Pekerjaan, Keandalan, Inisiatif, Kerjasama, Kehadiran, Kepatuhan Aturan/K3, Komunikasi, dan Tanggung Jawab).
+   - Pilih **Rating (Skala 1 – 5)** dan isi **Komentar / Justifikasi Penilai** pada setiap poin.
+   - Di bagian paling bawah kotak Poin D terdapat bar otomatis **`Total Nilai (Σ Rating) / Rata-rata Nilai (Σ Rating / 10)`** yang menghitung **Total / Rata-rata** secara *real-time* (contoh: `36 / 3.60`) beserta badge **`Memenuhi Standar (≥ 3.00)`**.
 
----
+4. **Bagian E, F & G — Penilaian Kompetensi, Catatan Penilai & Usulan Pengembangan:**
+   - Isi **Jumlah Kompetensi yang Memenuhi Requirement** dan **Total Kompetensi yang Dipersyaratkan** (Standar kelulusan: **minimal 90%**).
+   - Isi **F.1 Aspek Kekuatan**, **F.2 Aspek yang Perlu Dikembangkan**, **G. Usulan Pengembangan (Training/Coaching/Penugasan)**, serta **Tanggapan Karyawan**.
 
-## 6. Manajemen Proyek Multi-Customer, Nilai Proyek, Reminder 3-2-1 Bulan & Bulk Import
+5. **Bagian H, I & J — 6 Opsi Rekomendasi Keputusan & Approval Berjenjang 3 Tahap:**
+   - Sistem mengevaluasi otomatis apakah karyawan PKWT memenuhi minimal **2 dari 3 kriteria** (`Goal ≥ 95%`, `Manajemen Pekerjaan ≥ 3.00`, `Kompetensi ≥ 90%`).
+   - Pilih salah satu dari **6 Kesimpulan Rekomendasi (Poin I)**:
+     1. **`Diangkat Sebagai Karyawan Tetap`** (muncul input *Tanggal Efektif Pengangkatan*)
+     2. **`Diperpanjang Masa PKWT`** (muncul input *Durasi Perpanjangan Bulan*)
+     3. **`Dialihkan ke Outtask / Outsource`** (muncul input *Durasi Kontrak Outtask/Outsource*)
+     4. **`Diperpanjang Masa Outtask/Outsource`** (muncul input *Durasi Perpanjangan Outtask/Outsource*)
+     5. **`Tidak Diperpanjang Outtask/Outsource`** (muncul input *Alasan / Pertimbangan*)
+     6. **`Tidak Direkomendasikan / Terminasi PKWT`** (muncul input *Alasan / Pertimbangan*)
+   - **Alur Tanda Tangan / Approval Berjenjang (`View Evaluation → Approve / Tanda Tangani Berjenjang`)**:
+     - **Tahap 1:** Penilai / Atasan Langsung (`Level 1`)
+     - **Tahap 2:** Konfirmasi Karyawan yang Dinilai (`Employee`)
+     - **Tahap 3:** Atasan Penilai / Kepala Departemen (`Level 2`)
+   - **Cetak Form Evaluasi (PDF):** Klik tombol **`Cetak Form Evaluasi (PDF)`** untuk mengunduh dokumen resmi evaluasi siap cetak.
 
-### A. Satu Customer Memiliki Banyak Proyek (`1 Customer → N Projects`)
-1. Buka menu **Project → Projects** (`/admin/project/projects`).
-2. Klik **New Project (`Proyek Baru`)** atau **Edit** proyek.
-3. Pada bagian **Additional Information (`Informasi Tambahan`)**:
-   - **Customer (`Pelanggan`):** Pilih Customer dari daftar (sudah otomatis disaring dari akun karyawan/internal), atau klik tombol **`+`** untuk membuat Customer baru. Satu Customer dapat dipilih pada banyak proyek berbeda.
-   - **Start Date (`Tanggal Mulai Proyek`) & End Date (`Tanggal Akhir Proyek`):** Tentukan periode kontrak/pelaksanaan proyek.
-   - **Project Value (`Nilai Proyek`):** Isi nilai kontrak/anggaran proyek dalam Rupiah (`Rp`).
-4. Anda juga dapat melihat seluruh proyek milik suatu Customer beserta **Total Proyek** dan **Total Nilai Proyek (`Rp`)** langsung dari halaman detail Customer (**Contact → Contacts → View Customer → Tab Proyek**).
-
-### B. Reminder Notifikasi Berjenjang 3, 2, dan 1 Bulan Sebelum `End Date` Proyek
-Sistem memantau kolom `end_date` pada seluruh proyek aktif dan mengirimkan notifikasi lonceng secara berjenjang:
-- **`Pengingat 3 Bulan` (`3_months`)**: Saat sisa waktu proyek memasuki `61 – 90 hari` (hingga 3 bulan kalender) sebelum `end_date` (badge biru / `info`).
-- **`Pengingat 2 Bulan` (`2_months`)**: Saat sisa waktu proyek memasuki `31 – 60 hari` (hingga 2 bulan kalender) sebelum `end_date` (badge kuning / `warning`).
-- **`Pengingat 1 Bulan` (`1_month`)**: Saat sisa waktu proyek memasuki `0 – 30 hari` (hingga 1 bulan kalender) sebelum `end_date` (badge merah / `danger`).
-- **`Proyek Berakhir` (`expired`)**: Saat tanggal akhir proyek telah terlewat (badge merah / `danger`).
-- **Tab Filter Cepat:** Di halaman daftar **Projects**, klik tab **`Berakhir ≤ 3 Bulan` (`Ending ≤ 3 Months`)** atau **`Proyek Pelanggan` (`Customer Projects`)**.
-- **Scheduler Harian:** Berjalan otomatis setiap hari pukul **08:00** pagi (`php8.4 artisan projects:notify-expiring-projects`).
-
-### C. Bulk Import Proyek (Excel `.xlsx` / CSV)
-1. Buka menu **Project → Projects** (`/admin/project/projects`).
-2. Klik **`Unduh Template` (`Download Template`)** untuk mengunduh `template-import-projects.xlsx`.
-3. Isi kolom: `name`, `customer`, `project_manager`, `stage`, `start_date`, `end_date`, `project_value`, `allocated_hours`, `visibility`, `description`.
-4. Klik **`Impor Excel / CSV` (`Import Excel / CSV`)** dan unggah file Anda. Jika nama Customer belum ada, sistem otomatis membuatkannya sebagai Customer baru.
-
----
-
-## 7. Manajemen Aset (Karyawan, Proyek, Customer), Pergerakan Aset & Bulk Import
-
-### A. Mendaftarkan Aset / Peralatan Baru
-1. Buka menu **Maintenance → Equipment (`Peralatan`)** (`/admin/maintenance/equipments`).
-2. Klik **New Equipment (`Peralatan Baru`)**.
-3. Pada bagian **General & Product Information**:
-   - Isi **Nama Aset / Peralatan** (contoh: *MacBook Pro M4 #A01*, *Router Mikrotik Site A*), **Model**, **Serial Number**, **Effective Date**, **Cost**, dan **Warranty Expiration Date**.
-   - Pilih **Vendor (`Pemasok`)**. Daftar pilihan telah disaring agar hanya menampilkan vendor eksternal (tidak mencampur nama karyawan/user internal). Klik tombol **`+`** di sebelah kanan dropdown Vendor untuk menambahkan vendor baru secara langsung.
-4. Pada bagian **Settings (`Pengaturan`)**:
-   - **Assigned Employee (`Karyawan Pemegang Aset`):** Pilih karyawan yang memegang aset tersebut (*Owner User* akan terisi otomatis bila karyawan memiliki akun user).
-   - **Project (`Proyek`):** Pilih proyek tempat aset ditempatkan (*Customer* akan terisi otomatis mengikuti klien dari proyek tersebut).
-   - **Customer (`Customer / Klien`):** Pilih customer pemilik/lokasi proyek, atau klik tombol **`+`** untuk menambah customer baru secara langsung.
-   - **Used in location (`Digunakan di lokasi`):** Isi detail ruangan/gedung/site.
-5. Klik **Create / Save**.
-
-### B. Bulk Import Aset / Equipment (Excel `.xlsx` / CSV)
-1. Buka menu **Maintenance → Equipment** (`/admin/maintenance/equipments`).
-2. Klik **`Unduh Template` (`Download Template`)** untuk mengunduh file `template-import-equipment-assets.xlsx`.
-3. Isi kolom: `name`, `serial_no`, `model`, `category`, `vendor`, `employee`, `project`, `customer`, `location`, `cost`, `effective_date`, `warranty_date`, `note`.
-4. Klik **`Impor Excel / CSV` (`Import Excel / CSV`)** dan unggah file Anda. Jika `serial_no` sudah ada, data aset akan diperbarui otomatis.
-
-### C. Mencatat Pergerakan / Perpindahan Aset (`Relocation`, `Replacement`, `Return`, dll.)
-Setiap kali aset berpindah tangan, dipindah ke proyek/lokasi lain, diganti unit baru (*replacement*), atau dikembalikan:
-1. Buka menu **Maintenance → Equipment**, lalu klik **Edit** atau **View** pada aset terkait.
-2. Gulir ke bawah ke bagian **Riwayat Pergerakan / Perpindahan Aset (`Asset Movement / Transfer History`)**.
-3. Klik tombol **Catat Pergerakan / Pindah Aset (`Record Asset Movement`)**.
-4. Pilih **Jenis Pergerakan (`Movement Type`)**:
-   - **`Penugasan / Serah Terima (Assignment)`**: Menyerahkan aset ke karyawan, proyek, customer, dan lokasi tujuan.
-   - **`Relokasi / Pindah Lokasi (Relocation)`**: Memindahkan aset ke lokasi, proyek, atau karyawan baru. Data asal (*Dari Karyawan, Dari Proyek, Dari Lokasi*) otomatis direkam sebelum status aset diperbarui.
-   - **`Penggantian Unit (Replacement)`**:
-     - Pilih **Aset Pengganti (Unit Baru)** yang akan menggantikan unit lama ini.
-     - Isi **Lokasi Tujuan** untuk unit lama yang ditarik (contoh: *Gudang Servis*).
-     - Sistem **otomatis memindahkan** Karyawan pemegang, Proyek, Customer, dan Lokasi aktif dari unit lama ke **Unit Pengganti**, sekaligus mengosongkan penugasan pada unit lama.
-   - **`Pengembalian ke Gudang/Kantor (Return)`**: Melepas penugasan karyawan/proyek/customer dan mengembalikan lokasi aset ke gudang/kantor.
-   - **`Perbaikan / Servis (Repair)`**: Mencatat perpindahan aset untuk keperluan perbaikan.
-   - **`Afkir / Penghapusan (Scrap)`**: Melepas penugasan aset dan otomatis mengisi tanggal afkir (`scraped_at`).
-5. Isi **Tanggal Pergerakan**, **No. Referensi / BAST**, dan **Catatan / Alasan**, lalu klik **Create**.
-6. Riwayat perpindahan akan tersimpan di tabel histori dan otomatis tercatat sebagai *Note* di **Chatter** aset tersebut.
+### C. Dashboard Evaluasi Kinerja & Download Excel (`.xlsx`)
+1. Buka menu **Dashboard → Dashboard Evaluasi Kinerja** (`/admin/performance-evaluation-dashboard`) atau klik tombol **`Buka Dashboard Evaluasi`** dari halaman daftar **Evaluations**.
+2. Fitur pada Dashboard Evaluasi:
+   - **Filter Real-Time:** Filter berdasarkan *Jenis / Periode Evaluasi*, *Status Evaluasi*, *Departemen*, dan *Karyawan*.
+   - **4 Kartu KPI:** *Total Evaluasi (PKWT vs Outsource)*, *Status Evaluasi Berjalan (`In Progress` vs `Completed`)*, *Rata-rata Poin D (Manajemen Kerja)*, dan *Kelayakan Pengangkatan Tetap*.
+   - **2 Grafik Visual:** Grafik Batang *Distribusi Jenis & Periode Evaluasi* dan Grafik Doughnut *Komposisi Rekomendasi Keputusan (Poin I)*.
+   - **Tabel Monitoring Approval Berjenjang (`L1 -> Karyawan -> L2`)** dilengkapi tombol hijau **`Download Excel (.xlsx)`** untuk mengunduh rekapitulasi lengkap 22 kolom dalam format Microsoft Excel.
 
 ---
 
-## 8. Penggunaan `auraAI Assistant` (Floating Chatbot & In-Chatter AI)
+## 5. Modul Retail Point of Sale / Kasir (`POS`)
 
-### A. Floating Chatbot `✨ auraAI` (Pojok Kanan Bawah)
-1. Klik tombol melayang **`✨ auraAI`** di pojok kanan bawah layar.
-2. Klik salah satu tombol cepat (*quick chips*) atau ketik pertanyaan bebas:
-   - *“Absensi hari ini”*
-   - *“Kontrak akan berakhir”*
-   - *“Ringkasan kinerja & evaluasi”*
-   - *“Ringkasan karyawan”*
-   - *“Proyek & nilai proyek”*
-   - *“Aset proyek & karyawan”* / *“Bagaimana riwayat replacement aset?”*
-3. **Keamanan Data Otomatis (Role-Aware):**
-   - **Admin & HRD:** Menerima laporan dan ringkasan seluruh perusahaan.
-   - **Karyawan Biasa:** Hanya menerima informasi mengenai profil, sisa kontrak, absensi, nilai kinerja/evaluasi, dan daftar aset milik dirinya sendiri.
-
-### B. Tombol `✨ Tanya AI` & Mention `@ai` di Panel Chatter Dokumen
-1. Buka halaman detail (**View**) dokumen apa pun yang memiliki tombol **Chatter** (seperti Karyawan, Aset/Equipment, Proyek, Evaluasi, Rencana Kinerja).
-2. Klik tombol **Chatter**, lalu klik tombol **`✨ Tanya AI` (`Ask AI`)** di deretan atas panel Chatter:
-   - Kosongkan kolom instruksi untuk membuat **ringkasan otomatis** dokumen tersebut, atau ketik pertanyaan spesifik, lalu klik **Buat Jawaban AI di Chatter**.
-3. Atau, saat mengirim pesan melalui tombol **Message** di Chatter, cukup sertakan kata **`@ai`** di dalam isi pesan—maka `auraAI` akan otomatis membalas di thread diskusi dokumen tersebut.
+1. **Membuka Terminal Kasir:**
+   - Buka menu **Point of Sale → POS Terminal** (`/admin/pos-terminal`).
+   - Pilih **Register Kasir** dan masukkan **Modal Awal Kas (`Opening Cash`)** untuk memulai shift baru.
+2. **Transaksi Penjualan & Struk Thermal:**
+   - Cari produk melalui kolom pencarian atau scan barcode, atur jumlah/diskon, pilih pelanggan (opsional), lalu pilih metode pembayaran (`Cash / Tunai`, `QRIS`, `Debit / Kartu`, `Transfer`).
+   - Saat pembayaran selesai, stok produk otomatis berkurang dan layar menampilkan **Struk Thermal (`58mm` / `80mm`)** siap cetak.
+3. **Menutup Shift Kasir (`Close Session`):**
+   - Klik **Tutup Shift**, masukkan **Kas Aktual Dihitung (`Closing Cash`)**, dan sistem otomatis menghitung selisih kas (*difference*) beserta rekap penjualan shift tersebut.
 
 ---
 
-## 9. Ringkasan Semua Menu yang Mendukung Bulk Import Excel (`.xlsx`) / CSV
+## 6. Pengelolaan Customer & Vendor (Beserta Bulk Import)
 
-| Modul | Halaman / URL | Nama File Template |
+1. **Lokasi Menu:**
+   - **Semua Kontak (Customer & Vendor):** Menu **Contact → Contacts** (`/admin/contact/contacts`).
+   - **Khusus Customer:** Menu **Sales → Orders → Customers** (`/admin/sales/orders/customers`).
+2. **Bulk Import Customer & Vendor (Excel `.xlsx` / CSV):**
+   - Klik **`Unduh Template`** (`template-import-customers-vendors.xlsx`), isi kolom `name`, `role` (`customer`/`vendor`/`both`), `account_type`, `email`, `phone`, `mobile`, `tax_id`, `website`, `street1`, `city`, `zip`, `reference`, lalu klik **`Impor Excel / CSV`**.
+
+---
+
+## 7. Manajemen Proyek Multi-Customer, Nilai Proyek, Reminder 3-2-1 Bulan & Bulk Import
+
+1. **Satu Customer Memiliki Banyak Proyek (`1 Customer → N Projects`):**
+   - Buka menu **Project → Projects** (`/admin/project/projects`).
+   - Pilih **Customer**, **Start Date & End Date**, serta **Project Value (`Nilai Proyek Rp`)**.
+   - Daftar seluruh proyek dan total nilai kontrak per Customer dapat dilihat langsung pada tab **Proyek** di halaman detail Customer.
+2. **Reminder Berjenjang 3, 2, dan 1 Bulan Sebelum `End Date` Proyek:**
+   - Sistem memberi badge peringatan dan notifikasi otomatis pada sisa waktu `61–90 hari` (**3 Bulan**), `31–60 hari` (**2 Bulan**), `0–30 hari` (**1 Bulan**), dan saat **Berakhir** (`php artisan projects:notify-expiring-projects`).
+3. **Bulk Import Proyek:**
+   - Klik **`Unduh Template`** (`template-import-projects.xlsx`) di halaman **Projects**, lalu unggah melalui tombol **`Impor Excel / CSV`**.
+
+---
+
+## 8. Manajemen Aset (Karyawan, Proyek, Customer), Pergerakan Aset & Bulk Import
+
+1. **Mendaftarkan & Mengimpor Aset (`Maintenance → Equipment`):**
+   - Buka `/admin/maintenance/equipments` untuk menambah aset beserta **Vendor**, **Assigned Employee**, **Project**, **Customer**, dan **Lokasi**.
+   - Tersedia tombol **`Unduh Template`** (`template-import-equipment-assets.xlsx`) dan **`Impor Excel / CSV`**.
+2. **Mencatat Pergerakan / Perpindahan Aset (`Assignment`, `Relocation`, `Replacement`, `Return`, `Repair`, `Scrap`):**
+   - Buka detail aset → bagian **Riwayat Pergerakan / Perpindahan Aset** → klik **Catat Pergerakan / Pindah Aset**.
+   - Untuk **Penggantian Unit (`Replacement`)**, sistem otomatis memindahkan karyawan pemegang, proyek, customer, dan lokasi dari unit lama ke unit pengganti baru.
+
+---
+
+## 9. Penggunaan `auraAI Assistant` & Pengaturan Tema Modern (`Branding`)
+
+1. **Floating Chatbot `✨ auraAI` & Tombol `✨ Tanya AI` di Chatter:**
+   - Klik tombol **`✨ auraAI`** di pojok kanan bawah atau gunakan **`✨ Tanya AI`** / mention **`@ai`** di panel Chatter dokumen apa pun. Data yang disajikan otomatis mengikuti hak akses & scope user yang sedang login.
+2. **Preset Tema Warna 1-Klik (`Settings → Manage Branding`):**
+   - Buka **Settings → General → Manage Branding** untuk memilih tema warna instan (`Aura Indigo`, `Emerald Fresh`, `Ocean Blue`, `Royal Violet`, `Sunset Amber`, `Rose Modern`, atau `Slate Minimal`).
+
+---
+
+## 10. Ringkasan Menu yang Mendukung Export / Bulk Import Excel (`.xlsx`)
+
+| Modul | Halaman / URL | Fitur Excel (`.xlsx`) |
 | :--- | :--- | :--- |
-| **Employees (Karyawan)** | `/admin/employees/employees` | `template-import-employees.xlsx` |
-| **Customers & Vendors** | `/admin/contact/contacts` & `/admin/sales/orders/customers` | `template-import-customers-vendors.xlsx` |
-| **Projects (Proyek)** | `/admin/project/projects` | `template-import-projects.xlsx` |
-| **Equipment (Aset)** | `/admin/maintenance/equipments` | `template-import-equipment-assets.xlsx` |
+| **Evaluasi Kinerja (Monitoring & Dashboard)** | `/admin/performance-evaluation-dashboard` & `/admin/evaluations/evaluations` | **Export Excel (`Download Excel .xlsx`)** — 22 kolom nilai & status approval berjenjang |
+| **Employees (Karyawan)** | `/admin/employees/employees` | **Template & Bulk Import** (`template-import-employees.xlsx`) |
+| **Customers & Vendors** | `/admin/contact/contacts` | **Template & Bulk Import** (`template-import-customers-vendors.xlsx`) |
+| **Projects (Proyek)** | `/admin/project/projects` | **Template & Bulk Import** (`template-import-projects.xlsx`) |
+| **Equipment (Aset)** | `/admin/maintenance/equipments` | **Template & Bulk Import** (`template-import-equipment-assets.xlsx`) |
 
 ---
 
-## 10. Panduan Update / Deploy di Server VPS
+## 11. Panduan Update / Deploy di Server VPS
 
-Setiap kali ada pembaruan kode dari GitHub (`bionte4/auraERP`), jalankan perintah berikut di VPS (`ubuntu@VM-18-102-ubuntu`):
+Setiap kali ada pembaruan kode dari GitHub (`bionte4/auraERP` branch `main`), jalankan perintah berikut di VPS (`ubuntu@VM-18-102-ubuntu`):
 
 ```bash
-cd /var/www/auraerp
-git pull origin main
-php8.4 artisan migrate --force --no-interaction
-php8.4 artisan employees:notify-expiring-contracts
-php8.4 artisan projects:notify-expiring-projects
-php8.4 artisan shield:generate --all --panel=admin --no-interaction
-php8.4 artisan optimize:clear
+cd /var/www/auraerp && \
+sudo chown -R ubuntu:www-data /var/www/auraerp && \
+git fetch origin main && \
+git reset --hard origin/main && \
+sudo chown -R www-data:www-data storage bootstrap/cache && \
+sudo chmod -R ug+rwx storage bootstrap/cache && \
+sudo -u www-data php artisan migrate --force --no-interaction && \
+sudo -u www-data php artisan security:sync-rbac && \
+sudo -u www-data php artisan employees:notify-expiring-contracts && \
+sudo -u www-data php artisan projects:notify-expiring-projects && \
+sudo -u www-data php artisan optimize:clear
 ```
