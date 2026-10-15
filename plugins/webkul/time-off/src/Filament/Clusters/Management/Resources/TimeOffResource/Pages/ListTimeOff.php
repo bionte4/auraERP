@@ -2,14 +2,18 @@
 
 namespace Webkul\TimeOff\Filament\Clusters\Management\Resources\TimeOffResource\Pages;
 
+use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Webkul\Employee\Models\Employee;
 use Webkul\TableViews\Filament\Components\PresetView;
 use Webkul\TableViews\Filament\Concerns\HasTableViews;
 use Webkul\TimeOff\Enums\State;
 use Webkul\TimeOff\Filament\Clusters\Management\Resources\TimeOffResource;
+use Webkul\TimeOff\Services\ApprovalEscalationService;
 
 class ListTimeOff extends ListRecords
 {
@@ -54,21 +58,43 @@ class ListTimeOff extends ListRecords
             'my_team' => PresetView::make(__('time-off::filament/clusters/management/resources/time-off/pages/list-time-off.preset-views.my-team'))
                 ->icon('heroicon-o-users')
                 ->modifyQueryUsing(function (Builder $query) {
-                    $currentUserId = Auth::user()->id;
+                    $currentUserId = Auth::id();
+                    $managerEmployee = Employee::withoutGlobalScopes()->where('user_id', $currentUserId)->first();
+                    $subordinateIds = $managerEmployee ? $managerEmployee->getSubordinateEmployeeIds(true) : [];
 
-                    return $query->whereHas('employee', function ($query) use ($currentUserId) {
-                        $query->where('leave_manager_id', '=', $currentUserId)
-                            ->orWhere('user_id', '=', $currentUserId);
+                    return $query->where(function (Builder $outer) use ($currentUserId, $managerEmployee, $subordinateIds) {
+                        if (! empty($subordinateIds)) {
+                            $outer->orWhereIn('employee_id', $subordinateIds);
+                        }
+
+                        if ($managerEmployee) {
+                            $outer->orWhere('first_approver_id', $managerEmployee->id)
+                                ->orWhere('second_approver_id', $managerEmployee->id)
+                                ->orWhere('manager_id', $managerEmployee->id);
+                        }
+
+                        $outer->orWhereHas('employee', function ($q) use ($currentUserId) {
+                            $q->where('leave_manager_id', '=', $currentUserId)
+                                ->orWhere('user_id', '=', $currentUserId);
+                        });
                     });
                 }),
             'my_department' => PresetView::make(__('time-off::filament/clusters/management/resources/time-off/pages/list-time-off.preset-views.my-department'))
                 ->icon('heroicon-o-building-office')
                 ->modifyQueryUsing(function (Builder $query) {
-                    $currentUserId = Auth::user()->id;
+                    $currentUserId = Auth::id();
+                    $managerEmployee = Employee::withoutGlobalScopes()->where('user_id', $currentUserId)->first();
+                    $subordinateIds = $managerEmployee ? $managerEmployee->getSubordinateEmployeeIds(true) : [];
 
-                    return $query->whereHas('employee', function ($query) use ($currentUserId) {
-                        $query->whereHas('parent', function ($query) use ($currentUserId) {
-                            $query->where('user_id', '=', $currentUserId);
+                    return $query->where(function (Builder $outer) use ($currentUserId, $subordinateIds) {
+                        if (! empty($subordinateIds)) {
+                            $outer->orWhereIn('employee_id', $subordinateIds);
+                        }
+
+                        $outer->orWhereHas('employee', function ($q) use ($currentUserId) {
+                            $q->whereHas('parent', function ($p) use ($currentUserId) {
+                                $p->where('user_id', '=', $currentUserId);
+                            });
                         });
                     });
                 }),
@@ -81,6 +107,22 @@ class ListTimeOff extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('escalate_sla')
+                ->label('Eskalasi SLA Permit (24j)')
+                ->icon('heroicon-o-bolt')
+                ->color('warning')
+                ->requiresConfirmation()
+                ->modalHeading('Jalankan Eskalasi SLA Permit / Cuti')
+                ->modalDescription('Semua pengajuan izin/cuti yang belum disetujui lebih dari 24 jam akan otomatis dieskalasikan ke pejabat level di atasnya sesuai struktur organisasi.')
+                ->action(function (): void {
+                    $result = app(ApprovalEscalationService::class)->escalateOverdueLeaves(24);
+
+                    Notification::make()
+                        ->success()
+                        ->title('Eskalasi SLA Selesai')
+                        ->body("Berhasil mengeskalasi {$result['escalated']} pengajuan dan mengirim {$result['notifications_sent']} notifikasi ke atasan.")
+                        ->send();
+                }),
             CreateAction::make(),
         ];
     }

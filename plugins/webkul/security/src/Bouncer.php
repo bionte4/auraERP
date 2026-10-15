@@ -2,6 +2,9 @@
 
 namespace Webkul\Security;
 
+use Illuminate\Support\Facades\Schema;
+use Throwable;
+use Webkul\Employee\Models\Employee;
 use Webkul\Security\Enums\PermissionType;
 use Webkul\Security\Models\User;
 
@@ -52,27 +55,58 @@ class Bouncer
     }
 
     /**
-     * Get user IDs of the current user's groups.
+     * Get user IDs of the current user's teams AND organizational subordinates (reporting line & managed departments).
      */
     protected function getCurrentAccessibleUserIds(User $user): array
     {
+        $accessibleUserIds = [(int) $user->id];
+
         $teamIds = $user->teams()->pluck('teams.id')->toArray();
 
-        if (empty($teamIds)) {
-            return [$user->id];
+        if (! empty($teamIds)) {
+            $teamUserIds = User::query()
+                ->withoutGlobalScopes()
+                ->select('users.id')
+                ->leftJoin('user_team', 'users.id', '=', 'user_team.user_id')
+                ->whereIn('user_team.team_id', $teamIds)
+                ->pluck('users.id')
+                ->map(fn ($id) => (int) $id)
+                ->all();
+
+            $accessibleUserIds = array_merge($accessibleUserIds, $teamUserIds);
         }
 
-        return User::query()
-            ->withoutGlobalScopes()
-            ->select('users.id')
-            ->leftJoin('user_team', 'users.id', '=', 'user_team.user_id')
-            ->where(function ($query) use ($teamIds, $user): void {
-                $query->whereIn('user_team.team_id', $teamIds)
-                    ->orWhere('users.id', $user->id);
-            })
-            ->pluck('users.id')
-            ->unique()
-            ->values()
-            ->toArray();
+        try {
+            if (class_exists(Employee::class) && Schema::hasTable('employees_employees')) {
+                $managerEmployees = Employee::withoutGlobalScopes()
+                    ->whereNull('deleted_at')
+                    ->where('user_id', $user->id)
+                    ->get();
+
+                foreach ($managerEmployees as $managerEmployee) {
+                    $accessibleUserIds = array_merge(
+                        $accessibleUserIds,
+                        $managerEmployee->getSubordinateUserIds(true)
+                    );
+                }
+
+                $delegatedUserIds = Employee::withoutGlobalScopes()
+                    ->whereNull('deleted_at')
+                    ->whereNotNull('user_id')
+                    ->where(function ($query) use ($user): void {
+                        $query->where('leave_manager_id', $user->id)
+                            ->orWhere('attendance_manager_id', $user->id);
+                    })
+                    ->pluck('user_id')
+                    ->map(fn ($id) => (int) $id)
+                    ->all();
+
+                $accessibleUserIds = array_merge($accessibleUserIds, $delegatedUserIds);
+            }
+        } catch (Throwable) {
+            // Safely ignore if employee tables are not yet migrated.
+        }
+
+        return array_values(array_unique($accessibleUserIds));
     }
 }

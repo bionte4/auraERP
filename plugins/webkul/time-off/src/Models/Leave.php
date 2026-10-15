@@ -15,6 +15,7 @@ use Webkul\Security\Models\User;
 use Webkul\Support\Models\Calendar;
 use Webkul\Support\Models\Company;
 use Webkul\Support\Traits\BelongsToCompany;
+use Webkul\TimeOff\Enums\LeaveValidationType;
 use Webkul\TimeOff\Enums\RequestDateFromPeriod;
 use Webkul\TimeOff\Enums\State;
 
@@ -157,16 +158,132 @@ class Leave extends Model
         return $this->belongsTo(User::class, 'creator_id');
     }
 
+    public function requiresTwoStepApproval(): bool
+    {
+        $validationType = $this->holidayStatus?->leave_validation_type;
+
+        if ($validationType === LeaveValidationType::BOTH || $validationType === LeaveValidationType::BOTH->value) {
+            return true;
+        }
+
+        return ! empty($this->first_approver_id) && ! empty($this->second_approver_id);
+    }
+
+    public function canBeApprovedBy(?User $user): bool
+    {
+        if (! $user) {
+            return false;
+        }
+
+        if ($user->hasAnyRole(['Admin', 'HRD']) || $user->can('update_time_off_time::off')) {
+            return true;
+        }
+
+        $approverEmployeeIds = Employee::withoutGlobalScopes()
+            ->whereNull('deleted_at')
+            ->where('user_id', $user->id)
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        if (empty($approverEmployeeIds)) {
+            return false;
+        }
+
+        if (
+            in_array((int) $this->manager_id, $approverEmployeeIds, true)
+            || in_array((int) $this->first_approver_id, $approverEmployeeIds, true)
+            || in_array((int) $this->second_approver_id, $approverEmployeeIds, true)
+        ) {
+            return true;
+        }
+
+        foreach ($approverEmployeeIds as $empId) {
+            $emp = Employee::withoutGlobalScopes()->find($empId);
+
+            if ($emp && in_array((int) $this->employee_id, $emp->getSubordinateEmployeeIds(true), true)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function approveBy(?User $user = null): self
+    {
+        $user ??= Auth::user();
+
+        $actorEmployee = $user
+            ? Employee::withoutGlobalScopes()->whereNull('deleted_at')->where('user_id', $user->id)->first()
+            : null;
+
+        $currentState = $this->state instanceof State ? $this->state->value : (string) $this->state;
+
+        $isActorSecondApproverOrHigher = $actorEmployee && (
+            (int) $this->second_approver_id === (int) $actorEmployee->id
+            || ($this->employee && in_array((int) $this->employee_id, $actorEmployee->getSubordinateEmployeeIds(true), true)
+                && (int) $this->first_approver_id !== (int) $actorEmployee->id)
+        );
+
+        if (
+            $currentState === State::CONFIRM->value
+            && $this->requiresTwoStepApproval()
+            && ! $isActorSecondApproverOrHigher
+        ) {
+            $this->state = State::VALIDATE_ONE->value;
+
+            if ($actorEmployee) {
+                $this->first_approver_id = $actorEmployee->id;
+            }
+        } else {
+            $this->state = State::VALIDATE_TWO->value;
+
+            if ($actorEmployee) {
+                if (! $this->first_approver_id) {
+                    $this->first_approver_id = $actorEmployee->id;
+                } else {
+                    $this->second_approver_id = $actorEmployee->id;
+                }
+            }
+        }
+
+        $this->save();
+
+        return $this;
+    }
+
+    public function populateApproversFromHierarchy(): void
+    {
+        if (! $this->employee_id) {
+            return;
+        }
+
+        $employee = Employee::withoutGlobalScopes()->find($this->employee_id);
+
+        if (! $employee) {
+            return;
+        }
+
+        $levelOne = $employee->resolveLevelOneApproverEmployee();
+        $levelTwo = $employee->resolveLevelTwoApproverEmployee();
+
+        $this->manager_id ??= $levelOne?->id;
+        $this->first_approver_id ??= $levelOne?->id;
+        $this->second_approver_id ??= $levelTwo?->id;
+    }
+
     protected static function boot()
     {
         parent::boot();
 
-        static::creating(function ($leave) {
+        static::creating(function (self $leave) {
             $authUser = Auth::user();
 
-            $leave->creator_id = $authUser->id;
+            $leave->creator_id ??= $authUser?->id;
 
             $leave->company_id ??= current_company_id();
+
+            $leave->populateApproversFromHierarchy();
         });
     }
 }

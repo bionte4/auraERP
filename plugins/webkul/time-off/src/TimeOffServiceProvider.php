@@ -3,11 +3,13 @@
 namespace Webkul\TimeOff;
 
 use Filament\Panel;
+use Illuminate\Support\Facades\Schedule;
 use Webkul\Chatter\Services\ChatterCleanupService;
 use Webkul\PluginManager\Console\Commands\InstallCommand;
 use Webkul\PluginManager\Console\Commands\UninstallCommand;
 use Webkul\PluginManager\Package;
 use Webkul\PluginManager\PackageServiceProvider;
+use Webkul\TimeOff\Console\Commands\EscalatePendingApprovalsCommand;
 use Webkul\TimeOff\Models\Leave;
 use Webkul\TimeOff\Models\LeaveAllocation;
 
@@ -36,6 +38,7 @@ class TimeOffServiceProvider extends PackageServiceProvider
                 'employees',
             ])
             ->runsMigrations()
+            ->hasCommand(EscalatePendingApprovalsCommand::class)
             ->hasSeeder('Webkul\\TimeOff\\Database\\Seeders\\DatabaseSeeder')
             ->hasInstallCommand(function (InstallCommand $command) {
                 $command
@@ -49,6 +52,15 @@ class TimeOffServiceProvider extends PackageServiceProvider
                 });
             })
             ->icon('time-offs');
+    }
+
+    public function packageBooted(): void
+    {
+        $this->app->booted(function (): void {
+            if ($this->package->isInstalled()) {
+                Schedule::command('time-off:escalate-pending-approvals')->hourly();
+            }
+        });
     }
 
     public function packageRegistered(): void

@@ -176,6 +176,11 @@ class Employee extends Model
         return $this->belongsTo(self::class, 'parent_id');
     }
 
+    public function subordinates(): HasMany
+    {
+        return $this->hasMany(self::class, 'parent_id');
+    }
+
     public function coach(): BelongsTo
     {
         return $this->belongsTo(self::class, 'coach_id');
@@ -260,6 +265,160 @@ class Employee extends Model
     public function companyAddress()
     {
         return $this->belongsTo(Partner::class, 'address_id');
+    }
+
+    public function resolveLevelOneApproverEmployee(): ?self
+    {
+        if ($this->parent_id) {
+            $parent = self::withoutGlobalScopes()->find($this->parent_id);
+
+            if ($parent) {
+                return $parent;
+            }
+        }
+
+        if ($this->leave_manager_id) {
+            $leaveManagerEmployee = self::withoutGlobalScopes()
+                ->where('user_id', $this->leave_manager_id)
+                ->first();
+
+            if ($leaveManagerEmployee && $leaveManagerEmployee->id !== $this->id) {
+                return $leaveManagerEmployee;
+            }
+        }
+
+        $deptManagerId = $this->department()->withoutGlobalScopes()->value('manager_id');
+
+        if ($deptManagerId && (int) $deptManagerId !== (int) $this->id) {
+            return self::withoutGlobalScopes()->find($deptManagerId);
+        }
+
+        return null;
+    }
+
+    public function resolveLevelTwoApproverEmployee(): ?self
+    {
+        $levelOne = $this->resolveLevelOneApproverEmployee();
+
+        if ($levelOne && $levelOne->parent_id && (int) $levelOne->parent_id !== (int) $this->id) {
+            $grandParent = self::withoutGlobalScopes()->find($levelOne->parent_id);
+
+            if ($grandParent) {
+                return $grandParent;
+            }
+        }
+
+        $department = $this->department()->withoutGlobalScopes()->first();
+
+        if ($department) {
+            if ($department->manager_id && (! $levelOne || (int) $department->manager_id !== (int) $levelOne->id) && (int) $department->manager_id !== (int) $this->id) {
+                return self::withoutGlobalScopes()->find($department->manager_id);
+            }
+
+            if ($department->parent_id) {
+                $parentDeptManagerId = Department::withoutGlobalScopes()
+                    ->where('id', $department->parent_id)
+                    ->value('manager_id');
+
+                if ($parentDeptManagerId && (! $levelOne || (int) $parentDeptManagerId !== (int) $levelOne->id) && (int) $parentDeptManagerId !== (int) $this->id) {
+                    return self::withoutGlobalScopes()->find($parentDeptManagerId);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Return all direct and indirect subordinate employee IDs from both reporting line (parent_id)
+     * and managed departments.
+     *
+     * @return array<int, int>
+     */
+    public function getSubordinateEmployeeIds(bool $recursive = true): array
+    {
+        $visited = [$this->id => true];
+        $subordinateIds = [];
+        $frontier = [$this->id];
+        $depth = 0;
+
+        while (! empty($frontier) && $depth < 10) {
+            $childrenIds = self::withoutGlobalScopes()
+                ->whereNull('deleted_at')
+                ->whereIn('parent_id', $frontier)
+                ->pluck('id')
+                ->map(fn ($id) => (int) $id)
+                ->all();
+
+            $managedDeptIds = Department::withoutGlobalScopes()
+                ->whereNull('deleted_at')
+                ->whereIn('manager_id', $frontier)
+                ->pluck('id')
+                ->map(fn ($id) => (int) $id)
+                ->all();
+
+            if (! empty($managedDeptIds)) {
+                $childDeptIds = Department::withoutGlobalScopes()
+                    ->whereNull('deleted_at')
+                    ->whereIn('parent_id', $managedDeptIds)
+                    ->pluck('id')
+                    ->map(fn ($id) => (int) $id)
+                    ->all();
+
+                $allDeptIds = array_values(array_unique(array_merge($managedDeptIds, $childDeptIds)));
+
+                $deptEmpIds = self::withoutGlobalScopes()
+                    ->whereNull('deleted_at')
+                    ->whereIn('department_id', $allDeptIds)
+                    ->pluck('id')
+                    ->map(fn ($id) => (int) $id)
+                    ->all();
+
+                $childrenIds = array_values(array_unique(array_merge($childrenIds, $deptEmpIds)));
+            }
+
+            $nextFrontier = [];
+
+            foreach ($childrenIds as $childId) {
+                if (! isset($visited[$childId])) {
+                    $visited[$childId] = true;
+                    $subordinateIds[] = $childId;
+                    $nextFrontier[] = $childId;
+                }
+            }
+
+            if (! $recursive) {
+                break;
+            }
+
+            $frontier = $nextFrontier;
+            $depth++;
+        }
+
+        return $subordinateIds;
+    }
+
+    /**
+     * Return all user IDs belonging to subordinate employees in the organizational hierarchy.
+     *
+     * @return array<int, int>
+     */
+    public function getSubordinateUserIds(bool $recursive = true): array
+    {
+        $employeeIds = $this->getSubordinateEmployeeIds($recursive);
+
+        if (empty($employeeIds)) {
+            return [];
+        }
+
+        return self::withoutGlobalScopes()
+            ->whereIn('id', $employeeIds)
+            ->whereNotNull('user_id')
+            ->pluck('user_id')
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
     }
 
     protected static function boot()

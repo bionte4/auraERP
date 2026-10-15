@@ -47,6 +47,18 @@ class TimeOffsTable
                     ->label(__('time-off::filament/clusters/management/resources/time-off.table.columns.duration'))
                     ->sortable()
                     ->searchable(),
+                TextColumn::make('firstApprover.name')
+                    ->label('Approver Lv. 1')
+                    ->placeholder('—')
+                    ->badge()
+                    ->color('info')
+                    ->toggleable(),
+                TextColumn::make('secondApprover.name')
+                    ->label('Approver Lv. 2 (Eskalasi)')
+                    ->placeholder('—')
+                    ->badge()
+                    ->color('warning')
+                    ->toggleable(),
                 TextColumn::make('state')
                     ->label(__('time-off::filament/clusters/management/resources/time-off.table.columns.status'))
                     ->formatStateUsing(fn (State $state) => $state->getLabel())
@@ -77,13 +89,9 @@ class TimeOffsTable
                     Action::make('approve')
                         ->icon('heroicon-o-check-circle')
                         ->color('success')
-                        ->hidden(fn ($record) => $record->state === State::VALIDATE_TWO->value)
+                        ->hidden(fn ($record) => ($record->state instanceof State ? $record->state->value : $record->state) === State::VALIDATE_TWO->value)
                         ->action(function ($record) {
-                            if ($record->state === State::VALIDATE_ONE->value) {
-                                $record->update(['state' => State::VALIDATE_TWO->value]);
-                            } else {
-                                $record->update(['state' => State::VALIDATE_TWO->value]);
-                            }
+                            $record->approveBy(auth()->user());
 
                             Notification::make()
                                 ->success()
@@ -92,7 +100,9 @@ class TimeOffsTable
                                 ->send();
                         })
                         ->label(function ($record) {
-                            if ($record->state === State::VALIDATE_ONE->value) {
+                            $stateValue = $record->state instanceof State ? $record->state->value : $record->state;
+
+                            if ($stateValue === State::VALIDATE_ONE->value) {
                                 return __('time-off::filament/clusters/management/resources/time-off.table.actions.approve.title.validate');
                             } else {
                                 return __('time-off::filament/clusters/management/resources/time-off.table.actions.approve.title.approve');
