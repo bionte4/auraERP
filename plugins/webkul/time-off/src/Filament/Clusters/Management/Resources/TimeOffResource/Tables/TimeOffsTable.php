@@ -89,7 +89,10 @@ class TimeOffsTable
                     Action::make('approve')
                         ->icon('heroicon-o-check-circle')
                         ->color('success')
-                        ->hidden(fn ($record) => ($record->state instanceof State ? $record->state->value : $record->state) === State::VALIDATE_TWO->value)
+                        ->hidden(fn ($record) => ($record->state instanceof State ? $record->state->value : $record->state) === State::VALIDATE_TWO->value
+                            || (! auth()->user()?->can('update_time_off_time::off')
+                                && ! auth()->user()?->can('update_time_off_by::employee')
+                                && ! $record->canBeApprovedBy(auth()->user())))
                         ->action(function ($record) {
                             $record->approveBy(auth()->user());
 
@@ -110,7 +113,10 @@ class TimeOffsTable
                         }),
                     Action::make('refuse')
                         ->icon('heroicon-o-x-circle')
-                        ->hidden(fn ($record) => $record->state === State::REFUSE->value)
+                        ->hidden(fn ($record) => ($record->state instanceof State ? $record->state->value : $record->state) === State::REFUSE->value
+                            || (! auth()->user()?->can('update_time_off_time::off')
+                                && ! auth()->user()?->can('update_time_off_by::employee')
+                                && ! $record->canBeApprovedBy(auth()->user())))
                         ->color('danger')
                         ->action(function ($record) {
                             $record->update(['state' => State::REFUSE->value]);

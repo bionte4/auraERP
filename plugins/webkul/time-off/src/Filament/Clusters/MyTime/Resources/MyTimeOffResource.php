@@ -6,6 +6,7 @@ use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Webkul\TimeOff\Enums\State;
 use Webkul\TimeOff\Filament\Clusters\Management\Resources\TimeOffResource;
 use Webkul\TimeOff\Filament\Clusters\MyTime;
@@ -28,6 +29,21 @@ class MyTimeOffResource extends Resource
     protected static ?int $navigationSort = 2;
 
     protected static ?string $cluster = MyTime::class;
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+        $user = auth()->user();
+
+        if (! $user) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query->where(function (Builder $q) use ($user): void {
+            $q->where('user_id', $user->id)
+                ->orWhereHas('employee', fn (Builder $e) => $e->withoutGlobalScopes()->where('user_id', $user->id));
+        });
+    }
 
     public static function getModelLabel(): string
     {

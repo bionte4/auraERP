@@ -52,7 +52,14 @@ class AttendanceResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with(['employee', 'checkInSite', 'checkOutSite'])->withCount('tracks');
+        $query = parent::getEloquentQuery()->with(['employee', 'checkInSite', 'checkOutSite'])->withCount('tracks');
+        $userIds = bouncer()->getAuthorizedUserIds();
+
+        if (is_array($userIds)) {
+            $query->whereHas('employee', fn (Builder $e) => $e->withoutGlobalScopes()->whereIn('user_id', $userIds));
+        }
+
+        return $query;
     }
 
     public static function getGloballySearchableAttributes(): array

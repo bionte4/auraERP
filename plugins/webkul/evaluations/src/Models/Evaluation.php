@@ -497,31 +497,78 @@ class Evaluation extends Model
     }
 
     /**
+     * Determine whether the user can sign/approve this evaluation at any stage (Reviewer L1, Employee, or Approver L2),
+     * or if the user has update permission on evaluations.
+     */
+    public function canBeSignedBy(?User $user): bool
+    {
+        if (! $user) {
+            return false;
+        }
+
+        if ($user->can('update_evaluation_evaluation')) {
+            return true;
+        }
+
+        $empIds = Employee::withoutGlobalScopes()
+            ->where('user_id', $user->id)
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        $allowedSigners = array_map('intval', array_filter([
+            $this->employee_id,
+            $this->reviewer_id,
+            $this->gm_approver_id,
+            $this->director_approver_id,
+        ]));
+
+        return ! empty(array_intersect($empIds, $allowedSigners));
+    }
+
+    /**
      * Execute sequential/tiered approval by role or automatically detect from the given User.
      */
     public function signByRole(string $role, ?User $user = null): string
     {
         $now = now();
-
-        if ($role === 'auto' && $user) {
-            $empIds = Employee::withoutGlobalScopes()
+        $empIds = $user
+            ? Employee::withoutGlobalScopes()
                 ->where('user_id', $user->id)
                 ->pluck('id')
                 ->map(fn ($id) => (int) $id)
-                ->all();
+                ->all()
+            : [];
 
+        $isAdminOrHrd = $user && $user->can('update_evaluation_evaluation');
+
+        if ($role === 'auto' && $user) {
             if (! $this->reviewer_signed_at && in_array((int) $this->reviewer_id, $empIds, true)) {
                 $role = 'reviewer';
             } elseif (! $this->employee_signed_at && in_array((int) $this->employee_id, $empIds, true)) {
                 $role = 'employee';
             } elseif ($this->gm_approver_id && ! $this->gm_signed_at && in_array((int) $this->gm_approver_id, $empIds, true)) {
                 $role = 'level2';
-            } elseif (! $this->reviewer_signed_at) {
-                $role = 'reviewer';
-            } elseif (! $this->employee_signed_at) {
+            } elseif ($isAdminOrHrd) {
+                if (! $this->reviewer_signed_at) {
+                    $role = 'reviewer';
+                } elseif (! $this->employee_signed_at) {
+                    $role = 'employee';
+                } else {
+                    $role = 'level2';
+                }
+            } elseif (in_array((int) $this->employee_id, $empIds, true)) {
                 $role = 'employee';
-            } else {
+            } elseif (in_array((int) $this->reviewer_id, $empIds, true)) {
+                $role = 'reviewer';
+            } elseif (in_array((int) $this->gm_approver_id, $empIds, true)) {
                 $role = 'level2';
+            }
+        } elseif (! $isAdminOrHrd && $user) {
+            if ($role === 'reviewer' && ! in_array((int) $this->reviewer_id, $empIds, true)) {
+                $role = in_array((int) $this->employee_id, $empIds, true) ? 'employee' : $role;
+            } elseif ($role === 'level2' && ! in_array((int) $this->gm_approver_id, $empIds, true)) {
+                $role = in_array((int) $this->employee_id, $empIds, true) ? 'employee' : $role;
             }
         }
 

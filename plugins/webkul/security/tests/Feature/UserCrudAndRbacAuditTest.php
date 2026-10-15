@@ -1,10 +1,14 @@
 <?php
 
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Models\Role;
+use Webkul\Attendance\Models\Attendance;
 use Webkul\Attendance\Models\AttendanceSite;
 use Webkul\Employee\Models\Employee;
+use Webkul\Evaluation\Models\Evaluation;
+use Webkul\Performance\Models\PerformancePlan;
 use Webkul\Pos\Models\PosOrder;
 use Webkul\Pos\Models\PosRegister;
 use Webkul\Pos\Services\PosService;
@@ -25,6 +29,26 @@ use Webkul\TimeOff\Models\LeaveType;
 beforeEach(function (): void {
     $posMigration = include __DIR__.'/../../../pos/database/migrations/2026_10_15_100000_create_pos_tables.php';
     $posMigration->up();
+
+    if (Schema::hasTable('employees_employees')) {
+        if (! Schema::hasTable('performance_plans')) {
+            $perfPlanMigration = include __DIR__.'/../../../performance/database/migrations/2026_10_14_110000_create_performance_plans_table.php';
+            $perfPlanMigration->up();
+        }
+
+        if (! Schema::hasTable('evaluations_evaluations')) {
+            $evalMigration = include __DIR__.'/../../../evaluations/database/migrations/2026_10_14_150000_create_evaluations_evaluations_table.php';
+            $evalMigration->up();
+        }
+
+        if (! Schema::hasTable('evaluations_ratings')) {
+            $evalRatingsMigration = include __DIR__.'/../../../evaluations/database/migrations/2026_10_14_150001_create_evaluations_ratings_table.php';
+            $evalRatingsMigration->up();
+        }
+
+        $pkwtEvalMigration = include __DIR__.'/../../../evaluations/database/migrations/2026_10_15_140000_add_pkwt_quarterly_fields_to_evaluations_tables.php';
+        $pkwtEvalMigration->up();
+    }
 
     Bouncer::flushCache();
     app(RolePermissionSynchronizer::class)->syncAll(false);
@@ -310,4 +334,51 @@ it('resolves Employee, Leave, Bank, and Sequence policies accurately across Indi
     expect(Gate::forUser($adminUser)->allows('viewAny', Bank::class))->toBeTrue()
         ->and(Gate::forUser($adminUser)->allows('viewAny', Sequence::class))->toBeTrue()
         ->and(Gate::forUser($staffUser)->allows('viewAny', Sequence::class))->toBeFalse();
+
+    // 4. PerformancePlan, Evaluation, and Attendance scoped CRUD + tiered approval isolation
+    $staffPlan = PerformancePlan::withoutGlobalScopes()->create([
+        'company_id'   => $company->id,
+        'employee_id'  => $staffEmp->id,
+        'title'        => 'Goal Setting Staff Bawahan',
+        'period_start' => now()->startOfQuarter()->toDateString(),
+        'period_end'   => now()->endOfQuarter()->toDateString(),
+    ]);
+
+    $staffEvaluation = Evaluation::withoutGlobalScopes()->create([
+        'company_id'   => $company->id,
+        'employee_id'  => $staffEmp->id,
+        'reviewer_id'  => $managerEmp->id,
+        'title'        => 'Evaluasi Triwulan Staff Bawahan',
+        'period_start' => now()->startOfQuarter()->toDateString(),
+        'period_end'   => now()->endOfQuarter()->toDateString(),
+    ]);
+
+    $staffAttendance = Attendance::withoutGlobalScopes()->create([
+        'company_id'  => $company->id,
+        'employee_id' => $staffEmp->id,
+        'work_date'   => now()->toDateString(),
+        'check_in'    => now(),
+        'status'      => 'present',
+    ]);
+
+    // Staff can view their own PerformancePlan, Evaluation, and Attendance, and sign their own Evaluation
+    expect(Gate::forUser($staffUser)->allows('view', $staffPlan))->toBeTrue()
+        ->and(Gate::forUser($staffUser)->allows('view', $staffEvaluation))->toBeTrue()
+        ->and(Gate::forUser($staffUser)->allows('view', $staffAttendance))->toBeTrue()
+        ->and($staffEvaluation->canBeSignedBy($staffUser))->toBeTrue();
+
+    // Outsider Staff (Individual scope) cannot view or sign another employee's PerformancePlan, Evaluation, or Attendance
+    expect(Gate::forUser($outsiderUser)->allows('view', $staffPlan))->toBeFalse()
+        ->and(Gate::forUser($outsiderUser)->allows('view', $staffEvaluation))->toBeFalse()
+        ->and(Gate::forUser($outsiderUser)->allows('view', $staffAttendance))->toBeFalse()
+        ->and(Gate::forUser($outsiderUser)->allows('view', $staffLeave))->toBeFalse()
+        ->and($staffEvaluation->canBeSignedBy($outsiderUser))->toBeFalse();
+
+    // Group Manager can view and update subordinate's PerformancePlan, Evaluation, and Attendance
+    expect(Gate::forUser($managerUser)->allows('view', $staffPlan))->toBeTrue()
+        ->and(Gate::forUser($managerUser)->allows('update', $staffPlan))->toBeTrue()
+        ->and(Gate::forUser($managerUser)->allows('view', $staffEvaluation))->toBeTrue()
+        ->and(Gate::forUser($managerUser)->allows('update', $staffEvaluation))->toBeTrue()
+        ->and(Gate::forUser($managerUser)->allows('view', $staffAttendance))->toBeTrue()
+        ->and(Gate::forUser($managerUser)->allows('update', $staffAttendance))->toBeTrue();
 });

@@ -26,10 +26,19 @@ class LeavePolicy
      */
     public function view(User $user, Leave $leave): bool
     {
-        return $user->can('view_time_off_time::off')
-            || $user->can('view_time_off_my::time::off')
-            || $user->can('view_time_off_by::employee')
-            || $leave->canBeApprovedBy($user);
+        if ($leave->canBeApprovedBy($user)) {
+            return true;
+        }
+
+        if ($user->can('view_time_off_time::off') || $user->can('view_time_off_by::employee')) {
+            return $this->hasAccess($user, $leave, 'employee');
+        }
+
+        if ($user->can('view_time_off_my::time::off')) {
+            return $this->hasAccess($user, $leave, 'employee');
+        }
+
+        return false;
     }
 
     /**

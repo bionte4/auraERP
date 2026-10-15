@@ -135,6 +135,32 @@ trait HasScopedPermissions
             }
         }
 
+        if (isset($model->employee_id) && $model->employee_id && class_exists(Employee::class)) {
+            try {
+                $employeeRecord = Employee::withoutGlobalScopes()->find($model->employee_id);
+
+                if ($employeeRecord) {
+                    $userIds = array_merge($userIds, $this->extractUserIdsFromEmployee($employeeRecord));
+                }
+            } catch (Throwable) {
+            }
+        }
+
+        foreach (['reviewer_id', 'gm_approver_id', 'director_approver_id', 'first_approver_id', 'second_approver_id'] as $empFk) {
+            if (! empty($model->{$empFk}) && class_exists(Employee::class)) {
+                try {
+                    $approverUserId = Employee::withoutGlobalScopes()
+                        ->whereKey($model->{$empFk})
+                        ->value('user_id');
+
+                    if ($approverUserId) {
+                        $userIds[] = (int) $approverUserId;
+                    }
+                } catch (Throwable) {
+                }
+            }
+        }
+
         if (isset($model->project_id) && $model->project_id && method_exists($model, 'project')) {
             try {
                 $projectUserId = $model->project()->withoutGlobalScopes()->value('user_id');

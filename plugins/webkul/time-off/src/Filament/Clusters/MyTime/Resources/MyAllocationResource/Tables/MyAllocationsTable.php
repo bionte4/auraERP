@@ -74,7 +74,8 @@ class MyAllocationsTable
                     Action::make('approve')
                         ->icon('heroicon-o-check-circle')
                         ->color('success')
-                        ->hidden(fn ($record) => $record->state === State::VALIDATE_TWO->value)
+                        ->hidden(fn ($record) => $record->state === State::VALIDATE_TWO->value
+                            || ! Auth::user()?->can('update_time_off_allocation'))
                         ->action(function ($record) {
                             if ($record->state === State::VALIDATE_ONE->value) {
                                 $record->update(['state' => State::VALIDATE_TWO->value]);
@@ -97,7 +98,8 @@ class MyAllocationsTable
                         }),
                     Action::make('refuse')
                         ->icon('heroicon-o-x-circle')
-                        ->hidden(fn ($record) => $record->state === State::REFUSE->value)
+                        ->hidden(fn ($record) => $record->state === State::REFUSE->value
+                            || ! Auth::user()?->can('update_time_off_allocation'))
                         ->color('danger')
                         ->action(function ($record) {
                             $record->update(['state' => State::REFUSE->value]);

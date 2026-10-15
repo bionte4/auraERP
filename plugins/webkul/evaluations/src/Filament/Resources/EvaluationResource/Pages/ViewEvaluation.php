@@ -41,6 +41,7 @@ class ViewEvaluation extends ViewRecord
                 ->label('Approve / Tanda Tangani Berjenjang')
                 ->icon('heroicon-o-check-badge')
                 ->color('success')
+                ->visible(fn (Evaluation $record): bool => $record->canBeSignedBy(Auth::user()))
                 ->schema([
                     Select::make('signer_role')
                         ->label('Tahap Persetujuan Berjenjang')

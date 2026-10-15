@@ -66,7 +66,19 @@ class EvaluationResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with(['employee', 'reviewer', 'ratings']);
+        $query = parent::getEloquentQuery()->with(['employee', 'reviewer', 'ratings']);
+        $userIds = bouncer()->getAuthorizedUserIds();
+
+        if (is_array($userIds)) {
+            $query->where(function (Builder $q) use ($userIds): void {
+                $q->whereHas('employee', fn (Builder $e) => $e->withoutGlobalScopes()->whereIn('user_id', $userIds))
+                    ->orWhereHas('reviewer', fn (Builder $r) => $r->withoutGlobalScopes()->whereIn('user_id', $userIds))
+                    ->orWhereHas('gmApprover', fn (Builder $g) => $g->withoutGlobalScopes()->whereIn('user_id', $userIds))
+                    ->orWhereHas('directorApprover', fn (Builder $d) => $d->withoutGlobalScopes()->whereIn('user_id', $userIds));
+            });
+        }
+
+        return $query;
     }
 
     public static function getGloballySearchableAttributes(): array

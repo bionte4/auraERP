@@ -18,7 +18,11 @@ class EvaluationPolicy
 
     public function view(User $user, Evaluation $evaluation): bool
     {
-        return $user->can('view_evaluation_evaluation')
+        if (! $user->can('view_evaluation_evaluation') && ! $user->can('view_any_evaluation_evaluation')) {
+            return $this->isParticipantOrApprover($user, $evaluation);
+        }
+
+        return $this->hasAccess($user, $evaluation, 'employee')
             || $this->isParticipantOrApprover($user, $evaluation);
     }
 

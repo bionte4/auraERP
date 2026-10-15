@@ -4,11 +4,12 @@ namespace Webkul\TimeOff\Policies;
 
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Webkul\Security\Models\User;
+use Webkul\Security\Traits\HasScopedPermissions;
 use Webkul\TimeOff\Models\LeaveAllocation;
 
 class LeaveAllocationPolicy
 {
-    use HandlesAuthorization;
+    use HandlesAuthorization, HasScopedPermissions;
 
     /**
      * Determine whether the user can view any models.
@@ -24,8 +25,11 @@ class LeaveAllocationPolicy
      */
     public function view(User $user, LeaveAllocation $leaveAllocation): bool
     {
-        return $user->can('view_time_off_allocation')
-            || $user->can('view_time_off_my::allocation');
+        if (! $user->can('view_time_off_allocation') && ! $user->can('view_time_off_my::allocation')) {
+            return false;
+        }
+
+        return $this->hasAccess($user, $leaveAllocation, 'employee');
     }
 
     /**
@@ -42,8 +46,11 @@ class LeaveAllocationPolicy
      */
     public function update(User $user, LeaveAllocation $leaveAllocation): bool
     {
-        return $user->can('update_time_off_allocation')
-            || $user->can('update_time_off_my::allocation');
+        if (! $user->can('update_time_off_allocation') && ! $user->can('update_time_off_my::allocation')) {
+            return false;
+        }
+
+        return $this->hasAccess($user, $leaveAllocation, 'employee');
     }
 
     /**
@@ -51,8 +58,11 @@ class LeaveAllocationPolicy
      */
     public function delete(User $user, LeaveAllocation $leaveAllocation): bool
     {
-        return $user->can('delete_time_off_allocation')
-            || $user->can('delete_time_off_my::allocation');
+        if (! $user->can('delete_time_off_allocation') && ! $user->can('delete_time_off_my::allocation')) {
+            return false;
+        }
+
+        return $this->hasAccess($user, $leaveAllocation, 'employee');
     }
 
     /**
