@@ -184,5 +184,7 @@ it('supports all 6 recommendation decisions (including Extend/Terminate Outtask/
     $evaluation->load(['employee', 'reviewer', 'gmApprover', 'performancePlan', 'ratings']);
     $pdfOutput = Pdf::loadView('evaluations::pdf.pkwt-evaluation', ['record' => $evaluation])->output();
 
-    expect($pdfOutput)->toStartWith('%PDF-');
+    expect($pdfOutput)->toStartWith('%PDF-')
+        ->and($evaluation->isOutsourceOrOuttask())->toBeTrue()
+        ->and($evaluation->resolvedGoalAchievementPercentage())->toBeNull();
 });

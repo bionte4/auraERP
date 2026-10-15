@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Laporan Evaluasi Triwulanan Karyawan PKWT - {{ $record->employee?->name }}</title>
+    <title>Laporan Evaluasi Karyawan - {{ $record->employee?->name }}</title>
     <style>
         @page {
             margin: 20mm 16mm 18mm 16mm;
@@ -148,15 +148,18 @@
         $levelTwoApprover = $record->gmApprover;
         $ratings = $record->ratings;
         $summary = $record->criteriaSummary();
+        $isOutsource = $summary['is_outsource'];
         $decision = $record->recommendation_decision?->value;
     @endphp
 
     <div class="header-meta">
-        pkwt/hcm – {{ $record->evaluation_type?->getLabel() ?? 'Evaluasi PKWT' }} | Dicetak: {{ now()->format('d/m/Y H:i') }}
+        pkwt/hcm – {{ $record->evaluation_type?->getLabel() ?? 'Evaluasi Kinerja' }} | Dicetak: {{ now()->format('d/m/Y H:i') }}
     </div>
 
     <div class="doc-title">LAPORAN EVALUASI TRIWULANAN</div>
-    <div class="doc-subtitle">KARYAWAN PKWT (PERJANJIAN KERJA WAKTU TERTENTU)</div>
+    <div class="doc-subtitle">
+        {{ $isOutsource ? 'KARYAWAN OUTTASK / OUTSOURCE' : 'KARYAWAN PKWT (PERJANJIAN KERJA WAKTU TERTENTU)' }}
+    </div>
     <div class="doc-period">
         PERIODE : {{ $record->period_start?->translatedFormat('F Y') ?? '__________' }}
         s/d {{ $record->period_end?->translatedFormat('F Y') ?? '__________' }}
@@ -168,7 +171,6 @@
     <ol class="instructions small-note">
         <li>Proses evaluasi difokuskan pada kemampuan karyawan dalam melaksanakan tugas-tugas sesuai uraian kerja.</li>
         <li>Penilai adalah atasan langsung atau pembimbing yang bertanggung jawab melakukan penilaian terhadap kinerja karyawan.</li>
-        <li>Karyawan dievaluasi setiap tiga bulan terhitung sejak mulai bekerja hingga berakhirnya masa PKWT.</li>
         <li>Gunakan skala rating <strong>1 sampai dengan 5</strong> beserta komentar justifikasi pada setiap aspek penilaian:</li>
     </ol>
     <table class="grid-table small-note" style="width: 85%; margin-left: 18px;">
@@ -187,8 +189,8 @@
         </tbody>
     </table>
 
-    <!-- B. DATA KARYAWAN PKWT -->
-    <div class="section-heading">B. DATA KARYAWAN PKWT</div>
+    <!-- B. DATA KARYAWAN -->
+    <div class="section-heading">B. DATA KARYAWAN</div>
     <table class="info-table">
         <tr>
             <td>
@@ -206,22 +208,24 @@
         </tr>
     </table>
 
-    <!-- C. PENCAPAIAN GOAL KARYAWAN -->
-    <div class="section-heading">C. PENCAPAIAN GOAL KARYAWAN</div>
-    <table class="grid-table">
-        <tr>
-            <td style="width: 70%;">
-                <strong>Program Goal Setting Terkait:</strong>
-                {{ $record->performancePlan?->title ?? 'Data Pencapaian Goal Karyawan (Modul Performance)' }}
-            </td>
-            <td style="width: 30%; text-align: center;">
-                <strong>Rata-rata Pencapaian Goal:</strong><br>
-                <span style="font-size: 12pt; font-weight: bold;">
-                    {{ $summary['goal_percentage'] !== null ? number_format($summary['goal_percentage'], 1).'%' : '_____ %' }}
-                </span>
-            </td>
-        </tr>
-    </table>
+    @if (! $isOutsource)
+        <!-- C. PENCAPAIAN GOAL KARYAWAN (KHUSUS NON-OUTSOURCE / PKWT) -->
+        <div class="section-heading">C. PENCAPAIAN GOAL KARYAWAN</div>
+        <table class="grid-table">
+            <tr>
+                <td style="width: 70%;">
+                    <strong>Program Goal Setting Terkait:</strong>
+                    {{ $record->performancePlan?->title ?? 'Data Pencapaian Goal Karyawan (Modul Performance)' }}
+                </td>
+                <td style="width: 30%; text-align: center;">
+                    <strong>Rata-rata Pencapaian Goal:</strong><br>
+                    <span style="font-size: 12pt; font-weight: bold;">
+                        {{ $summary['goal_percentage'] !== null ? number_format($summary['goal_percentage'], 1).'%' : '_____ %' }}
+                    </span>
+                </td>
+            </tr>
+        </table>
+    @endif
 
     <!-- D. MANAJEMEN PEKERJAAN (POIN 1 - 10) -->
     <div class="section-heading">D. MANAJEMEN PEKERJAAN</div>
@@ -314,30 +318,32 @@
     <!-- H. PENILAIAN AKHIR -->
     <div class="section-heading">H. PENILAIAN AKHIR</div>
     <table class="grid-table">
+        @if (! $isOutsource)
+            <tr>
+                <td style="width: 68%;">1. Pencapaian Goal (rata-rata pencapaian seluruh goal, min. 95%)</td>
+                <td style="width: 17%; text-align: center; font-weight: bold;">
+                    {{ $summary['goal_percentage'] !== null ? number_format($summary['goal_percentage'], 1).' %' : '_____ %' }}
+                </td>
+                <td style="width: 15%; text-align: center;">
+                    <span class="{{ $summary['goal_met'] ? 'badge-pass' : 'badge-fail' }}">
+                        {{ $summary['goal_met'] ? 'MEMENUHI' : 'BELUM' }}
+                    </span>
+                </td>
+            </tr>
+        @endif
         <tr>
-            <td style="width: 68%;">1. Pencapaian Goal (rata-rata pencapaian seluruh goal, min. 95%)</td>
+            <td style="width: 68%;">Manajemen Pekerjaan (rata-rata nilai pada kolom D, min. 3.0)</td>
             <td style="width: 17%; text-align: center; font-weight: bold;">
-                {{ $summary['goal_percentage'] !== null ? number_format($summary['goal_percentage'], 1).' %' : '_____ %' }}
-            </td>
-            <td style="width: 15%; text-align: center;">
-                <span class="{{ $summary['goal_met'] ? 'badge-pass' : 'badge-fail' }}">
-                    {{ $summary['goal_met'] ? 'MEMENUHI' : 'BELUM' }}
-                </span>
-            </td>
-        </tr>
-        <tr>
-            <td>2. Manajemen Pekerjaan (rata-rata nilai pada kolom D, min. 3.0)</td>
-            <td style="text-align: center; font-weight: bold;">
                 {{ $summary['work_management_score'] !== null ? number_format($summary['work_management_score'], 2) : '_____' }}
             </td>
-            <td style="text-align: center;">
+            <td style="width: 15%; text-align: center;">
                 <span class="{{ $summary['work_management_met'] ? 'badge-pass' : 'badge-fail' }}">
                     {{ $summary['work_management_met'] ? 'MEMENUHI' : 'BELUM' }}
                 </span>
             </td>
         </tr>
         <tr>
-            <td>3. Jumlah kompetensi yang memenuhi requirement (min. 90%)</td>
+            <td>Jumlah kompetensi yang memenuhi requirement (min. 90%)</td>
             <td style="text-align: center; font-weight: bold;">
                 {{ $record->competencies_met_count ?? '__' }} / {{ $record->competencies_total_count ?? '__' }}
                 ({{ $summary['competency_percentage'] !== null ? number_format($summary['competency_percentage'], 1).'%' : '__%' }})
@@ -345,16 +351,6 @@
             <td style="text-align: center;">
                 <span class="{{ $summary['competency_met'] ? 'badge-pass' : 'badge-fail' }}">
                     {{ $summary['competency_met'] ? 'MEMENUHI' : 'BELUM' }}
-                </span>
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2" style="text-align: right; font-weight: bold; background-color: #f9fafb;">
-                Status Kelayakan Pengangkatan (Minimal 2 dari 3 Kriteria Terpenuhi):
-            </td>
-            <td style="text-align: center; background-color: #f9fafb;">
-                <span class="{{ $summary['eligible_for_permanent'] ? 'badge-pass' : 'badge-fail' }}">
-                    {{ $summary['criteria_met_count'] }}/3 ({{ $summary['eligible_for_permanent'] ? 'LAYAK' : 'BELUM LAYAK' }})
                 </span>
             </td>
         </tr>
@@ -405,10 +401,6 @@
                     <span class="checkbox">{{ $decision === 'terminate_pkwt' ? 'V' : '' }}</span>
                     <strong>Tidak Direkomendasikan / Terminasi PKWT</strong>, dengan alasan:
                     <u>{{ $decision === 'terminate_pkwt' && filled($record->recommendation_reason) ? $record->recommendation_reason : '………………………………………………………………' }}</u>
-                </div>
-                <div class="small-note" style="border-top: 1px solid #d1d5db; padding-top: 4px;">
-                    *) Kriteria yang harus dipenuhi untuk dapat diangkat sebagai karyawan tetap (setidaknya 2 dari 3 kriteria harus terpenuhi):
-                    (1) Pencapaian Goal &ge; 95%, (2) Rata-rata Manajemen Pekerjaan &ge; 3.0, (3) Kompetensi memenuhi requirement &ge; 90%.
                 </div>
             </td>
         </tr>

@@ -23,11 +23,49 @@ use Webkul\Performance\Models\PerformancePlan;
 
 class EvaluationForm
 {
+    public static function isOutsourceOrOuttaskState(Get $get): bool
+    {
+        $evalType = $get('evaluation_type');
+
+        if ($evalType instanceof EvaluationType) {
+            $evalType = $evalType->value;
+        }
+
+        if ($evalType === EvaluationType::OutsourceOuttask->value) {
+            return true;
+        }
+
+        $decision = $get('recommendation_decision');
+
+        if ($decision instanceof RecommendationDecision) {
+            $decision = $decision->value;
+        }
+
+        if (in_array($decision, [
+            RecommendationDecision::ExtendOuttaskOutsource->value,
+            RecommendationDecision::TerminateOuttaskOutsource->value,
+        ], true)) {
+            return true;
+        }
+
+        $employeeId = $get('employee_id');
+
+        if ($employeeId) {
+            $employee = Employee::withoutGlobalScopes()->with('employmentType')->find($employeeId);
+
+            if (Evaluation::isEmployeeOutsourceOrOuttask($employee)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public static function configure(Schema $schema): Schema
     {
         return $schema
             ->components([
-                Section::make('A & B. Identitas Evaluasi & Data Karyawan PKWT')
+                Section::make('A & B. Identitas Evaluasi & Data Karyawan')
                     ->schema([
                         TextInput::make('title')
                             ->label(__('evaluations::filament/resources/evaluation.form.title'))
@@ -44,6 +82,11 @@ class EvaluationForm
                             ->afterStateUpdated(function (?string $state, Set $set): void {
                                 if ($state === EvaluationType::PkwtFinal->value) {
                                     $set('is_final_period', true);
+                                }
+
+                                if ($state === EvaluationType::OutsourceOuttask->value) {
+                                    $set('performance_plan_id', null);
+                                    $set('goal_achievement_percentage', null);
                                 }
                             }),
                         Select::make('status')
@@ -64,11 +107,17 @@ class EvaluationForm
                                 }
 
                                 $employee = Employee::withoutGlobalScopes()
-                                    ->with(['department', 'workLocation', 'job'])
+                                    ->with(['department', 'workLocation', 'job', 'employmentType'])
                                     ->find($state);
 
                                 if (! $employee) {
                                     return;
+                                }
+
+                                if (Evaluation::isEmployeeOutsourceOrOuttask($employee)) {
+                                    $set('evaluation_type', EvaluationType::OutsourceOuttask->value);
+                                    $set('performance_plan_id', null);
+                                    $set('goal_achievement_percentage', null);
                                 }
 
                                 $levelOne = $employee->resolveLevelOneApproverEmployee();
@@ -143,6 +192,7 @@ class EvaluationForm
                     ->columns(2),
 
                 Section::make('C. Pencapaian Goal Karyawan')
+                    ->visible(fn (Get $get): bool => ! static::isOutsourceOrOuttaskState($get))
                     ->schema([
                         Select::make('performance_plan_id')
                             ->label('Link Program Goal Setting (Modul Performance)')

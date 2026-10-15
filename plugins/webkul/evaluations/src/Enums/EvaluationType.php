@@ -15,16 +15,19 @@ enum EvaluationType: string implements HasColor, HasLabel
 
     case PkwtFinal = 'pkwt_final';
 
+    case OutsourceOuttask = 'outsource_outtask';
+
     case Regular = 'regular';
 
     public function getLabel(): string
     {
         return match ($this) {
-            self::PkwtQ1    => 'Triwulan I PKWT',
-            self::PkwtQ2    => 'Triwulan II PKWT',
-            self::PkwtQ3    => 'Triwulan III PKWT',
-            self::PkwtFinal => 'Evaluasi Akhir PKWT (Keputusan Pengangkatan)',
-            self::Regular   => 'Evaluasi Berkala / Reguler',
+            self::PkwtQ1           => 'Triwulan I PKWT',
+            self::PkwtQ2           => 'Triwulan II PKWT',
+            self::PkwtQ3           => 'Triwulan III PKWT',
+            self::PkwtFinal        => 'Evaluasi Akhir PKWT (Keputusan Pengangkatan)',
+            self::OutsourceOuttask => 'Evaluasi Karyawan Outtask / Outsource',
+            self::Regular          => 'Evaluasi Berkala / Reguler',
         };
     }
 
@@ -33,6 +36,7 @@ enum EvaluationType: string implements HasColor, HasLabel
         return match ($this) {
             self::PkwtQ1, self::PkwtQ2, self::PkwtQ3 => 'info',
             self::PkwtFinal                          => 'warning',
+            self::OutsourceOuttask                   => 'gray',
             self::Regular                            => 'primary',
         };
     }
@@ -40,6 +44,11 @@ enum EvaluationType: string implements HasColor, HasLabel
     public function isPkwt(): bool
     {
         return in_array($this, [self::PkwtQ1, self::PkwtQ2, self::PkwtQ3, self::PkwtFinal], true);
+    }
+
+    public function isOutsourceOrOuttask(): bool
+    {
+        return $this === self::OutsourceOuttask;
     }
 
     /**

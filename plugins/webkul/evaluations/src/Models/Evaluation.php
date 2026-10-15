@@ -132,6 +132,54 @@ class Evaluation extends Model
     }
 
     /**
+     * Determine whether an Employee record belongs to an Outsource / Outtask employment scheme.
+     */
+    public static function isEmployeeOutsourceOrOuttask(?Employee $employee): bool
+    {
+        if (! $employee) {
+            return false;
+        }
+
+        $haystack = mb_strtolower(implode(' ', array_filter([
+            $employee->employee_type,
+            $employee->employmentType?->name,
+            $employee->employmentType?->code,
+            $employee->job_title,
+        ])));
+
+        foreach (['outsource', 'outsourcing', 'outtask', 'out-task', 'alih daya', 'vendor'] as $keyword) {
+            if (str_contains($haystack, $keyword)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Determine whether this evaluation is for an Outsource / Outtask employee or workflow.
+     */
+    public function isOutsourceOrOuttask(): bool
+    {
+        if ($this->evaluation_type === EvaluationType::OutsourceOuttask) {
+            return true;
+        }
+
+        if (in_array($this->recommendation_decision, [
+            RecommendationDecision::ExtendOuttaskOutsource,
+            RecommendationDecision::TerminateOuttaskOutsource,
+        ], true)) {
+            return true;
+        }
+
+        $employee = $this->relationLoaded('employee')
+            ? $this->employee
+            : ($this->employee_id ? Employee::withoutGlobalScopes()->with('employmentType')->find($this->employee_id) : null);
+
+        return static::isEmployeeOutsourceOrOuttask($employee);
+    }
+
+    /**
      * Return the 10 standard PKWT work management aspects from the official PKWT Quarterly Evaluation form.
      *
      * @return array<int, array{title: string, description: string, weight: int, sort: int}>
@@ -273,10 +321,14 @@ class Evaluation extends Model
     }
 
     /**
-     * Resolve effective goal achievement percentage (either stored or pulled from linked PerformancePlan).
+     * Resolve effective goal achievement percentage (returns null when Outsource/Outtask).
      */
     public function resolvedGoalAchievementPercentage(): ?float
     {
+        if ($this->isOutsourceOrOuttask()) {
+            return null;
+        }
+
         if ($this->goal_achievement_percentage !== null) {
             return round((float) $this->goal_achievement_percentage, 1);
         }
@@ -300,6 +352,10 @@ class Evaluation extends Model
      */
     public function syncGoalFromPerformancePlan(): ?float
     {
+        if ($this->isOutsourceOrOuttask()) {
+            return null;
+        }
+
         try {
             if (! class_exists(PerformancePlan::class) || ! Schema::hasTable('performance_plans')) {
                 return null;
@@ -367,17 +423,22 @@ class Evaluation extends Model
     }
 
     /**
-     * Number of permanent-appointment criteria met (out of 3).
+     * Number of permanent-appointment criteria met.
      */
     public function criteriaMetCount(): int
     {
+        if ($this->isOutsourceOrOuttask()) {
+            return (int) $this->meetsWorkManagementCriterion()
+                + (int) $this->meetsCompetencyCriterion();
+        }
+
         return (int) $this->meetsGoalCriterion()
             + (int) $this->meetsWorkManagementCriterion()
             + (int) $this->meetsCompetencyCriterion();
     }
 
     /**
-     * Employee is eligible for permanent appointment if at least 2 of the 3 criteria are met.
+     * Employee is eligible if at least 2 criteria are met.
      */
     public function isEligibleForPermanentAppointment(): bool
     {
@@ -388,6 +449,7 @@ class Evaluation extends Model
      * Structured summary of Section H & I criteria for UI badges and PDF output.
      *
      * @return array{
+     *     is_outsource: bool,
      *     goal_percentage: ?float,
      *     goal_met: bool,
      *     work_management_score: ?float,
@@ -401,6 +463,7 @@ class Evaluation extends Model
     public function criteriaSummary(): array
     {
         return [
+            'is_outsource'           => $this->isOutsourceOrOuttask(),
             'goal_percentage'        => $this->resolvedGoalAchievementPercentage(),
             'goal_met'               => $this->meetsGoalCriterion(),
             'work_management_score'  => $this->finalScore(),
@@ -500,7 +563,7 @@ class Evaluation extends Model
         }
 
         $employee = Employee::withoutGlobalScopes()
-            ->with(['department', 'workLocation', 'job'])
+            ->with(['department', 'workLocation', 'job', 'employmentType'])
             ->find($this->employee_id);
 
         if (! $employee) {
@@ -509,6 +572,15 @@ class Evaluation extends Model
 
         if ($employee->company_id) {
             $this->company_id = $employee->company_id;
+        }
+
+        if (static::isEmployeeOutsourceOrOuttask($employee) && ($this->evaluation_type === null || $this->evaluation_type === EvaluationType::PkwtQ1)) {
+            $this->evaluation_type = EvaluationType::OutsourceOuttask;
+        }
+
+        if ($this->isOutsourceOrOuttask()) {
+            $this->performance_plan_id = null;
+            $this->goal_achievement_percentage = null;
         }
 
         $levelOne = $employee->resolveLevelOneApproverEmployee();
