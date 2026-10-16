@@ -651,6 +651,11 @@ html.fi.dark .dhonu-ops-map .leaflet-container {
     background: #0f172a;
 }
 
+/* Leaflet ships a Ukraine flag SVG in attribution; keep text credit only. */
+html.fi .leaflet-attribution-flag {
+    display: none !important;
+}
+
 html.fi .dhonu-ops-marker {
     background: transparent;
     border: none;
