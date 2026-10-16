@@ -11,4 +11,7 @@ return [
     'role_created'        => 'Role created',
     'role_updated'        => 'Role updated',
     'role_deleted'        => 'Role deleted',
+    'backup_created'      => 'Backup created',
+    'backup_restored'     => 'Backup restored',
+    'backup_deleted'      => 'Backup deleted',
 ];

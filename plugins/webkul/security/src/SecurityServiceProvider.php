@@ -6,11 +6,14 @@ use Filament\Panel;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Webkul\PluginManager\Package;
 use Webkul\PluginManager\PackageServiceProvider;
+use Webkul\Security\Console\Commands\DatabaseBackupCleanCommand;
+use Webkul\Security\Console\Commands\DatabaseBackupCommand;
 use Webkul\Security\Console\Commands\SyncRbacPermissionsCommand;
 use Webkul\Security\Facades\Bouncer as BouncerFacade;
 use Webkul\Security\Listeners\RecordSecurityAccessAudit;
@@ -54,8 +57,11 @@ class SecurityServiceProvider extends PackageServiceProvider
                 '2025_07_29_064223_create_currency_settings',
             ])
             ->runsSettings()
+            ->hasConfigFile('security-backup')
             ->hasCommands([
                 SyncRbacPermissionsCommand::class,
+                DatabaseBackupCommand::class,
+                DatabaseBackupCleanCommand::class,
             ]);
     }
 
@@ -85,6 +91,19 @@ class SecurityServiceProvider extends PackageServiceProvider
             }
 
             return null;
+        });
+
+        $this->app->booted(function (): void {
+            if (! config('security-backup.enabled', true)) {
+                return;
+            }
+
+            $scheduleAt = (string) config('security-backup.schedule_at', '02:00');
+
+            /** @var Schedule $schedule */
+            $schedule = $this->app->make(Schedule::class);
+            $schedule->command('security:database-backup')->dailyAt($scheduleAt)->withoutOverlapping();
+            $schedule->command('security:database-backup-clean')->dailyAt('03:15')->withoutOverlapping();
         });
     }
 

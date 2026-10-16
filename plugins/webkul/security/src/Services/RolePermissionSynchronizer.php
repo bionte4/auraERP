@@ -49,6 +49,7 @@ class RolePermissionSynchronizer
             'view_any_security_team', 'view_security_team', 'create_security_team', 'update_security_team', 'delete_security_team', 'delete_any_security_team',
             'view_any_security_company', 'view_security_company', 'create_security_company', 'update_security_company', 'delete_security_company', 'delete_any_security_company',
             'view_any_security_audit::trail', 'view_security_audit::trail',
+            'page_security_manage_database_backups',
             'view_any_role', 'view_role', 'create_role', 'update_role', 'delete_role', 'delete_any_role', 'force_delete_role', 'force_delete_any_role', 'restore_role', 'restore_any_role', 'reorder_role',
 
             // Employees & HR

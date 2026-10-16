@@ -12,7 +12,7 @@ Halaman login Admin Panel: **`/admin/login`**
 
 | Role | Hak Akses Utama |
 | :--- | :--- |
-| **Admin** | Akses penuh ke seluruh modul, pengaturan perusahaan, manajemen User, Role & Permission, **Audit Trail** (khusus Admin), dan instalasi plugin. |
+| **Admin** | Akses penuh ke seluruh modul, pengaturan perusahaan, manajemen User, Role & Permission, **Audit Trail**, **Backup Database** (khusus Admin), dan instalasi plugin. |
 | **HRD** | Mengelola Karyawan, Kontrak, Departemen, Lokasi Kerja (Geofence), Rekap Absensi, Cuti/Izin (`Time Off`), Rencana Kinerja (`Performance Plans`), Evaluasi Kinerja (`Evaluations`), Dashboard Evaluasi + Export Excel/PDF, Rekrutmen, dan Aset Karyawan. |
 | **Operation Manager** | Mengelola Proyek (`Projects`), **Tugaskan Karyawan ke Proyek**, Tugas (`Tasks`), `Timesheets`, Gudang & Stok (`Inventory` & `Products`), Perawatan & Aset (`Maintenance` & `Equipment`), Pembelian (`Purchases`), Penjualan (`Sales`), Mitra (`Partners`), serta melakukan **Penilaian Kinerja (L1/L2)** dan **Approval Cuti/Absensi** untuk tim/bawahannya. |
 | **Kasir** | Mengoperasikan **POS Terminal** (`/admin/pos-terminal`), membuka/menutup sesi shift kasir (`POS Sessions`), membuat transaksi penjualan kasir (`POS Orders`), melihat katalog produk & pelanggan, serta melakukan absensi (`/admin/absen`). |
@@ -45,6 +45,19 @@ Saat membuat atau mengedit User di **Settings → Users**, terdapat pengaturan *
 2. Mencatat peristiwa akses keamanan: login berhasil/gagal, logout, perubahan user (email/status/password), perubahan peran user, serta CRUD role.
 3. Setiap entri menampilkan waktu, pelaku, objek, IP, guard, dan detail tambahan. Hanya mode lihat (tidak dapat diubah/dihapus dari UI).
 4. Setelah deploy: pastikan migrasi jalan (`php artisan migrate`) lalu `sudo -u www-data php artisan security:sync-rbac` bila perlu.
+
+### E. Backup Database Berkala & Restore (khusus Admin)
+1. Menu **Settings → Backup Database** (`/admin/database-backups`) **hanya untuk role Admin**.
+2. Backup otomatis harian (default pukul **02:00** server) via scheduler; pembersihan backup lama default pukul **03:15**.
+3. Dari UI Admin dapat: **buat backup sekarang**, **unduh**, **restore** (konfirmasi ketik `RESTORE`), **hapus**, dan **bersihkan backup lama**.
+4. File disimpan di `storage/app/private/database-backups` (bisa diubah lewat `SECURITY_BACKUP_PATH`).
+5. Perintah CLI:
+   - `sudo -u www-data php artisan security:database-backup`
+   - `sudo -u www-data php artisan security:database-backup-clean`
+6. Pastikan cron scheduler aktif:
+   `* * * * * cd /var/www/auraerp && sudo -u www-data php artisan schedule:run >> /dev/null 2>&1`
+7. Env berguna: `SECURITY_BACKUP_ENABLED`, `SECURITY_BACKUP_SCHEDULE_AT`, `SECURITY_BACKUP_RETENTION_DAYS`, `SECURITY_BACKUP_RETENTION_COUNT`.
+8. **Peringatan:** Restore menimpa database aktif — uji dulu di staging bila memungkinkan.
 
 *(Akun Demo: `hrd@opsora.my.id` / `Demo-hrd-2026` dan `karyawan@opsora.my.id` / `Demo-karyawan-2026`. Untuk menyinkronkan ulang seluruh Role & Permission kapan saja: `sudo -u www-data php artisan security:sync-rbac`)*
 

@@ -11,4 +11,7 @@ return [
     'role_created'        => 'Role dibuat',
     'role_updated'        => 'Role diubah',
     'role_deleted'        => 'Role dihapus',
+    'backup_created'      => 'Backup dibuat',
+    'backup_restored'     => 'Backup dipulihkan',
+    'backup_deleted'      => 'Backup dihapus',
 ];
