@@ -26,6 +26,8 @@ use Webkul\Support\Models\Sequence;
 
 class SequenceResource extends Resource
 {
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-hashtag';
+
     protected static ?string $model = Sequence::class;
 
     protected static ?int $navigationSort = 10;

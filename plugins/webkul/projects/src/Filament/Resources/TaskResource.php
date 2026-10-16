@@ -29,6 +29,8 @@ use Webkul\Support\Enums\NavigationGroup;
 
 class TaskResource extends Resource
 {
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-check';
+
     use HasCustomFields;
 
     protected static ?string $model = Task::class;

@@ -7,6 +7,8 @@ use Webkul\Support\Models\Country;
 
 class CountryResource extends Resource
 {
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-globe-alt';
+
     protected static ?string $model = Country::class;
 
     protected static bool $shouldRegisterNavigation = false;

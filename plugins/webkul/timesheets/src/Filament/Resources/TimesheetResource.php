@@ -16,6 +16,8 @@ use Webkul\Timesheet\Models\Timesheet;
 
 class TimesheetResource extends Resource
 {
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clock';
+
     use HasCustomFields;
 
     protected static ?string $model = Timesheet::class;

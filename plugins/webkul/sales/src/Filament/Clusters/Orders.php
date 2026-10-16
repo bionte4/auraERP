@@ -7,6 +7,8 @@ use Webkul\Support\Enums\NavigationGroup;
 
 class Orders extends Cluster
 {
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-shopping-cart';
+
     protected static ?string $slug = 'sale/orders';
 
     public static function getNavigationLabel(): string

@@ -17,6 +17,8 @@ use Webkul\Partner\Models\Partner;
 
 class PartnerResource extends Resource
 {
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-users';
+
     use HasCustomFields;
 
     protected static ?string $model = Partner::class;

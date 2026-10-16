@@ -97,6 +97,9 @@
             <div>
                 <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Business & System</div>
                 <ul class="space-y-1.5 text-xs">
+                    @if (\Webkul\Support\Filament\Pages\TeamBoard::canAccess())
+                        <li><a href="{{ url('/admin/team-board') }}" class="block px-2 py-1.5 rounded-md text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">Team Board</a></li>
+                    @endif
                     <li><a href="{{ url('/admin/project') }}" class="block px-2 py-1.5 rounded-md text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">Projects & Tasks</a></li>
                     <li><a href="{{ url('/admin/pos/terminal') }}" class="block px-2 py-1.5 rounded-md text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">Point of Sale (POS)</a></li>
                     <li><a href="{{ url('/admin/settings/manage-branding') }}" class="block px-2 py-1.5 rounded-md text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">Branding & Appearance</a></li>

@@ -113,7 +113,7 @@ class ListTimeOff extends ListRecords
                 ->color('warning')
                 ->requiresConfirmation()
                 ->modalHeading('Jalankan Eskalasi SLA Permit / Cuti')
-                ->modalDescription('Semua pengajuan izin/cuti yang belum disetujui lebih dari 24 jam akan otomatis dieskalasikan ke pejabat level di atasnya sesuai struktur organisasi.')
+                ->modalDescription('Pengajuan cuti, izin, sakit, atau keterlambatan yang belum disetujui lebih dari 24 jam memberi tahu team leader, Operation Manager, dan HRD. Tahap yang kosong dapat ditutup HRD.')
                 ->action(function (): void {
                     $result = app(ApprovalEscalationService::class)->escalateOverdueLeaves(24);
 

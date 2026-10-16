@@ -18,6 +18,8 @@ use Webkul\Support\Enums\NavigationGroup;
 
 class FieldResource extends Resource
 {
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-adjustments-horizontal';
+
     protected static ?string $model = Field::class;
 
     protected static ?int $navigationSort = 5;

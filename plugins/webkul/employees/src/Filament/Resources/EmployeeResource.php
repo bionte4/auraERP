@@ -27,6 +27,8 @@ use Webkul\Support\Enums\NavigationGroup;
 
 class EmployeeResource extends Resource
 {
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-users';
+
     use HasCustomFields;
 
     protected static ?string $model = Employee::class;

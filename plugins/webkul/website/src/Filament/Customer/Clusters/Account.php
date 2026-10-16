@@ -7,6 +7,8 @@ use Filament\Facades\Filament;
 
 class Account extends Cluster
 {
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-user-circle';
+
     protected static ?int $navigationSort = 1000;
 
     public static function getNavigationLabel(): string

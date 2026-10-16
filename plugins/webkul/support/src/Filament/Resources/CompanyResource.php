@@ -22,6 +22,8 @@ use Webkul\Support\Models\Scopes\AllowedCompanyScope;
 
 class CompanyResource extends Resource
 {
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-office-2';
+
     use HasCustomFields;
 
     protected static ?string $model = Company::class;

@@ -7,6 +7,8 @@ use Webkul\Support\Enums\NavigationGroup;
 
 class Accounting extends Cluster
 {
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-calculator';
+
     protected static ?string $slug = 'accounting/accounting';
 
     protected static ?int $navigationSort = 4;

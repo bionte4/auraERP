@@ -45,7 +45,7 @@ class Dashboard extends BaseDashboard
 
     public static function getNavigationIcon(): string|BackedEnum|Htmlable|null
     {
-        return null;
+        return 'heroicon-o-briefcase';
     }
 
     public function filtersForm(Schema $schema): Schema

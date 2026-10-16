@@ -19,6 +19,8 @@ use Webkul\Support\Enums\NavigationGroup;
 
 class EquipmentResource extends Resource
 {
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-wrench-screwdriver';
+
     use HasCustomFields;
 
     protected static ?string $model = Equipment::class;

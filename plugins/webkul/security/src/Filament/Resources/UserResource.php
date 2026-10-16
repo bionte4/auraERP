@@ -24,6 +24,8 @@ use Webkul\Support\Enums\NavigationGroup;
 
 class UserResource extends Resource
 {
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-users';
+
     protected static ?string $model = User::class;
 
     protected static ?int $navigationSort = 4;

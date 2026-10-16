@@ -24,7 +24,7 @@ class Overview extends BaseDashboard
 
     public static function getNavigationIcon(): string|BackedEnum|Htmlable|null
     {
-        return null;
+        return 'heroicon-o-calendar-days';
     }
 
     public function getTitle(): string

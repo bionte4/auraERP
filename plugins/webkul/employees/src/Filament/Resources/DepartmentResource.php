@@ -22,6 +22,8 @@ use Webkul\Support\Enums\NavigationGroup;
 
 class DepartmentResource extends Resource
 {
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-office-2';
+
     protected static ?string $model = Department::class;
 
     protected static ?SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;

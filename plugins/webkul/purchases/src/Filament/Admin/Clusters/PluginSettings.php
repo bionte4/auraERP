@@ -7,6 +7,8 @@ use Webkul\Support\Enums\NavigationGroup;
 
 class PluginSettings extends Cluster
 {
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-puzzle-piece';
+
     protected static ?string $slug = 'purchase/settings';
 
     protected static ?int $navigationSort = 4;

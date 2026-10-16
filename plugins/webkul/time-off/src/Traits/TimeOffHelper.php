@@ -453,12 +453,12 @@ trait TimeOffHelper
                 $data['number_of_hours'] = $employee->calendar->hours_per_day;
             }
 
-            $levelOne = $employee->resolveLevelOneApproverEmployee();
-            $levelTwo = $employee->resolveLevelTwoApproverEmployee();
+            $teamLeader = $employee->resolveTeamLeaderEmployee();
+            $operationManager = $employee->resolveOperationManagerEmployee($teamLeader);
 
-            $data['manager_id'] ??= $levelOne?->id;
-            $data['first_approver_id'] ??= $levelOne?->id;
-            $data['second_approver_id'] ??= $levelTwo?->id;
+            $data['manager_id'] ??= $teamLeader?->id;
+            $data['first_approver_id'] ??= $teamLeader?->id;
+            $data['second_approver_id'] ??= $operationManager?->id;
         }
 
         if ($user) {

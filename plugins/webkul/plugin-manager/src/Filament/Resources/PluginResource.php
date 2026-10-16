@@ -14,6 +14,8 @@ use Webkul\Support\Enums\NavigationGroup;
 
 class PluginResource extends Resource
 {
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-puzzle-piece';
+
     protected static ?string $model = Plugin::class;
 
     public static function getNavigationGroup(): string|\UnitEnum

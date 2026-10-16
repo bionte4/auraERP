@@ -12,6 +12,8 @@ use Webkul\Product\Models\Packaging;
 
 class PackagingResource extends Resource
 {
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-archive-box';
+
     protected static ?string $model = Packaging::class;
 
     protected static bool $shouldRegisterNavigation = false;

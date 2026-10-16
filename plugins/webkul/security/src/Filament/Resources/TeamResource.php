@@ -15,6 +15,8 @@ use Webkul\Support\Enums\NavigationGroup;
 
 class TeamResource extends Resource
 {
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-user-group';
+
     protected static ?string $model = Team::class;
 
     protected static ?int $navigationSort = 3;

@@ -199,10 +199,39 @@ html.fi .fi-sidebar-group-label {
     color: #94a3b8;
 }
 
-html.fi .fi-sidebar-item-btn {
+html.fi .fi-sidebar-item-btn,
+html.fi .fi-sidebar-group-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
+    min-height: 2.15rem;
     border-radius: 0.5rem;
-    padding: 0.45rem 0.65rem;
-    transition: all 0.15s ease;
+    padding: 0.4rem 0.65rem;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+html.fi .fi-sidebar-group-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+html.fi .fi-sidebar-item-icon,
+html.fi .fi-sidebar-group-icon {
+    width: 1.15rem;
+    height: 1.15rem;
+    color: #64748b;
+    flex-shrink: 0;
+}
+
+html.fi.dark .fi-sidebar-item-icon,
+html.fi.dark .fi-sidebar-group-icon {
+    color: #cbd5e1;
+}
+
+html.fi .fi-sidebar-item.fi-active > .fi-sidebar-item-btn .fi-sidebar-item-icon {
+    color: var(--primary-600, #4f46e5);
 }
 
 html.fi .fi-sidebar-item-label {
@@ -237,7 +266,8 @@ html.fi.dark .fi-sidebar-item.fi-active > .fi-sidebar-item-btn .fi-sidebar-item-
 }
 
 /* Hide only the default page title. The content lives in the same wrapper, so the wrapper itself must stay visible. */
-html.fi .fi-page:has(.dhonu-dashboard) .fi-page-header-main-ctn > .fi-header {
+html.fi .fi-page:has(.dhonu-dashboard) .fi-page-header-main-ctn > .fi-header,
+html.fi .fi-page:has(.team-board) .fi-page-header-main-ctn > .fi-header {
     display: none;
 }
 
@@ -643,4 +673,272 @@ html.fi .dhonu-map-empty {
     font-size: 0.75rem;
     line-height: 1.35;
     color: #64748b;
+}
+
+html.fi .team-board {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+html.fi .team-board-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+html.fi .team-board-head h2 {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #1e293b;
+}
+
+html.fi .team-board-head p {
+    margin: 0.25rem 0 0;
+    max-width: 40rem;
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+html.fi .team-board-add {
+    display: inline-flex;
+    align-items: center;
+    height: 2.25rem;
+    padding: 0 0.9rem;
+    border-radius: 0.55rem;
+    background: #22a06b;
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 8px 16px -10px rgba(34, 160, 107, 0.9);
+}
+
+html.fi .team-board-add:hover {
+    background: #1b8a5a;
+}
+
+html.fi .team-board-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+}
+
+@media (min-width: 860px) {
+    html.fi .team-board-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1200px) {
+    html.fi .team-board-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+html.fi .team-card,
+html.fi .team-empty {
+    min-width: 0;
+    padding: 1.1rem 1.15rem 0.95rem;
+    border-radius: 0.9rem;
+    border: 1px solid #e6ebf2;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+html.fi .team-empty {
+    color: #64748b;
+    font-size: 0.875rem;
+}
+
+html.fi .team-card-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+html.fi .team-card-head h3 {
+    margin: 0;
+    min-width: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+html.fi .team-card-head a {
+    color: #1e293b;
+    text-decoration: none;
+}
+
+html.fi .team-card-head a:hover {
+    color: #3b6ef6;
+}
+
+html.fi .team-badge {
+    flex: 0 0 auto;
+    padding: 0.1rem 0.4rem;
+    border-radius: 0.35rem;
+    background: #e8f1ff;
+    color: #2563eb;
+    font-size: 0.65rem;
+    font-weight: 700;
+}
+
+html.fi .team-members-label,
+html.fi .team-about strong,
+html.fi .team-stats span,
+html.fi .team-progress-label span,
+html.fi .team-card-foot span {
+    color: #64748b;
+    font-size: 0.75rem;
+}
+
+html.fi .team-members-label {
+    margin: 0.85rem 0 0.45rem;
+}
+
+html.fi .team-avatars {
+    display: flex;
+    align-items: center;
+}
+
+html.fi .team-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.7rem;
+    height: 1.7rem;
+    margin-left: -0.35rem;
+    border: 2px solid #fff;
+    border-radius: 999px;
+    color: #fff;
+    font-size: 0.62rem;
+    font-weight: 700;
+}
+
+html.fi .team-avatar:first-child {
+    margin-left: 0;
+}
+
+html.fi .team-avatar.is-more {
+    background: #e2e8f0;
+    color: #475569;
+}
+
+html.fi .team-about {
+    margin-top: 0.9rem;
+}
+
+html.fi .team-about strong {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-weight: 700;
+}
+
+html.fi .team-about p {
+    margin: 0;
+    min-height: 3.2rem;
+    color: #475569;
+    font-size: 0.78rem;
+    line-height: 1.45;
+}
+
+html.fi .team-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin-top: 0.9rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #eef2f7;
+}
+
+html.fi .team-stats strong {
+    display: block;
+    margin-top: 0.15rem;
+    color: #0f172a;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+html.fi .team-progress {
+    margin-top: 0.85rem;
+}
+
+html.fi .team-progress-label {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.35rem;
+}
+
+html.fi .team-progress-label strong {
+    color: #334155;
+    font-size: 0.75rem;
+}
+
+html.fi .team-progress-bar {
+    height: 0.4rem;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #e8eef8;
+}
+
+html.fi .team-progress-bar i {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #3b6ef6 0%, #60a5fa 100%);
+}
+
+html.fi .team-card-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-top: 0.85rem;
+}
+
+html.fi .team-card-foot a {
+    display: inline-flex;
+    align-items: center;
+    height: 1.75rem;
+    padding: 0 0.7rem;
+    border-radius: 0.45rem;
+    background: #eef2ff;
+    color: #3730a3;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+html.fi .team-card-foot a:hover {
+    background: #e0e7ff;
+}
+
+html.fi.dark .team-board-head h2,
+html.fi.dark .team-card-head a,
+html.fi.dark .team-stats strong {
+    color: #f1f5f9;
+}
+
+html.fi.dark .team-card,
+html.fi.dark .team-empty {
+    border-color: rgba(51, 65, 85, 0.75);
+    background: rgba(15, 23, 42, 0.92);
+}
+
+html.fi.dark .team-about p,
+html.fi.dark .team-progress-label strong {
+    color: #cbd5e1;
+}
+
+html.fi.dark .team-stats {
+    border-top-color: rgba(51, 65, 85, 0.75);
+}
+
+html.fi.dark .team-avatar {
+    border-color: #0f172a;
 }

@@ -28,6 +28,8 @@ use Webkul\Support\Enums\NavigationGroup;
 
 class ProjectResource extends Resource
 {
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-briefcase';
+
     use HasCustomFields;
 
     protected static ?string $model = Project::class;

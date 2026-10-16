@@ -43,7 +43,7 @@ class Recruitments extends BaseDashboard
 
     public static function getNavigationIcon(): string|BackedEnum|Htmlable|null
     {
-        return null;
+        return 'heroicon-o-user-plus';
     }
 
     public function filtersForm(Schema $schema): Schema

@@ -11,6 +11,8 @@ use Webkul\Partner\Models\Industry;
 
 class IndustryResource extends Resource
 {
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-office';
+
     protected static ?string $model = Industry::class;
 
     protected static bool $shouldRegisterNavigation = false;

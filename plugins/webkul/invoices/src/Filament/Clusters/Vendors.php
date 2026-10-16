@@ -7,6 +7,8 @@ use Webkul\Support\Enums\NavigationGroup;
 
 class Vendors extends Cluster
 {
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-truck';
+
     protected static ?string $slug = 'invoices/vendors';
 
     public static function getNavigationLabel(): string

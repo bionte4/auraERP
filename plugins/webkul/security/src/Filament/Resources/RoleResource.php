@@ -54,12 +54,12 @@ class RoleResource extends RolesRoleResource
 
     public static function getNavigationIcon(): string|BackedEnum|Htmlable|null
     {
-        return null;
+        return 'heroicon-o-shield-check';
     }
 
     public static function getActiveNavigationIcon(): BackedEnum|Htmlable|null|string
     {
-        return null;
+        return 'heroicon-o-shield-check';
     }
 
     public static function getPermissionPrefixes(): array

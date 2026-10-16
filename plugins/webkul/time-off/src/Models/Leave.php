@@ -5,7 +5,9 @@ namespace Webkul\TimeOff\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 use Webkul\Chatter\Traits\HasChatter;
 use Webkul\Chatter\Traits\HasLogActivity;
 use Webkul\Employee\Models\Department;
@@ -175,8 +177,10 @@ class Leave extends Model
             return false;
         }
 
-        if ($user->hasAnyRole(['Admin', 'HRD']) || $user->can('update_time_off_time::off')) {
-            return true;
+        $state = $this->state instanceof State ? $this->state->value : (string) $this->state;
+
+        if (in_array($state, [State::VALIDATE_TWO->value, State::REFUSE->value], true)) {
+            return false;
         }
 
         $approverEmployeeIds = Employee::withoutGlobalScopes()
@@ -186,64 +190,47 @@ class Leave extends Model
             ->map(fn ($id) => (int) $id)
             ->all();
 
-        if (empty($approverEmployeeIds)) {
-            return false;
+        if ($state === State::CONFIRM->value) {
+            if ($this->first_approver_id && in_array((int) $this->first_approver_id, $approverEmployeeIds, true)) {
+                return true;
+            }
+
+            return $this->hrdMayCoverMissingApprover($user, $this->first_approver_id === null);
         }
 
-        if (
-            in_array((int) $this->manager_id, $approverEmployeeIds, true)
-            || in_array((int) $this->first_approver_id, $approverEmployeeIds, true)
-            || in_array((int) $this->second_approver_id, $approverEmployeeIds, true)
-        ) {
+        if ($this->second_approver_id && in_array((int) $this->second_approver_id, $approverEmployeeIds, true)) {
             return true;
         }
 
-        foreach ($approverEmployeeIds as $empId) {
-            $emp = Employee::withoutGlobalScopes()->find($empId);
-
-            if ($emp && in_array((int) $this->employee_id, $emp->getSubordinateEmployeeIds(true), true)) {
-                return true;
-            }
-        }
-
-        return false;
+        return $this->hrdMayCoverMissingApprover($user, $this->second_approver_id === null);
     }
 
     public function approveBy(?User $user = null): self
     {
         $user ??= Auth::user();
 
-        $actorEmployee = $user
-            ? Employee::withoutGlobalScopes()->whereNull('deleted_at')->where('user_id', $user->id)->first()
-            : null;
+        if (! $user instanceof User || ! $this->canBeApprovedBy($user)) {
+            throw ValidationException::withMessages([
+                'state' => 'Tahap ini menunggu team leader atau Operation Manager yang ditugaskan.',
+            ]);
+        }
 
+        $actorEmployee = Employee::withoutGlobalScopes()->whereNull('deleted_at')->where('user_id', $user->id)->first();
         $currentState = $this->state instanceof State ? $this->state->value : (string) $this->state;
+        $actorIsTeamLeader = $actorEmployee && (int) $this->first_approver_id === (int) $actorEmployee->id;
 
-        $isActorSecondApproverOrHigher = $actorEmployee && (
-            (int) $this->second_approver_id === (int) $actorEmployee->id
-            || ($this->employee && in_array((int) $this->employee_id, $actorEmployee->getSubordinateEmployeeIds(true), true)
-                && (int) $this->first_approver_id !== (int) $actorEmployee->id)
-        );
+        if ($currentState === State::CONFIRM->value) {
+            $hrdClosesBecauseNobodyElseRemains = ! $this->second_approver_id && $this->isHrdOrAdmin($user) && ! $actorIsTeamLeader;
+            $this->state = $hrdClosesBecauseNobodyElseRemains ? State::VALIDATE_TWO->value : State::VALIDATE_ONE->value;
 
-        if (
-            $currentState === State::CONFIRM->value
-            && $this->requiresTwoStepApproval()
-            && ! $isActorSecondApproverOrHigher
-        ) {
-            $this->state = State::VALIDATE_ONE->value;
-
-            if ($actorEmployee) {
+            if ($actorEmployee && ! $this->first_approver_id) {
                 $this->first_approver_id = $actorEmployee->id;
             }
         } else {
             $this->state = State::VALIDATE_TWO->value;
 
-            if ($actorEmployee) {
-                if (! $this->first_approver_id) {
-                    $this->first_approver_id = $actorEmployee->id;
-                } else {
-                    $this->second_approver_id = $actorEmployee->id;
-                }
+            if ($actorEmployee && ! $this->second_approver_id) {
+                $this->second_approver_id = $actorEmployee->id;
             }
         }
 
@@ -264,12 +251,41 @@ class Leave extends Model
             return;
         }
 
-        $levelOne = $employee->resolveLevelOneApproverEmployee();
-        $levelTwo = $employee->resolveLevelTwoApproverEmployee();
+        $teamLeader = $employee->resolveTeamLeaderEmployee();
+        $operationManager = $employee->resolveOperationManagerEmployee($teamLeader);
 
-        $this->manager_id ??= $levelOne?->id;
-        $this->first_approver_id ??= $levelOne?->id;
-        $this->second_approver_id ??= $levelTwo?->id;
+        $this->manager_id ??= $teamLeader?->id;
+        $this->first_approver_id ??= $teamLeader?->id;
+        $this->second_approver_id ??= $operationManager?->id;
+    }
+
+    protected function hrdMayCoverMissingApprover(User $user, bool $approverMissing): bool
+    {
+        if ($this->isAdmin($user)) {
+            return true;
+        }
+
+        if (! $user->hasRole('HRD')) {
+            return false;
+        }
+
+        if ($approverMissing) {
+            return true;
+        }
+
+        $anchor = $this->updated_at instanceof Carbon ? $this->updated_at : $this->created_at;
+
+        return $anchor instanceof Carbon && $anchor->lte(now()->subHours(24));
+    }
+
+    protected function isHrdOrAdmin(User $user): bool
+    {
+        return $this->isAdmin($user) || $user->hasRole('HRD');
+    }
+
+    protected function isAdmin(User $user): bool
+    {
+        return $user->hasRole(config('filament-shield.panel_user.name', 'Admin'));
     }
 
     protected static function boot()

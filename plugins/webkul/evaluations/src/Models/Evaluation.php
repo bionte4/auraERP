@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\ValidationException;
 use Throwable;
 use Webkul\Employee\Models\Employee;
 use Webkul\Evaluation\Database\Factories\EvaluationFactory;
@@ -497,8 +498,7 @@ class Evaluation extends Model
     }
 
     /**
-     * Determine whether the user can sign/approve this evaluation at any stage (Reviewer L1, Employee, or Approver L2),
-     * or if the user has update permission on evaluations.
+     * Determine whether the user can sign this evaluation: assigned stage, or Admin/HRD override.
      */
     public function canBeSignedBy(?User $user): bool
     {
@@ -506,7 +506,7 @@ class Evaluation extends Model
             return false;
         }
 
-        if ($user->can('update_evaluation_evaluation')) {
+        if ($this->canOverrideApproval($user)) {
             return true;
         }
 
@@ -526,6 +526,31 @@ class Evaluation extends Model
         return ! empty(array_intersect($empIds, $allowedSigners));
     }
 
+    public function canOverrideApproval(?User $user): bool
+    {
+        if (! $user || ! method_exists($user, 'hasRole')) {
+            return false;
+        }
+
+        $adminRole = config('filament-shield.panel_user.name', 'Admin');
+
+        return $user->hasRole($adminRole) || $user->hasRole('HRD');
+    }
+
+    /**
+     * @param  array<int, int>  $employeeIds
+     */
+    protected function userMatchesApprovalStage(string $role, array $employeeIds): bool
+    {
+        $stageEmployeeId = match ($role) {
+            'employee' => (int) $this->employee_id,
+            'level2'   => (int) $this->gm_approver_id,
+            default    => (int) $this->reviewer_id,
+        };
+
+        return $stageEmployeeId > 0 && in_array($stageEmployeeId, $employeeIds, true);
+    }
+
     /**
      * Execute sequential/tiered approval by role or automatically detect from the given User.
      */
@@ -540,7 +565,7 @@ class Evaluation extends Model
                 ->all()
             : [];
 
-        $isAdminOrHrd = $user && $user->can('update_evaluation_evaluation');
+        $isAdminOrHrd = $this->canOverrideApproval($user);
 
         if ($role === 'auto' && $user) {
             if (! $this->reviewer_signed_at && in_array((int) $this->reviewer_id, $empIds, true)) {
@@ -570,6 +595,12 @@ class Evaluation extends Model
             } elseif ($role === 'level2' && ! in_array((int) $this->gm_approver_id, $empIds, true)) {
                 $role = in_array((int) $this->employee_id, $empIds, true) ? 'employee' : $role;
             }
+        }
+
+        if ($role === 'auto' || ($user && ! $isAdminOrHrd && ! $this->userMatchesApprovalStage($role, $empIds))) {
+            throw ValidationException::withMessages([
+                'signer_role' => 'Anda hanya dapat menandatangani tahap yang ditugaskan kepada Anda.',
+            ]);
         }
 
         match ($role) {

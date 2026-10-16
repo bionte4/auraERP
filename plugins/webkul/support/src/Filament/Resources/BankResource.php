@@ -11,6 +11,8 @@ use Webkul\Support\Models\Bank;
 
 class BankResource extends Resource
 {
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-library';
+
     protected static ?string $model = Bank::class;
 
     protected static bool $shouldRegisterNavigation = false;

@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Webkul\Chatter\Traits\HasChatter;
 use Webkul\Chatter\Traits\HasLogActivity;
 use Webkul\Employee\Database\Factories\EmployeeFactory;
@@ -327,6 +329,99 @@ class Employee extends Model
         }
 
         return null;
+    }
+
+    public function resolveTeamLeaderEmployee(): ?self
+    {
+        return $this->resolveLevelOneApproverEmployee();
+    }
+
+    public function resolveOperationManagerEmployee(?self $teamLeader = null): ?self
+    {
+        $excludedUserIds = array_values(array_filter([
+            (int) $this->user_id,
+            (int) ($teamLeader?->user_id ?? 0),
+        ]));
+
+        $projectManagerIds = $this->activeProjectManagerUserIds();
+        $candidateUserIds = array_values(array_unique(array_merge(
+            $projectManagerIds,
+            $this->teamMateUserIds(),
+        )));
+        $candidateUserIds = array_values(array_diff($candidateUserIds, $excludedUserIds));
+
+        if ($candidateUserIds === []) {
+            return null;
+        }
+
+        $operationManagers = User::query()
+            ->whereIn('id', $candidateUserIds)
+            ->whereHas('roles', fn ($query) => $query->where('name', 'Operation Manager'))
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        $chosenUserId = collect($projectManagerIds)->first(fn (int $id): bool => in_array($id, $operationManagers, true))
+            ?? ($operationManagers[0] ?? null);
+
+        if (! $chosenUserId) {
+            return null;
+        }
+
+        return self::withoutGlobalScopes()
+            ->whereNull('deleted_at')
+            ->where('user_id', $chosenUserId)
+            ->first();
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    protected function teamMateUserIds(): array
+    {
+        if (! $this->user_id || ! Schema::hasTable('user_team')) {
+            return [];
+        }
+
+        $teamIds = DB::table('user_team')->where('user_id', $this->user_id)->pluck('team_id');
+
+        if ($teamIds->isEmpty()) {
+            return [];
+        }
+
+        return DB::table('user_team')
+            ->whereIn('team_id', $teamIds)
+            ->pluck('user_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    protected function activeProjectManagerUserIds(): array
+    {
+        if (! $this->user_id || ! Schema::hasTable('projects_projects') || ! Schema::hasTable('projects_task_users') || ! Schema::hasTable('projects_tasks')) {
+            return [];
+        }
+
+        $projectIds = DB::table('projects_task_users')
+            ->join('projects_tasks', 'projects_tasks.id', '=', 'projects_task_users.task_id')
+            ->where('projects_task_users.user_id', $this->user_id)
+            ->whereNull('projects_tasks.deleted_at')
+            ->pluck('projects_tasks.project_id');
+
+        if ($projectIds->isEmpty()) {
+            return [];
+        }
+
+        return DB::table('projects_projects')
+            ->whereIn('id', $projectIds)
+            ->whereNull('deleted_at')
+            ->whereNotNull('user_id')
+            ->pluck('user_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
     }
 
     /**

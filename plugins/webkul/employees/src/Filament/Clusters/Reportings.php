@@ -8,6 +8,8 @@ use Webkul\Support\Enums\NavigationGroup;
 
 class Reportings extends Cluster
 {
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-chart-bar';
+
     protected static ?int $navigationSort = 5;
 
     public static function getSlug(?Panel $panel = null): string

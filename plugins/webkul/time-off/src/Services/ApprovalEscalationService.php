@@ -63,11 +63,11 @@ class ApprovalEscalationService
 
             $levelOneEmployee = $leave->first_approver_id
                 ? Employee::withoutGlobalScopes()->find($leave->first_approver_id)
-                : $employee->resolveLevelOneApproverEmployee();
+                : $employee->resolveTeamLeaderEmployee();
 
             $levelTwoEmployee = $leave->second_approver_id
                 ? Employee::withoutGlobalScopes()->find($leave->second_approver_id)
-                : $employee->resolveLevelTwoApproverEmployee();
+                : $employee->resolveOperationManagerEmployee($levelOneEmployee);
 
             $dirty = false;
 
@@ -86,13 +86,6 @@ class ApprovalEscalationService
                 $dirty = true;
             }
 
-            $currentState = $leave->state instanceof State ? $leave->state->value : (string) $leave->state;
-
-            if ($currentState === State::CONFIRM->value && $leave->second_approver_id) {
-                $leave->state = State::VALIDATE_ONE->value;
-                $dirty = true;
-            }
-
             if ($dirty) {
                 $leave->saveQuietly();
                 $escalatedCount++;
@@ -103,12 +96,11 @@ class ApprovalEscalationService
 
             $title = "Eskalasi SLA Permit/Cuti: {$employee->name}";
             $body = sprintf(
-                'Pengajuan %s (%s) atas nama %s telah menunggu persetujuan lebih dari %d jam dan dieskalasi ke pejabat di atasnya (%s).',
+                'Pengajuan %s (%s) atas nama %s telah menunggu lebih dari %d jam. Team leader atau Operation Manager yang ditugaskan masih perlu menyetujui. HRD dapat menutup tahap yang kosong.',
                 $leaveTypeName,
                 $leave->duration_display ?? ($leave->number_of_days.' hari'),
                 $employee->name,
                 $waitingHours,
-                $levelTwoEmployee?->name ?? 'Manajemen / HRD'
             );
 
             $url = $this->leaveUrl($leave);

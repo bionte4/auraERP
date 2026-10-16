@@ -7,6 +7,8 @@ use Webkul\Support\Enums\NavigationGroup;
 
 class Configuration extends Cluster
 {
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-cog-6-tooth';
+
     protected static ?string $slug = 'accounting/configurations';
 
     protected static ?int $navigationSort = 6;

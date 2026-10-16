@@ -27,11 +27,11 @@ class WebsiteDashboard extends BaseDashboard
 
     protected static string $routePath = 'website';
 
-    protected static string|BackedEnum|null $navigationIcon = null;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-globe-alt';
 
     public static function getNavigationIcon(): string|BackedEnum|null
     {
-        return null;
+        return 'heroicon-o-globe-alt';
     }
 
     public static function getNavigationLabel(): string
