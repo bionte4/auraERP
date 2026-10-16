@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Throwable;
 use Webkul\Attendance\Enums\AttendanceStatus;
+use Webkul\Attendance\Filament\Resources\AttendanceResource;
 use Webkul\Employee\Models\Employee;
 use Webkul\Project\Services\OperationalScope;
 
@@ -37,24 +38,38 @@ class AttendancePresenceWidget extends BaseWidget
     {
         $summary = $this->todaySummary();
 
+        $attendanceUrl = $this->attendanceIndexUrl();
+
         return [
             Stat::make(
                 __('projects::filament/widgets/attendance-presence.stats.present'),
                 (string) $summary['present']
-            )->color('success')->url(url('/admin/attendances/attendances')),
+            )->color('success')->url($attendanceUrl),
             Stat::make(
                 __('projects::filament/widgets/attendance-presence.stats.late'),
                 (string) $summary['late']
-            )->color('warning')->url(url('/admin/attendances/attendances')),
+            )->color('warning')->url($attendanceUrl),
             Stat::make(
                 __('projects::filament/widgets/attendance-presence.stats.not-in'),
                 (string) $summary['not_in']
-            )->color('danger')->url(url('/admin/attendances/attendances')),
+            )->color('danger')->url($attendanceUrl),
             Stat::make(
                 __('projects::filament/widgets/attendance-presence.stats.active'),
                 (string) $summary['active']
             )->color('gray')->url(url('/admin/employees/employees')),
         ];
+    }
+
+    protected function attendanceIndexUrl(): string
+    {
+        try {
+            if (class_exists(AttendanceResource::class)) {
+                return AttendanceResource::getUrl('index');
+            }
+        } catch (Throwable) {
+        }
+
+        return url('/admin/attendances');
     }
 
     /**

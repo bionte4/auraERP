@@ -105,7 +105,7 @@ class MyDayDashboard extends Page
             $this->card(
                 $indonesian ? 'Belum absen hari ini' : 'Not clocked in today',
                 (string) $this->notClockedInToday(),
-                url('/admin/attendances/attendances'),
+                url('/admin/attendances'),
                 'gray'
             ),
             $this->card(
