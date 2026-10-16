@@ -135,11 +135,11 @@
                     <span class="dhonu-open">Buka</span>
                 </div>
 
-                <div class="relative w-full my-auto" style="height: 255px;">
+                <div class="relative w-full dhonu-panel-chart">
                     <canvas id="dhonu-bubble-chart" wire:ignore></canvas>
                 </div>
 
-                <div class="mt-3 flex flex-wrap items-center justify-center gap-4 text-xs font-medium text-slate-600 dark:text-slate-400">
+                <div class="mt-1 flex flex-wrap items-center justify-center gap-3 text-xs font-medium text-slate-600 dark:text-slate-400">
                     <span class="inline-flex items-center gap-1.5">
                         <span class="h-2.5 w-2.5 rounded-full" style="background-color: #3b6ef6;"></span>
                         Projects & Tasks
@@ -162,23 +162,19 @@
                     <span class="dhonu-open">Buka</span>
                 </div>
 
-                {{-- Concentric Multi-Ring Radial SVG --}}
-                <div class="my-2 flex items-center justify-center">
-                    <svg class="w-40 h-40 -rotate-90" viewBox="0 0 160 160">
-                        {{-- Outer Track & Progress (82%) --}}
+                <div class="dhonu-panel-rings flex items-center justify-center">
+                    <svg class="-rotate-90" viewBox="0 0 160 160" aria-hidden="true">
                         <circle cx="80" cy="80" r="62" fill="none" stroke="currentColor" class="text-slate-100 dark:text-slate-800" stroke-width="10"/>
                         <circle cx="80" cy="80" r="62" fill="none" stroke="#5a67d8" stroke-width="10" stroke-linecap="round"
-                                stroke-dasharray="389.5" stroke-dashoffset="{{ 389.5 * (1 - (($goals[0]['progress'] ?? 82) / 100)) }}"/>
+                                stroke-dasharray="389.5" stroke-dashoffset="{{ 389.5 * (1 - (($goals[0]['progress'] ?? 0) / 100)) }}"/>
 
-                        {{-- Middle Track & Progress (66%) --}}
                         <circle cx="80" cy="80" r="45" fill="none" stroke="currentColor" class="text-slate-100 dark:text-slate-800" stroke-width="10"/>
                         <circle cx="80" cy="80" r="45" fill="none" stroke="#38b2ac" stroke-width="10" stroke-linecap="round"
-                                stroke-dasharray="282.7" stroke-dashoffset="{{ 282.7 * (1 - (($goals[1]['progress'] ?? 68) / 100)) }}"/>
+                                stroke-dasharray="282.7" stroke-dashoffset="{{ 282.7 * (1 - (($goals[1]['progress'] ?? 0) / 100)) }}"/>
 
-                        {{-- Inner Track & Progress (74%) --}}
                         <circle cx="80" cy="80" r="28" fill="none" stroke="currentColor" class="text-slate-100 dark:text-slate-800" stroke-width="10"/>
                         <circle cx="80" cy="80" r="28" fill="none" stroke="#3182ce" stroke-width="10" stroke-linecap="round"
-                                stroke-dasharray="175.9" stroke-dashoffset="{{ 175.9 * (1 - (($goals[2]['progress'] ?? 74) / 100)) }}"/>
+                                stroke-dasharray="175.9" stroke-dashoffset="{{ 175.9 * (1 - (($goals[2]['progress'] ?? 0) / 100)) }}"/>
                     </svg>
                 </div>
 
@@ -208,37 +204,13 @@
             </div>
 
             <div class="dhonu-map-wide-body">
-                <div class="dhonu-map-canvas">
-                    <svg viewBox="0 0 900 390" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Peta penempatan karyawan Indonesia">
-                        <g fill="#c7d7fb" stroke="#5b82f0" stroke-width="1.75" stroke-linejoin="round">
-                            @foreach ($sites['islands'] ?? [] as $island)
-                                <polygon points="{{ $island }}" />
-                            @endforeach
-                        </g>
-                        @foreach ($sites['markers'] ?? [] as $marker)
-                            <g class="dhonu-map-marker">
-                                <circle
-                                    cx="{{ $marker['x'] }}"
-                                    cy="{{ $marker['y'] }}"
-                                    r="{{ max(9, min(20, 7 + (int) $marker['count'])) }}"
-                                    fill="{{ $marker['color'] }}"
-                                    stroke="#ffffff"
-                                    stroke-width="2.25"
-                                >
-                                    <title>{{ $marker['name'] }} — {{ $marker['count'] }} karyawan</title>
-                                </circle>
-                                <text
-                                    x="{{ $marker['x'] }}"
-                                    y="{{ $marker['y'] + 4 }}"
-                                    text-anchor="middle"
-                                    fill="#ffffff"
-                                    font-size="10"
-                                    font-weight="700"
-                                >{{ $marker['count'] }}</text>
-                            </g>
-                        @endforeach
-                    </svg>
-                </div>
+                <div
+                    id="dhonu-ops-map"
+                    class="dhonu-map-canvas dhonu-ops-map"
+                    wire:ignore
+                    role="img"
+                    aria-label="Peta penempatan karyawan Indonesia"
+                ></div>
 
                 <aside class="dhonu-map-side">
                     <div class="dhonu-map-side-head">
@@ -285,7 +257,9 @@
     </div>
 
     @assets
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
         <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+        <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
     @endassets
 
     @script
@@ -465,8 +439,84 @@
                 }
             };
 
-            setTimeout(initDhonuCharts, 80);
-            document.addEventListener('livewire:navigated', () => setTimeout(initDhonuCharts, 80));
+            const initDhonuOpsMap = () => {
+                const mapEl = document.getElementById('dhonu-ops-map');
+                if (! mapEl || ! window.L) {
+                    return;
+                }
+
+                if (mapEl._leafletMap) {
+                    mapEl._leafletMap.remove();
+                    mapEl._leafletMap = null;
+                }
+
+                const markers = @js($sites['markers'] ?? []);
+                const escapeHtml = (value) => String(value ?? '')
+                    .replaceAll('&', '&amp;')
+                    .replaceAll('<', '&lt;')
+                    .replaceAll('>', '&gt;')
+                    .replaceAll('"', '&quot;');
+
+                const map = L.map(mapEl, {
+                    zoomControl: true,
+                    attributionControl: true,
+                    scrollWheelZoom: false,
+                }).setView([-2.5, 118], 4);
+
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                    attribution: '&copy; OpenStreetMap &copy; CARTO',
+                    subdomains: 'abcd',
+                    maxZoom: 18,
+                }).addTo(map);
+
+                const bounds = [];
+
+                markers.forEach((marker) => {
+                    const lat = Number(marker.latitude);
+                    const lng = Number(marker.longitude);
+                    if (! Number.isFinite(lat) || ! Number.isFinite(lng)) {
+                        return;
+                    }
+
+                    const size = Math.max(28, Math.min(44, 24 + Number(marker.count || 0)));
+                    const color = /^#[0-9a-fA-F]{6}$/.test(marker.color || '') ? marker.color : '#3b6ef6';
+                    const icon = L.divIcon({
+                        className: 'dhonu-ops-marker',
+                        html: `<span style="background:${color}">${escapeHtml(marker.count ?? 0)}</span>`,
+                        iconSize: [size, size],
+                        iconAnchor: [size / 2, size / 2],
+                    });
+
+                    const names = Array.isArray(marker.names) ? marker.names.map(escapeHtml).join(', ') : '';
+                    const extra = marker.extra > 0 ? ` +${escapeHtml(marker.extra)}` : '';
+                    const popup = `
+                        <strong>${escapeHtml(marker.name)}</strong><br>
+                        ${escapeHtml(marker.count ?? 0)} karyawan
+                        ${names ? `<br><em style="font-style:normal;color:#64748b">${names}${extra}</em>` : ''}
+                    `;
+
+                    L.marker([lat, lng], { icon }).addTo(map).bindPopup(popup);
+                    bounds.push([lat, lng]);
+                });
+
+                if (bounds.length > 0) {
+                    map.fitBounds(bounds, { padding: [28, 28], maxZoom: 7 });
+                } else {
+                    map.fitBounds([[-11, 95], [6, 141]], { padding: [20, 20] });
+                }
+
+                setTimeout(() => map.invalidateSize(), 120);
+                mapEl._leafletMap = map;
+            };
+
+            setTimeout(() => {
+                initDhonuCharts();
+                initDhonuOpsMap();
+            }, 80);
+            document.addEventListener('livewire:navigated', () => setTimeout(() => {
+                initDhonuCharts();
+                initDhonuOpsMap();
+            }, 80));
         </script>
     @endscript
 </x-filament-panels::page>

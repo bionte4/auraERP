@@ -205,10 +205,14 @@ it('maps employee placement markers from work locations with coordinates', funct
     $page = app(WelcomeDashboard::class);
     $placements = $page->getDashboardData()['sites'] ?? [];
 
+    $jakartaMarker = collect($placements['markers'] ?? [])->firstWhere('name', 'Jakarta');
+
     expect($placements['total'] ?? 0)->toBe(2)
         ->and($placements['cities'] ?? 0)->toBe(1)
         ->and(collect($placements['markers'] ?? [])->pluck('name')->all())->toContain('Jakarta')
-        ->and(collect($placements['markers'] ?? [])->firstWhere('name', 'Jakarta')['count'] ?? 0)->toBe(2)
+        ->and($jakartaMarker['count'] ?? 0)->toBe(2)
+        ->and($jakartaMarker['latitude'] ?? null)->toBeFloat()
+        ->and($jakartaMarker['longitude'] ?? null)->toBeFloat()
         ->and(collect($placements['markers'] ?? [])->pluck('name')->all())->not->toContain('Bandung');
 });
 

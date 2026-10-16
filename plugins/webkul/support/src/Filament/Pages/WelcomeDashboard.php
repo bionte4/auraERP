@@ -718,14 +718,16 @@ class WelcomeDashboard extends BaseDashboard
                 [$x, $y] = $this->projectIndonesia($lat, $lng);
 
                 $markers[] = [
-                    'name'  => $cluster['name'],
-                    'count' => $count,
-                    'sites' => $cluster['sites'],
-                    'names' => array_slice($cluster['names'], 0, 5),
-                    'extra' => max(0, $count - 5),
-                    'x'     => $x,
-                    'y'     => $y,
-                    'color' => $palette[$index % count($palette)],
+                    'name'      => $cluster['name'],
+                    'count'     => $count,
+                    'sites'     => $cluster['sites'],
+                    'names'     => array_slice($cluster['names'], 0, 5),
+                    'extra'     => max(0, $count - 5),
+                    'latitude'  => round($lat, 6),
+                    'longitude' => round($lng, 6),
+                    'x'         => $x,
+                    'y'         => $y,
+                    'color'     => $palette[$index % count($palette)],
                 ];
             }
 

@@ -518,7 +518,23 @@ html.fi .dhonu-open {
 }
 
 html.fi .dhonu-panel {
-    min-height: 26rem;
+    min-height: 0;
+    justify-content: flex-start;
+    gap: 0.65rem;
+}
+
+html.fi .dhonu-panel-chart {
+    height: 10.5rem;
+    margin: 0;
+}
+
+html.fi .dhonu-panel-rings {
+    margin: 0.15rem 0 0.25rem;
+}
+
+html.fi .dhonu-panel-rings svg {
+    width: 7.25rem;
+    height: 7.25rem;
 }
 
 html.fi .dhonu-kpi-foot,
@@ -530,7 +546,7 @@ html.fi .dhonu-kpi-change {
 html.fi .dhonu-goals {
     display: flex;
     flex-direction: column;
-    gap: 0.7rem;
+    gap: 0.45rem;
 }
 
 html.fi .dhonu-goal-row {
@@ -606,17 +622,52 @@ html.fi .dhonu-map-wide-body {
     }
 }
 
-html.fi .dhonu-map-wide .dhonu-map-canvas {
-    height: 16.5rem;
+html.fi .dhonu-map-wide .dhonu-map-canvas,
+html.fi .dhonu-ops-map {
+    height: 18.5rem;
     border-radius: 0.75rem;
-    background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+    background: #f8fafc;
     border: 1px solid rgba(226, 232, 240, 0.95);
-    padding: 0.35rem 0.5rem;
+    padding: 0;
+    overflow: hidden;
+    z-index: 0;
 }
 
-html.fi.dark .dhonu-map-wide .dhonu-map-canvas {
-    background: linear-gradient(180deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.95) 100%);
+html.fi.dark .dhonu-map-wide .dhonu-map-canvas,
+html.fi.dark .dhonu-ops-map {
+    background: #0f172a;
     border-color: rgba(51, 65, 85, 0.75);
+}
+
+html.fi .dhonu-ops-map .leaflet-container {
+    width: 100%;
+    height: 100%;
+    font: inherit;
+    background: #f8fafc;
+    border-radius: 0.75rem;
+}
+
+html.fi.dark .dhonu-ops-map .leaflet-container {
+    background: #0f172a;
+}
+
+html.fi .dhonu-ops-marker {
+    background: transparent;
+    border: none;
+}
+
+html.fi .dhonu-ops-marker span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    border-radius: 999px;
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    border: 2px solid #fff;
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.22);
 }
 
 html.fi .dhonu-map-side {
