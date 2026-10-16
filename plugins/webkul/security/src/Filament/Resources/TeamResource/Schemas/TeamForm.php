@@ -5,6 +5,8 @@ namespace Webkul\Security\Filament\Resources\TeamResource\Schemas;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Facades\Schema as DbSchema;
+use Webkul\Project\Models\Project;
 
 class TeamForm
 {
@@ -16,6 +18,17 @@ class TeamForm
                     ->label(__('security::filament/resources/team.form.fields.name'))
                     ->required()
                     ->maxLength(255),
+                Select::make('project_id')
+                    ->label(__('security::filament/resources/team.form.fields.project'))
+                    ->helperText(__('security::filament/resources/team.form.fields.project-help'))
+                    ->relationship('project', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->nullable()
+                    ->visible(fn (): bool => class_exists(Project::class)
+                        && DbSchema::hasTable('projects_projects')
+                        && DbSchema::hasColumn('teams', 'project_id'))
+                    ->columnSpanFull(),
                 Select::make('users')
                     ->label(__('security::filament/resources/team.form.fields.members'))
                     ->helperText(__('security::filament/resources/team.form.fields.members-help'))

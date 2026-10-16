@@ -4,6 +4,8 @@
     $retentionCount = $retentionCount ?? 30;
     $enabled = $enabled ?? true;
     $directory = $directory ?? '';
+    $restoreAllowed = $restoreAllowed ?? false;
+    $health = $health ?? [];
 @endphp
 
 <x-filament-panels::page>
@@ -31,6 +33,22 @@
                 </li>
                 <li>
                     {{ __('security::filament/pages/manage-database-backups.info.directory', ['path' => $directory]) }}
+                </li>
+                <li>
+                    {{ __('security::filament/pages/manage-database-backups.info.restore', [
+                        'status' => $restoreAllowed
+                            ? __('security::filament/pages/manage-database-backups.info.on')
+                            : __('security::filament/pages/manage-database-backups.info.off'),
+                    ]) }}
+                </li>
+                <li>
+                    {{ __('security::filament/pages/manage-database-backups.info.health', [
+                        'status' => ($health['ok'] ?? false)
+                            ? __('security::filament/pages/manage-database-backups.info.health-ok')
+                            : __('security::filament/pages/manage-database-backups.info.health-warn'),
+                        'last' => $health['last_backup_at'] ?? '—',
+                        'free' => $health['disk_free_mb'] ?? '—',
+                    ]) }}
                 </li>
                 <li>
                     {{ __('security::filament/pages/manage-database-backups.info.cron') }}
@@ -85,14 +103,16 @@
                                         >
                                             {{ __('security::filament/pages/manage-database-backups.actions.download') }}
                                         </x-filament::button>
-                                        <x-filament::button
-                                            size="sm"
-                                            color="warning"
-                                            wire:click="requestRestore({{ \Illuminate\Support\Js::from($backup['filename']) }})"
-                                            wire:confirm="{{ __('security::filament/pages/manage-database-backups.actions.restore-preconfirm') }}"
-                                        >
-                                            {{ __('security::filament/pages/manage-database-backups.actions.restore') }}
-                                        </x-filament::button>
+                                        @if ($restoreAllowed)
+                                            <x-filament::button
+                                                size="sm"
+                                                color="warning"
+                                                wire:click="requestRestore({{ \Illuminate\Support\Js::from($backup['filename']) }})"
+                                                wire:confirm="{{ __('security::filament/pages/manage-database-backups.actions.restore-preconfirm') }}"
+                                            >
+                                                {{ __('security::filament/pages/manage-database-backups.actions.restore') }}
+                                            </x-filament::button>
+                                        @endif
                                         <x-filament::button
                                             size="sm"
                                             color="danger"

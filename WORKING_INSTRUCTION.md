@@ -12,7 +12,7 @@ Halaman login Admin Panel: **`/admin/login`**
 
 | Role | Hak Akses Utama |
 | :--- | :--- |
-| **Admin** | Akses penuh ke seluruh modul, pengaturan perusahaan, manajemen User, Role & Permission, **Audit Trail**, **Backup Database** (khusus Admin), dan instalasi plugin. |
+| **Admin** | Akses penuh ke seluruh modul, pengaturan perusahaan, manajemen User, Role & Permission, **Audit Trail**, **Backup Database**, **IP Diblokir** (khusus Admin), dan instalasi plugin. |
 | **HRD** | Mengelola Karyawan, Kontrak, Departemen, Lokasi Kerja (Geofence), Rekap Absensi, Cuti/Izin (`Time Off`), Rencana Kinerja (`Performance Plans`), Evaluasi Kinerja (`Evaluations`), Dashboard Evaluasi + Export Excel/PDF, Rekrutmen, dan Aset Karyawan. |
 | **Operation Manager** | Mengelola Proyek (`Projects`), **Tugaskan Karyawan ke Proyek**, Tugas (`Tasks`), `Timesheets`, Gudang & Stok (`Inventory` & `Products`), Perawatan & Aset (`Maintenance` & `Equipment`), Pembelian (`Purchases`), Penjualan (`Sales`), Mitra (`Partners`), serta melakukan **Penilaian Kinerja (L1/L2)** dan **Approval Cuti/Absensi** untuk tim/bawahannya. |
 | **Kasir** | Mengoperasikan **POS Terminal** (`/admin/pos-terminal`), membuka/menutup sesi shift kasir (`POS Sessions`), membuat transaksi penjualan kasir (`POS Orders`), melihat katalog produk & pelanggan, serta melakukan absensi (`/admin/absen`). |
@@ -57,9 +57,42 @@ Saat membuat atau mengedit User di **Settings → Users**, terdapat pengaturan *
 6. Pastikan cron scheduler aktif:
    `* * * * * cd /var/www/auraerp && sudo -u www-data php artisan schedule:run >> /dev/null 2>&1`
 7. Env berguna: `SECURITY_BACKUP_ENABLED`, `SECURITY_BACKUP_SCHEDULE_AT`, `SECURITY_BACKUP_RETENTION_DAYS`, `SECURITY_BACKUP_RETENTION_COUNT`.
-8. **Peringatan:** Restore menimpa database aktif — uji dulu di staging bila memungkinkan.
+8. **Peringatan:** Restore menimpa database aktif. Di **production**, restore dari UI/CLI **default dinonaktifkan** (unduh saja, restore di staging). Override: `SECURITY_BACKUP_ALLOW_RESTORE=true`.
+9. Cek kesehatan backup: `sudo -u www-data php artisan security:health-check`.
 
-*(Akun Demo: `hrd@opsora.my.id` / `Demo-hrd-2026` dan `karyawan@opsora.my.id` / `Demo-karyawan-2026`. Untuk menyinkronkan ulang seluruh Role & Permission kapan saja: `sudo -u www-data php artisan security:sync-rbac`)*
+### F. Rate Limit Login & Blokir IP
+1. Login Admin Panel (`/admin/login`) dan API login dilindungi:
+   - **Rate limit:** default **5** percobaan gagal per kombinasi email+IP dalam **1** menit.
+   - **Blokir IP:** setelah **10** kegagalan dari IP yang sama dalam **15** menit, IP diblokir **30** menit.
+2. Menu **Settings → IP Diblokir** (`/admin/blocked-ips`) **khusus Admin** — lihat daftar IP aktif + **Buka blokir**.
+3. Whitelist default: `127.0.0.1`, `::1` (tidak pernah diblokir). Sesuaikan via env.
+4. Env berguna:
+   - `SECURITY_LOGIN_PROTECTION_ENABLED` (default `true`)
+   - `SECURITY_LOGIN_MAX_ATTEMPTS` (default `5`)
+   - `SECURITY_LOGIN_DECAY_MINUTES` (default `1`)
+   - `SECURITY_LOGIN_BLOCK_AFTER_FAILURES` (default `10`)
+   - `SECURITY_LOGIN_FAILURE_WINDOW_MINUTES` (default `15`)
+   - `SECURITY_LOGIN_BLOCK_MINUTES` (default `30`)
+   - `SECURITY_LOGIN_IP_WHITELIST` (comma-separated, default `127.0.0.1,::1`)
+5. Setelah deploy: `php artisan migrate` (tabel `security_blocked_ips`) lalu `security:sync-rbac`.
+
+### G. Deploy dari Fork (jika `origin` 403)
+VPS sering menarik dari fork `bionte4/auraERP` karena akses write ke `aureuserp/aureuserp` terbatas:
+```bash
+cd /var/www/auraerp
+sudo -u www-data git remote add fork https://github.com/bionte4/auraERP.git 2>/dev/null || true
+sudo -u www-data git fetch fork && sudo -u www-data git merge fork/master
+sudo -u www-data php artisan migrate --force
+sudo -u www-data php artisan security:sync-rbac
+sudo -u www-data php artisan optimize:clear
+```
+
+### H. Akun Demo
+- Demo: `hrd@opsora.my.id` / `Demo-hrd-2026`, `karyawan@opsora.my.id` / `Demo-karyawan-2026`.
+- Untuk go-live tanpa demo: set `SECURITY_DEMO_ACCOUNTS_ALLOWED=false` di `.env` (login demo ditolak).
+- Sync RBAC kapan saja: `sudo -u www-data php artisan security:sync-rbac`.
+
+*(Untuk menyinkronkan ulang seluruh Role & Permission kapan saja: `sudo -u www-data php artisan security:sync-rbac`)*
 
 ---
 
@@ -220,9 +253,12 @@ Buka menu **Employees → Performance Plans → Evaluations** (`/admin/evaluatio
    - Hak akses juga dipengaruhi **Visibilitas (`Visibility`)** proyek.
 4. **Dashboard beban kerja Operation Manager (`Project → Dashboard`):**
    - Buka **Project → Dashboard** (`/admin/project`).
+   - Widget **Item aksi OM**: cuti pending, kontrak ≤ 30 hari, tugas terlambat, karyawan ditugaskan tanpa Related User (klik menuju halaman terkait).
    - Widget **Operation Manager — Proyek sebagai Manajer Proyek** menampilkan semua user ber-role **Operation Manager**, jumlah proyek aktif di mana mereka = **Manajer Proyek** (`user_id`), serta daftar nama proyek yang dapat diklik menuju detail proyek.
    - Catatan: role **Operation Manager** ≠ otomatis Manajer Proyek; hitungan hanya dari field **Manajer Proyek** pada masing-masing proyek.
-   - Permission widget: `widget_project_operation_manager_workload_widget` (Admin & Operation Manager setelah `php artisan security:sync-rbac`).
+   - Laporan unduhan: **Dashboard → Laporan Ops Mingguan** (`/admin/weekly-operations-report`) — Excel untuk OM/HRD/Admin.
+   - Permission: `widget_project_operation_manager_workload_widget`, `widget_project_operation_manager_actions_widget`, `page_project_weekly_operations_report` (setelah `php artisan security:sync-rbac`).
+5. **Link Tim ↔ Proyek eksplisit:** di **Settings → Teams** pilih **Proyek terkait**. Sinkron anggota & Team Board mengutamakan link ini; jika kosong, fallback cocok nama.
 5. **Reminder Berjenjang 3, 2, dan 1 Bulan Sebelum `End Date` Proyek:**
    - Sistem memberi badge peringatan dan notifikasi otomatis pada sisa waktu `61–90 hari` (**3 Bulan**), `31–60 hari` (**2 Bulan**), `0–30 hari` (**1 Bulan**), dan saat **Berakhir** (`php artisan projects:notify-expiring-projects`).
 6. **Bulk Import Proyek:**

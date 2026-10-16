@@ -12,7 +12,9 @@ use Knuckles\Scribe\Attributes\Group;
 use Knuckles\Scribe\Attributes\Response;
 use Knuckles\Scribe\Attributes\Subgroup;
 use Knuckles\Scribe\Attributes\Unauthenticated;
+use RuntimeException;
 use Webkul\Security\Models\User;
+use Webkul\Security\Services\LoginProtection;
 use Webkul\Security\Services\SecurityAuditLogger;
 
 #[Group('Security API Management')]
@@ -33,10 +35,30 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        $user = User::whereRaw(db_dialect()->caseInsensitiveEquals('email'), [$request->email])->first();
+        $protection = app(LoginProtection::class);
+        $email = (string) $request->email;
+
+        try {
+            $protection->assertNotBlocked();
+        } catch (RuntimeException $exception) {
+            throw ValidationException::withMessages([
+                'email' => [$exception->getMessage()],
+            ]);
+        }
+
+        if ($protection->tooManyAttempts($email)) {
+            throw ValidationException::withMessages([
+                'email' => [__('security::login-protection.errors.throttled', [
+                    'seconds' => max(1, $protection->availableIn($email)),
+                ])],
+            ]);
+        }
+
+        $user = User::whereRaw(db_dialect()->caseInsensitiveEquals('email'), [$email])->first();
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
-            app(SecurityAuditLogger::class)->logLoginFailed($request->email, 'sanctum');
+            $protection->recordFailure($email);
+            app(SecurityAuditLogger::class)->logLoginFailed($email, 'sanctum');
 
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
@@ -45,6 +67,7 @@ class AuthController extends Controller
 
         $token = $user->createToken('api-token')->plainTextToken;
 
+        $protection->recordSuccess($user->email);
         app(SecurityAuditLogger::class)->logLoginSucceeded($user, 'sanctum');
 
         return response()->json([

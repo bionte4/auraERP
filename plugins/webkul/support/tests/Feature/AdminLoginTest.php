@@ -1,14 +1,15 @@
 <?php
 
-use Filament\Auth\Pages\Login;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Livewire;
+use Webkul\Security\Filament\Auth\Login;
 use Webkul\Security\Models\User;
+use Webkul\Security\Services\LoginProtection;
 
 it('authenticates the local admin account through the filament login page', function () {
-    RateLimiter::clear(strtolower('admin@example.com').'|127.0.0.1');
+    app(LoginProtection::class)->clearRateLimit('admin@example.com', '127.0.0.1');
+    app(LoginProtection::class)->recordSuccess('admin@example.com', '127.0.0.1');
 
     DB::table('users')->where('email', 'admin@example.com')->update([
         'password'                          => Hash::make('password'),

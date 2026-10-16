@@ -214,12 +214,19 @@ class TeamBoard extends Page
 
         $names = $teams->map(fn (Team $team): string => mb_strtolower(trim($team->name)))->unique()->values();
         $memberIds = $teams->flatMap(fn (Team $team) => $team->users->pluck('id'))->unique()->values()->all();
+        $linkedProjectIds = Schema::hasColumn('teams', 'project_id')
+            ? $teams->pluck('project_id')->filter()->unique()->values()->all()
+            : [];
 
         $projectsQuery = Project::query()
             ->withoutGlobalScopes()
             ->whereNull('deleted_at')
-            ->where(function ($query) use ($names, $memberIds): void {
-                $query->where(function ($nameQuery) use ($names): void {
+            ->where(function ($query) use ($names, $memberIds, $linkedProjectIds): void {
+                if ($linkedProjectIds !== []) {
+                    $query->whereIn('id', $linkedProjectIds);
+                }
+
+                $query->orWhere(function ($nameQuery) use ($names): void {
                     foreach ($names as $name) {
                         $nameQuery->orWhereRaw('LOWER(TRIM(name)) = ?', [$name]);
                     }
@@ -246,6 +253,9 @@ class TeamBoard extends Page
         $projects = $projectsQuery->with($with)->get();
 
         $teamsByName = $teams->keyBy(fn (Team $team): string => mb_strtolower(trim($team->name)));
+        $teamsByProjectId = Schema::hasColumn('teams', 'project_id')
+            ? $teams->filter(fn (Team $team): bool => filled($team->project_id))->keyBy('project_id')
+            : collect();
 
         $grouped = collect();
 
@@ -254,6 +264,14 @@ class TeamBoard extends Page
         }
 
         foreach ($projects as $project) {
+            $linked = $teamsByProjectId->get($project->id);
+
+            if ($linked instanceof Team) {
+                $grouped[$linked->id] = $grouped[$linked->id]->push($project)->unique('id')->values();
+
+                continue;
+            }
+
             $matched = $teamsByName->get(mb_strtolower(trim((string) $project->name)));
 
             if ($matched instanceof Team) {

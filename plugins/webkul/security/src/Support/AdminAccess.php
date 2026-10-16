@@ -17,6 +17,7 @@ final class AdminAccess
             'view_any_security_audit::trail',
             'view_security_audit::trail',
             'page_security_manage_database_backups',
+            'page_security_manage_blocked_ips',
         ];
     }
 

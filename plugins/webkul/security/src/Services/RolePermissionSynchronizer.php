@@ -51,6 +51,7 @@ class RolePermissionSynchronizer
             'view_any_security_company', 'view_security_company', 'create_security_company', 'update_security_company', 'delete_security_company', 'delete_any_security_company',
             'view_any_security_audit::trail', 'view_security_audit::trail',
             'page_security_manage_database_backups',
+            'page_security_manage_blocked_ips',
             'view_any_role', 'view_role', 'create_role', 'update_role', 'delete_role', 'delete_any_role', 'force_delete_role', 'force_delete_any_role', 'restore_role', 'restore_any_role', 'reorder_role',
 
             // Employees & HR
@@ -76,8 +77,10 @@ class RolePermissionSynchronizer
             'page_project_dashboard',
             'page_project_assign_project_employees',
             'widget_project_operation_manager_workload_widget',
+            'widget_project_operation_manager_actions_widget',
             'page_integrations_manage_integrations',
             'page_support_welcome_dashboard',
+            'page_project_weekly_operations_report',
 
             // Projects & Timesheets
             'view_any_project_project', 'view_project_project', 'create_project_project', 'update_project_project', 'delete_project_project', 'delete_any_project_project',
@@ -139,6 +142,7 @@ class RolePermissionSynchronizer
             || str_contains($p->name, 'time_off')
             || str_contains($p->name, 'recruitment')
             || str_contains($p->name, 'maintenance_equipment')
+            || $p->name === 'page_project_weekly_operations_report'
         );
         $hrdRole->givePermissionTo($hrdPermissions);
         $rolesSynced[] = $hrdRole->name;
@@ -169,6 +173,8 @@ class RolePermissionSynchronizer
                 'page_project_dashboard',
                 'page_project_assign_project_employees',
                 'widget_project_operation_manager_workload_widget',
+                'widget_project_operation_manager_actions_widget',
+                'page_project_weekly_operations_report',
                 'page_evaluation_performance_evaluation_dashboard',
                 'page_attendance_clock_page',
             ], true)

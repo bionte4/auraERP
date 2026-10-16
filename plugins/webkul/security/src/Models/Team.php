@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\Auth;
 use Webkul\Field\Traits\HasCustomFields;
+use Webkul\Project\Models\Project;
 use Webkul\Security\Traits\HasOwnershipScope;
 
 class Team extends Model
@@ -15,6 +16,7 @@ class Team extends Model
 
     protected $fillable = [
         'name',
+        'project_id',
         'creator_id',
     ];
 
@@ -26,6 +28,11 @@ class Team extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'creator_id');
+    }
+
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class, 'project_id');
     }
 
     public function users(): BelongsToMany

@@ -43,4 +43,10 @@ return [
     | Phrase the Admin must type to confirm a destructive restore.
     */
     'restore_confirmation' => env('SECURITY_BACKUP_RESTORE_CONFIRMATION', 'RESTORE'),
+
+    /*
+    | Allow UI/CLI restore. When null, restore is disabled in the "production"
+    | environment and enabled elsewhere. Set explicitly with true/false to override.
+    */
+    'allow_restore' => env('SECURITY_BACKUP_ALLOW_RESTORE'),
 ];

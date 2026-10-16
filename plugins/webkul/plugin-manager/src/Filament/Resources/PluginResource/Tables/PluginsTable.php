@@ -25,6 +25,8 @@ use Webkul\PluginManager\Console\Commands\UninstallCommand;
 use Webkul\PluginManager\Filament\Resources\PluginResource;
 use Webkul\PluginManager\Models\Plugin;
 use Webkul\PluginManager\Package;
+use Webkul\Security\Enums\SecurityAuditEvent;
+use Webkul\Security\Services\SecurityAuditLogger;
 
 class PluginsTable
 {
@@ -165,6 +167,8 @@ class PluginsTable
                                 ]);
 
                                 DB::commit();
+
+                                static::auditPluginChange('installed', (string) $record->name);
 
                                 Notification::make()
                                     ->title(__('plugin-manager::filament/resources/plugin.notifications.installed.title'))
@@ -327,6 +331,8 @@ class PluginsTable
                     if ($uninstallCommand?->endWith) {
                         ($uninstallCommand->endWith)($uninstallCommand);
                     }
+
+                    static::auditPluginChange('uninstalled', (string) $pluginName);
                 } catch (Throwable $e) {
                     $errors[] = "Failed to uninstall '{$pluginName}': ".$e->getMessage();
                 }
@@ -385,5 +391,29 @@ class PluginsTable
     private static function buildTimeoutCommand(int $seconds, string $command): string
     {
         return Package::buildTimeoutCommand($seconds, $command);
+    }
+
+    private static function auditPluginChange(string $action, string $pluginName): void
+    {
+        try {
+            if (! class_exists(SecurityAuditLogger::class)) {
+                return;
+            }
+
+            $event = $action === 'installed'
+                ? SecurityAuditEvent::PluginInstalled
+                : SecurityAuditEvent::PluginUninstalled;
+
+            $description = $action === 'installed'
+                ? __('security::backup.audit.plugin-installed', ['plugin' => $pluginName])
+                : __('security::backup.audit.plugin-uninstalled', ['plugin' => $pluginName]);
+
+            app(SecurityAuditLogger::class)->log(
+                $event,
+                $description,
+                properties: ['plugin' => $pluginName, 'action' => $action],
+            );
+        } catch (Throwable) {
+        }
     }
 }

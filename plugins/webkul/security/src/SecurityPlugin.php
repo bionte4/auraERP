@@ -4,6 +4,7 @@ namespace Webkul\Security;
 
 use Filament\Contracts\Plugin;
 use Filament\Panel;
+use Webkul\Security\Filament\Auth\Login;
 use Webkul\Security\Settings\UserSettings;
 
 class SecurityPlugin implements Plugin
@@ -22,7 +23,8 @@ class SecurityPlugin implements Plugin
     {
         $panel
             ->when($panel->getId() == 'admin', function (Panel $panel) {
-                $panel->passwordReset()
+                $panel->login(Login::class)
+                    ->passwordReset()
                     ->discoverResources(
                         in: __DIR__.'/Filament/Resources',
                         for: 'Webkul\\Security\\Filament\\Resources'

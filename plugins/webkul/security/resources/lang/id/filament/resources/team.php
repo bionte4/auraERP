@@ -10,6 +10,8 @@ return [
     'form' => [
         'fields' => [
             'name'          => 'Nama',
+            'project'       => 'Proyek terkait',
+            'project-help'  => 'Opsional. Jika diisi, sinkron anggota memakai proyek ini (lebih diutamakan daripada cocok nama).',
             'members'       => 'Anggota tim',
             'members-help'  => 'Pilih user yang menjadi anggota tim ini. Manage Teams menghitung proyek di mana anggota ini = Manajer Proyek.',
         ],

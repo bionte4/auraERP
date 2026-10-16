@@ -130,6 +130,7 @@ class ManageDatabaseBackups extends Page
                 ->label(__('security::filament/pages/manage-database-backups.actions.restore'))
                 ->icon('heroicon-o-arrow-path')
                 ->color('danger')
+                ->visible(fn (): bool => app(DatabaseBackupManager::class)->restoreAllowed())
                 ->modalHeading(__('security::filament/pages/manage-database-backups.actions.restore-heading'))
                 ->modalDescription(__('security::filament/pages/manage-database-backups.actions.restore-description', [
                     'phrase' => $phrase,
@@ -202,6 +203,16 @@ class ManageDatabaseBackups extends Page
     {
         AdminAccess::ensure();
 
+        if (! app(DatabaseBackupManager::class)->restoreAllowed()) {
+            Notification::make()
+                ->danger()
+                ->title(__('security::filament/pages/manage-database-backups.notifications.failed.title'))
+                ->body(__('security::backup.errors.restore-disabled'))
+                ->send();
+
+            return;
+        }
+
         $this->pendingRestoreFilename = basename($filename);
         $this->mountAction('confirmRestore');
     }
@@ -211,12 +222,16 @@ class ManageDatabaseBackups extends Page
      */
     public function getViewData(): array
     {
+        $manager = app(DatabaseBackupManager::class);
+
         return [
-            'scheduleAt'     => (string) config('security-backup.schedule_at', '02:00'),
-            'retentionDays'  => (int) config('security-backup.retention_days', 14),
-            'retentionCount' => (int) config('security-backup.retention_count', 30),
-            'enabled'        => (bool) config('security-backup.enabled', true),
-            'directory'      => app(DatabaseBackupManager::class)->directory(),
+            'scheduleAt'      => (string) config('security-backup.schedule_at', '02:00'),
+            'retentionDays'   => (int) config('security-backup.retention_days', 14),
+            'retentionCount'  => (int) config('security-backup.retention_count', 30),
+            'enabled'         => (bool) config('security-backup.enabled', true),
+            'directory'       => $manager->directory(),
+            'restoreAllowed'  => $manager->restoreAllowed(),
+            'health'          => $manager->health(),
         ];
     }
 }

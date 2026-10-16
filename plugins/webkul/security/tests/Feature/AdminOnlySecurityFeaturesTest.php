@@ -7,6 +7,7 @@ use Livewire\Livewire;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Webkul\Security\Enums\SecurityAuditEvent;
+use Webkul\Security\Filament\Pages\ManageBlockedIps;
 use Webkul\Security\Filament\Pages\ManageDatabaseBackups;
 use Webkul\Security\Filament\Resources\AuditTrailResource;
 use Webkul\Security\Models\AuditTrail;
@@ -172,5 +173,31 @@ it('blocks non-admin from database backups page and download route', function ()
     expect(ManageDatabaseBackups::canAccess())->toBeTrue();
 
     Livewire::test(ManageDatabaseBackups::class)
+        ->assertOk();
+});
+
+it('blocks non-admin from blocked ips page', function (): void {
+    $adminRoleName = AdminAccess::adminRoleName();
+    ensureRolesForGuards([$adminRoleName, 'Staff', 'HRD']);
+
+    foreach (['Staff', 'HRD'] as $roleName) {
+        $user = User::withoutEvents(fn () => User::factory()->create());
+        $user->syncRoles([$roleName]);
+
+        Auth::guard('web')->login($user);
+        Auth::guard('sanctum')->setUser($user);
+        Auth::shouldUse('sanctum');
+
+        expect(ManageBlockedIps::canAccess())->toBeFalse()
+            ->and(ManageBlockedIps::shouldRegisterNavigation())->toBeFalse();
+    }
+
+    $admin = FilamentHelper::actingAs();
+    $admin->syncRoles([$adminRoleName]);
+
+    expect(ManageBlockedIps::canAccess())->toBeTrue()
+        ->and(ManageBlockedIps::shouldRegisterNavigation())->toBeTrue();
+
+    Livewire::test(ManageBlockedIps::class)
         ->assertOk();
 });

@@ -27,7 +27,7 @@ class TeamMembershipSynchronizer
             return ['team' => null, 'attached' => 0];
         }
 
-        $team = $this->resolveTeam($name);
+        $team = $this->resolveTeamForProject($project, $name);
 
         if (! $team instanceof Team) {
             return ['team' => null, 'attached' => 0];
@@ -50,17 +50,33 @@ class TeamMembershipSynchronizer
             return ['projects' => 0, 'attached' => 0];
         }
 
-        $name = trim((string) $team->name);
+        $projects = collect();
 
-        if ($name === '') {
-            return ['projects' => 0, 'attached' => 0];
+        if (Schema::hasColumn('teams', 'project_id') && $team->project_id) {
+            $linked = Project::query()
+                ->withoutGlobalScopes()
+                ->whereNull('deleted_at')
+                ->whereKey($team->project_id)
+                ->first();
+
+            if ($linked instanceof Project) {
+                $projects = collect([$linked]);
+            }
         }
 
-        $projects = Project::query()
-            ->withoutGlobalScopes()
-            ->whereNull('deleted_at')
-            ->whereRaw('LOWER(TRIM(name)) = ?', [mb_strtolower($name)])
-            ->get();
+        if ($projects->isEmpty()) {
+            $name = trim((string) $team->name);
+
+            if ($name === '') {
+                return ['projects' => 0, 'attached' => 0];
+            }
+
+            $projects = Project::query()
+                ->withoutGlobalScopes()
+                ->whereNull('deleted_at')
+                ->whereRaw('LOWER(TRIM(name)) = ?', [mb_strtolower($name)])
+                ->get();
+        }
 
         $userIds = [];
 
@@ -124,8 +140,19 @@ class TeamMembershipSynchronizer
         }
     }
 
-    protected function resolveTeam(string $name): ?Team
+    protected function resolveTeamForProject(Project $project, string $name): ?Team
     {
+        if (Schema::hasColumn('teams', 'project_id')) {
+            $linked = Team::query()
+                ->withoutGlobalScopes()
+                ->where('project_id', $project->id)
+                ->first();
+
+            if ($linked instanceof Team) {
+                return $linked;
+            }
+        }
+
         $normalized = mb_strtolower($name);
 
         $team = Team::query()
@@ -134,12 +161,20 @@ class TeamMembershipSynchronizer
             ->first();
 
         if ($team instanceof Team) {
+            if (Schema::hasColumn('teams', 'project_id') && ! $team->project_id) {
+                $team->forceFill(['project_id' => $project->id])->saveQuietly();
+            }
+
             return $team;
         }
 
-        return Team::query()->create([
-            'name' => $name,
-        ]);
+        $attributes = ['name' => $name];
+
+        if (Schema::hasColumn('teams', 'project_id')) {
+            $attributes['project_id'] = $project->id;
+        }
+
+        return Team::query()->create($attributes);
     }
 
     /**

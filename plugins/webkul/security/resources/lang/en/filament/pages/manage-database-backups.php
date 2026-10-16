@@ -8,14 +8,18 @@ return [
     ],
 
     'info' => [
-        'heading'   => 'Periodic backup & restore',
-        'enabled'   => 'Scheduler: :status',
-        'on'        => 'enabled',
-        'off'       => 'disabled',
-        'schedule'  => 'Automatic backup runs daily at :time (server timezone).',
-        'retention' => 'Retention: :days day(s), max :count file(s).',
-        'directory' => 'Storage path: :path',
-        'cron'      => 'Ensure the Laravel scheduler cron is active: * * * * * php /path/to/artisan schedule:run',
+        'heading'    => 'Periodic backup & restore',
+        'enabled'    => 'Scheduler: :status',
+        'on'         => 'enabled',
+        'off'        => 'disabled',
+        'schedule'   => 'Automatic backup runs daily at :time (server timezone).',
+        'retention'  => 'Retention: :days day(s), max :count file(s).',
+        'directory'  => 'Storage path: :path',
+        'restore'    => 'In-app restore: :status (disabled in production by default)',
+        'health'     => 'Backup health: :status — last: :last — free disk: :free MB',
+        'health-ok'  => 'OK',
+        'health-warn'=> 'Needs attention',
+        'cron'       => 'Ensure the Laravel scheduler cron is active: * * * * * php /path/to/artisan schedule:run',
     ],
 
     'table' => [

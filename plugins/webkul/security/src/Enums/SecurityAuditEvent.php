@@ -20,6 +20,12 @@ enum SecurityAuditEvent: string implements HasColor, HasLabel
     case BackupCreated = 'backup_created';
     case BackupRestored = 'backup_restored';
     case BackupDeleted = 'backup_deleted';
+    case EmployeesAssigned = 'employees_assigned';
+    case PluginInstalled = 'plugin_installed';
+    case PluginUninstalled = 'plugin_uninstalled';
+    case BackupRestoreBlocked = 'backup_restore_blocked';
+    case IpBlocked = 'ip_blocked';
+    case IpUnblocked = 'ip_unblocked';
 
     public function getLabel(): string
     {
@@ -29,12 +35,12 @@ enum SecurityAuditEvent: string implements HasColor, HasLabel
     public function getColor(): string|array|null
     {
         return match ($this) {
-            self::LoginSucceeded, self::BackupCreated                                          => 'success',
-            self::LoginFailed                                                                  => 'danger',
-            self::Logout                                                                       => 'gray',
-            self::UserCreated, self::RoleCreated                                               => 'info',
-            self::UserUpdated, self::UserRolesChanged, self::RoleUpdated, self::BackupRestored => 'warning',
-            self::UserDeleted, self::RoleDeleted, self::BackupDeleted                          => 'danger',
+            self::LoginSucceeded, self::BackupCreated, self::PluginInstalled, self::IpUnblocked => 'success',
+            self::LoginFailed, self::BackupRestoreBlocked, self::IpBlocked                      => 'danger',
+            self::Logout, self::PluginUninstalled                                               => 'gray',
+            self::UserCreated, self::RoleCreated, self::EmployeesAssigned                       => 'info',
+            self::UserUpdated, self::UserRolesChanged, self::RoleUpdated, self::BackupRestored  => 'warning',
+            self::UserDeleted, self::RoleDeleted, self::BackupDeleted                           => 'danger',
         };
     }
 }

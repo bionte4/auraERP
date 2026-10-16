@@ -73,10 +73,34 @@ class DatabaseBackupManager
         return $meta;
     }
 
+    public function restoreAllowed(): bool
+    {
+        $configured = config('security-backup.allow_restore');
+
+        if ($configured === null || $configured === '') {
+            return ! app()->environment('production');
+        }
+
+        return filter_var($configured, FILTER_VALIDATE_BOOLEAN);
+    }
+
     public function restore(string $filename): void
     {
         $path = $this->resolveExistingPath($filename);
         $driver = DB::getDriverName();
+
+        if (! $this->restoreAllowed()) {
+            $this->auditLogger->log(
+                SecurityAuditEvent::BackupRestoreBlocked,
+                __('security::backup.audit.restore-blocked', ['file' => basename($path)]),
+                properties: [
+                    'filename'    => basename($path),
+                    'environment' => app()->environment(),
+                ],
+            );
+
+            throw new RuntimeException(__('security::backup.errors.restore-disabled'));
+        }
 
         match ($driver) {
             'sqlite'           => $this->restoreSqlite($path),
@@ -90,6 +114,31 @@ class DatabaseBackupManager
             __('security::backup.audit.restored', ['file' => basename($path)]),
             properties: ['filename' => basename($path), 'driver' => $driver],
         );
+    }
+
+    /**
+     * @return array{ok: bool, last_backup_at: ?string, age_hours: ?float, count: int, restore_allowed: bool, disk_free_mb: ?float}
+     */
+    public function health(): array
+    {
+        $items = $this->list();
+        $latest = $items->first();
+        $ageHours = null;
+
+        if ($latest && ! empty($latest['created_at'])) {
+            $ageHours = round(now()->diffInMinutes(Carbon::parse((string) $latest['created_at'])) / 60, 1);
+        }
+
+        $freeBytes = @disk_free_space($this->directory());
+
+        return [
+            'ok'              => $latest !== null && ($ageHours === null || $ageHours <= 36),
+            'last_backup_at'  => $latest['created_at'] ?? null,
+            'age_hours'       => $ageHours,
+            'count'           => $items->count(),
+            'restore_allowed' => $this->restoreAllowed(),
+            'disk_free_mb'    => $freeBytes === false ? null : round($freeBytes / 1024 / 1024, 1),
+        ];
     }
 
     public function delete(string $filename): void

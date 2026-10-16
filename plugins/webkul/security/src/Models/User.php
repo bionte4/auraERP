@@ -24,6 +24,7 @@ use Webkul\Employee\Models\Employee;
 use Webkul\Partner\Models\Partner;
 use Webkul\Project\Models\Project;
 use Webkul\Security\Enums\PermissionType;
+use Webkul\Security\Support\DemoAccountGuard;
 use Webkul\Security\Support\OwnerSource;
 use Webkul\Security\Traits\HasOwnershipScope;
 use Webkul\Support\Models\Company;
@@ -77,7 +78,11 @@ class User extends BaseUser implements FilamentUser, HasAppAuthentication, HasAp
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->is_active;
+        if (! $this->is_active) {
+            return false;
+        }
+
+        return ! DemoAccountGuard::shouldBlock($this);
     }
 
     public function creator(): BelongsTo

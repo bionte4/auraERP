@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Schema;
 use Webkul\Employee\Models\Employee;
 use Webkul\Partner\Models\Partner;
 use Webkul\Project\Models\Project;
+use Webkul\Security\Enums\SecurityAuditEvent;
+use Webkul\Security\Services\SecurityAuditLogger;
 
 class ProjectEmployeeAssigner
 {
@@ -99,10 +101,31 @@ class ProjectEmployeeAssigner
         } catch (\Throwable) {
         }
 
-        return [
+        $result = [
             'assigned'     => count($syncPayload),
             'without_user' => $withoutUser,
         ];
+
+        try {
+            app(SecurityAuditLogger::class)->log(
+                SecurityAuditEvent::EmployeesAssigned,
+                __('security::backup.audit.employees-assigned', [
+                    'project' => $project->name,
+                    'count'   => $result['assigned'],
+                    'without' => $result['without_user'],
+                ]),
+                subject: $project,
+                properties: [
+                    'project_id'   => $project->id,
+                    'employee_ids' => array_keys($syncPayload),
+                    'assigned'     => $result['assigned'],
+                    'without_user' => $result['without_user'],
+                ],
+            );
+        } catch (\Throwable) {
+        }
+
+        return $result;
     }
 
     /**

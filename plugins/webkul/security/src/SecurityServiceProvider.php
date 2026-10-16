@@ -14,6 +14,7 @@ use Webkul\PluginManager\Package;
 use Webkul\PluginManager\PackageServiceProvider;
 use Webkul\Security\Console\Commands\DatabaseBackupCleanCommand;
 use Webkul\Security\Console\Commands\DatabaseBackupCommand;
+use Webkul\Security\Console\Commands\SecurityHealthCheckCommand;
 use Webkul\Security\Console\Commands\SyncRbacPermissionsCommand;
 use Webkul\Security\Facades\Bouncer as BouncerFacade;
 use Webkul\Security\Listeners\RecordSecurityAccessAudit;
@@ -51,17 +52,20 @@ class SecurityServiceProvider extends PackageServiceProvider
                 '2025_08_21_101646_alter_users_table',
                 '2026_01_23_074142_add_multi_factor_auth_columns_in_users_table',
                 '2026_10_16_160000_create_security_audit_trails_table',
+                '2026_10_16_171000_add_project_id_to_teams_table',
+                '2026_10_16_173000_create_security_blocked_ips_table',
             ])
             ->hasSettings([
                 '2024_11_05_042358_create_user_settings',
                 '2025_07_29_064223_create_currency_settings',
             ])
             ->runsSettings()
-            ->hasConfigFile('security-backup')
+            ->hasConfigFile(['security-backup', 'security-demo', 'security-login'])
             ->hasCommands([
                 SyncRbacPermissionsCommand::class,
                 DatabaseBackupCommand::class,
                 DatabaseBackupCleanCommand::class,
+                SecurityHealthCheckCommand::class,
             ]);
     }
 

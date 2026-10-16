@@ -8,14 +8,18 @@ return [
     ],
 
     'info' => [
-        'heading'   => 'Backup berkala & restore',
-        'enabled'   => 'Penjadwal: :status',
-        'on'        => 'aktif',
-        'off'       => 'nonaktif',
-        'schedule'  => 'Backup otomatis berjalan setiap hari pukul :time (timezone server).',
-        'retention' => 'Retensi: :days hari, maks :count file.',
-        'directory' => 'Lokasi penyimpanan: :path',
-        'cron'      => 'Pastikan cron Laravel scheduler aktif: * * * * * php /path/to/artisan schedule:run',
+        'heading'    => 'Backup berkala & restore',
+        'enabled'    => 'Penjadwal: :status',
+        'on'         => 'aktif',
+        'off'        => 'nonaktif',
+        'schedule'   => 'Backup otomatis berjalan setiap hari pukul :time (timezone server).',
+        'retention'  => 'Retensi: :days hari, maks :count file.',
+        'directory'  => 'Lokasi penyimpanan: :path',
+        'restore'    => 'Restore dari UI: :status (default nonaktif di production)',
+        'health'     => 'Kesehatan backup: :status — terakhir: :last — disk bebas: :free MB',
+        'health-ok'  => 'Baik',
+        'health-warn'=> 'Perlu perhatian',
+        'cron'       => 'Pastikan cron Laravel scheduler aktif: * * * * * php /path/to/artisan schedule:run',
     ],
 
     'table' => [
