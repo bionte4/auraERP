@@ -119,6 +119,13 @@ class ProjectsTable
                     ])
                         ->visible(fn (Project $record) => ProjectResource::getTimeSettings()->enable_timesheets && $record->allow_milestones && $record->remaining_hours),
                     Stack::make([
+                        TextColumn::make('health')
+                            ->label(__('projects::filament/resources/project.table.columns.health'))
+                            ->badge()
+                            ->color(fn (Project $record): string => $record->healthColor())
+                            ->state(fn (Project $record): string => $record->healthSummary()),
+                    ]),
+                    Stack::make([
                         TextColumn::make('user.name')
                             ->label(__('projects::filament/resources/project.table.columns.project-manager'))
                             ->icon('heroicon-o-user')

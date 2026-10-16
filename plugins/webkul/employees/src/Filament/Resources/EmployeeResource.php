@@ -14,6 +14,7 @@ use Webkul\Employee\Filament\Resources\EmployeeResource\Pages\CreateEmployee;
 use Webkul\Employee\Filament\Resources\EmployeeResource\Pages\EditEmployee;
 use Webkul\Employee\Filament\Resources\EmployeeResource\Pages\ListEmployees;
 use Webkul\Employee\Filament\Resources\EmployeeResource\Pages\ManageAssignedProjects;
+use Webkul\Employee\Filament\Resources\EmployeeResource\Pages\ManageOverview;
 use Webkul\Employee\Filament\Resources\EmployeeResource\Pages\ManageResume;
 use Webkul\Employee\Filament\Resources\EmployeeResource\Pages\ManageSkill;
 use Webkul\Employee\Filament\Resources\EmployeeResource\Pages\ViewEmployee;
@@ -94,6 +95,7 @@ class EmployeeResource extends Resource
         return $page->generateNavigationItems([
             ViewEmployee::class,
             EditEmployee::class,
+            ManageOverview::class,
             ManageSkill::class,
             ManageResume::class,
             ManageAssignedProjects::class,
@@ -128,6 +130,7 @@ class EmployeeResource extends Resource
             'create'            => CreateEmployee::route('/create'),
             'edit'              => EditEmployee::route('/{record}/edit'),
             'view'              => ViewEmployee::route('/{record}'),
+            'overview'          => ManageOverview::route('/{record}/overview'),
             'skills'            => ManageSkill::route('/{record}/skills'),
             'resumes'           => ManageResume::route('/{record}/resumes'),
             'assigned-projects' => ManageAssignedProjects::route('/{record}/assigned-projects'),

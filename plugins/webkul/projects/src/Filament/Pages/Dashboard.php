@@ -10,6 +10,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Illuminate\Contracts\Support\Htmlable;
 use Webkul\Partner\Models\Partner;
+use Webkul\Project\Filament\Widgets\AttendancePresenceWidget;
 use Webkul\Project\Filament\Widgets\OperationManagerActionsWidget;
 use Webkul\Project\Filament\Widgets\OperationManagerWorkloadWidget;
 use Webkul\Project\Filament\Widgets\StatsOverviewWidget;
@@ -105,6 +106,7 @@ class Dashboard extends BaseDashboard
         return [
             StatsOverviewWidget::class,
             OperationManagerActionsWidget::class,
+            AttendancePresenceWidget::class,
             OperationManagerWorkloadWidget::class,
             TaskByStageChart::class,
             TaskByStateChart::class,

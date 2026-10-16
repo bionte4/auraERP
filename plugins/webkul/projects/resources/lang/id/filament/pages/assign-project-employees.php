@@ -15,7 +15,10 @@ return [
     ],
 
     'actions' => [
-        'save' => 'Simpan Penugasan',
+        'save'                   => 'Simpan Penugasan',
+        'provision-users'        => 'Buat Related User yang hilang',
+        'provision-heading'      => 'Buat akun login untuk karyawan ditugaskan?',
+        'provision-description'  => 'Membuat user role Staff dari work email untuk karyawan yang ditugaskan ke proyek tetapi belum punya Related User. Password sementara digenerate.',
     ],
 
     'notifications' => [
@@ -23,6 +26,10 @@ return [
             'title'       => 'Penugasan karyawan disimpan',
             'body'        => ':count karyawan ditugaskan ke proyek.',
             'body-warn'   => ':count karyawan ditugaskan. :without di antaranya belum punya Pengguna Terkait — hubungkan akun user agar mereka dapat mengakses proyek.',
+        ],
+        'provisioned' => [
+            'title' => 'Related User diproses',
+            'body'  => ':count dibuat/dihubungkan, :skip dilewati.',
         ],
         'missing-project' => [
             'title' => 'Silakan pilih proyek terlebih dahulu',

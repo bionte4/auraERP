@@ -10,12 +10,83 @@
                 <h2>{{ $board['title'] }}</h2>
                 <p>{{ $board['subtitle'] }}</p>
             </div>
-            @if ($board['action'])
-                <a class="team-board-add" href="{{ $board['action']['href'] }}">+ {{ $board['action']['label'] }}</a>
-            @endif
+            <div class="flex flex-wrap items-center gap-2">
+                <button
+                    type="button"
+                    wire:click="setViewMode('cards')"
+                    class="rounded-lg px-3 py-1.5 text-sm {{ ($board['viewMode'] ?? 'cards') === 'cards' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200' }}"
+                >
+                    {{ $labels['mode-cards'] }}
+                </button>
+                @if ($board['manages'])
+                    <button
+                        type="button"
+                        wire:click="setViewMode('kanban')"
+                        class="rounded-lg px-3 py-1.5 text-sm {{ ($board['viewMode'] ?? '') === 'kanban' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200' }}"
+                    >
+                        {{ $labels['mode-kanban'] }}
+                    </button>
+                @endif
+                @if ($board['action'])
+                    <a class="team-board-add" href="{{ $board['action']['href'] }}">+ {{ $board['action']['label'] }}</a>
+                @endif
+            </div>
         </div>
 
-        @if ($board['cards'] === [])
+        @if (($board['viewMode'] ?? 'cards') === 'kanban' && $board['manages'])
+            @if (($board['kanban'] ?? []) === [])
+                <div class="team-empty">{{ $board['empty'] }}</div>
+            @else
+                <div class="flex gap-4 overflow-x-auto pb-4">
+                    @foreach ($board['kanban'] as $column)
+                        <div
+                            class="min-w-[240px] max-w-[280px] flex-1 rounded-xl border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900"
+                            data-project-id="{{ $column['id'] }}"
+                            ondragover="event.preventDefault()"
+                            ondrop="
+                                event.preventDefault();
+                                const employeeId = Number(event.dataTransfer.getData('employeeId'));
+                                const fromProjectId = Number(event.dataTransfer.getData('fromProjectId'));
+                                const toProjectId = Number('{{ $column['id'] }}');
+                                if (employeeId && fromProjectId && toProjectId) {
+                                    @this.call('moveEmployeeOnKanban', employeeId, fromProjectId, toProjectId);
+                                }
+                            "
+                        >
+                            <div class="mb-3 flex items-center justify-between gap-2">
+                                <a href="{{ $column['href'] }}" class="font-semibold text-gray-950 dark:text-white">{{ $column['name'] }}</a>
+                                <span class="text-xs text-gray-500">{{ count($column['employees']) }}</span>
+                            </div>
+                            <div class="space-y-2 min-h-[80px]">
+                                @forelse ($column['employees'] as $employee)
+                                    <div
+                                        class="cursor-grab rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                                        draggable="true"
+                                        ondragstart="
+                                            event.dataTransfer.setData('employeeId', '{{ $employee['id'] }}');
+                                            event.dataTransfer.setData('fromProjectId', '{{ $column['id'] }}');
+                                        "
+                                    >
+                                        <div class="flex items-center gap-2">
+                                            <span class="inline-flex h-7 w-7 items-center justify-center rounded-full text-xs text-white" style="background: {{ $employee['color'] }}">
+                                                {{ $employee['initials'] }}
+                                            </span>
+                                            @if (! empty($employee['href']))
+                                                <a href="{{ $employee['href'] }}" class="font-medium text-gray-900 dark:text-gray-100">{{ $employee['name'] }}</a>
+                                            @else
+                                                <span class="font-medium text-gray-900 dark:text-gray-100">{{ $employee['name'] }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @empty
+                                    <p class="text-xs text-gray-400">{{ $labels['drop-here'] }}</p>
+                                @endforelse
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        @elseif ($board['cards'] === [])
             <div class="team-empty">{{ $board['empty'] }}</div>
         @else
             <div class="team-board-grid">

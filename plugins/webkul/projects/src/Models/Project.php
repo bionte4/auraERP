@@ -22,6 +22,7 @@ use Webkul\Field\Traits\HasCustomFields;
 use Webkul\Partner\Enums\AccountType;
 use Webkul\Partner\Models\Partner;
 use Webkul\Project\Database\Factories\ProjectFactory;
+use Webkul\Project\Enums\TaskState;
 use Webkul\Project\Services\ProjectExpiryNotifier;
 use Webkul\Project\Services\TeamMembershipSynchronizer;
 use Webkul\Security\Models\User;
@@ -260,6 +261,45 @@ class Project extends Model implements Sortable
         $value = (float) ($this->project_value ?? 0);
 
         return 'Rp '.number_format($value, 0, ',', '.');
+    }
+
+    public function healthSummary(): string
+    {
+        $taskTotal = $this->tasks()->count();
+        $taskDone = $this->tasks()
+            ->whereIn('state', [TaskState::DONE->value, TaskState::APPROVED->value])
+            ->count();
+        $overdue = $this->tasks()
+            ->whereNotNull('deadline')
+            ->where('deadline', '<', now())
+            ->whereNotIn('state', [TaskState::DONE->value, TaskState::CANCELLED->value, TaskState::APPROVED->value])
+            ->count();
+        $members = method_exists($this, 'employees') ? $this->employees()->count() : 0;
+        $days = $this->daysUntilEndDate();
+        $progress = $taskTotal > 0 ? (int) round(($taskDone / $taskTotal) * 100) : 0;
+        $daysLabel = $days === null ? '—' : ($days < 0 ? 'lewat' : "{$days}h");
+
+        return "{$progress}% · {$members} org · overdue {$overdue} · sisa {$daysLabel}";
+    }
+
+    public function healthColor(): string
+    {
+        $days = $this->daysUntilEndDate();
+        $overdue = $this->tasks()
+            ->whereNotNull('deadline')
+            ->where('deadline', '<', now())
+            ->whereNotIn('state', [TaskState::DONE->value, TaskState::CANCELLED->value, TaskState::APPROVED->value])
+            ->exists();
+
+        if ($overdue || ($days !== null && $days < 0)) {
+            return 'danger';
+        }
+
+        if ($days !== null && $days <= 30) {
+            return 'warning';
+        }
+
+        return 'success';
     }
 
     public static function filterExternalCustomersQuery(Builder $query, mixed $selectedId = null): Builder

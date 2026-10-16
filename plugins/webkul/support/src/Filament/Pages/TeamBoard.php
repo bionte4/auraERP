@@ -3,6 +3,7 @@
 namespace Webkul\Support\Filament\Pages;
 
 use BackedEnum;
+use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Carbon;
@@ -15,6 +16,7 @@ use Webkul\Employee\Filament\Resources\EmployeeResource;
 use Webkul\Employee\Models\Employee;
 use Webkul\Project\Filament\Resources\ProjectResource;
 use Webkul\Project\Models\Project;
+use Webkul\Project\Services\ProjectEmployeeAssigner;
 use Webkul\Project\Services\TeamMembershipSynchronizer;
 use Webkul\Security\Models\Team;
 use Webkul\Security\Models\User;
@@ -27,6 +29,8 @@ class TeamBoard extends Page
     protected static ?string $slug = 'team-board';
 
     protected static ?int $navigationSort = -8;
+
+    public string $viewMode = 'cards';
 
     public static function canAccess(): bool
     {
@@ -63,6 +67,41 @@ class TeamBoard extends Page
         return 'heroicon-o-user-group';
     }
 
+    public function setViewMode(string $mode): void
+    {
+        $this->viewMode = in_array($mode, ['cards', 'kanban'], true) ? $mode : 'cards';
+    }
+
+    public function moveEmployeeOnKanban(int $employeeId, int $fromProjectId, int $toProjectId): void
+    {
+        if (! static::managesTeams() || $fromProjectId === $toProjectId) {
+            return;
+        }
+
+        $from = Project::query()->find($fromProjectId);
+        $to = Project::query()->find($toProjectId);
+        $employee = class_exists(Employee::class) ? Employee::query()->find($employeeId) : null;
+
+        if (! $from || ! $to || ! $employee) {
+            return;
+        }
+
+        $assigner = app(ProjectEmployeeAssigner::class);
+        $fromIds = $assigner->assignedEmployees($from)->pluck('id')->reject(fn ($id): bool => (int) $id === $employeeId)->values()->all();
+        $toIds = $assigner->assignedEmployees($to)->pluck('id')->push($employeeId)->unique()->values()->all();
+
+        $assigner->sync($from, $fromIds);
+        $assigner->sync($to, $toIds);
+
+        Notification::make()
+            ->success()
+            ->title(str_starts_with((string) app()->getLocale(), 'id')
+                ? 'Penugasan dipindahkan'
+                : 'Assignment moved')
+            ->body($employee->name.' → '.$to->name)
+            ->send();
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -74,13 +113,15 @@ class TeamBoard extends Page
 
         return [
             'manages'  => $manages,
+            'viewMode' => $this->viewMode,
+            'kanban'   => $this->viewMode === 'kanban' ? $this->kanbanColumns(auth()->user()) : [],
             'title'    => $manages
                 ? ($indonesian ? 'Kelola Tim' : 'Manage Teams')
                 : ($indonesian ? 'Tim Saya' : 'My Team'),
             'subtitle' => $manages
                 ? ($indonesian
-                    ? 'Pantau anggota, proyek berjalan, dan nilai proyek pada tim yang Anda kelola.'
-                    : 'Track members, active projects, and project value for the teams you manage.')
+                    ? 'Pantau anggota, proyek berjalan, dan nilai proyek pada tim yang Anda kelola. Mode Kanban: seret karyawan antar proyek.'
+                    : 'Track members, active projects, and project value for the teams you manage. Kanban: drag employees between projects.')
                 : ($indonesian
                     ? 'Proyek dan kemajuan tim tempat Anda menjadi anggota.'
                     : 'Projects and progress for the team you belong to.'),
@@ -109,8 +150,59 @@ class TeamBoard extends Page
                 'details'           => $indonesian ? 'Detail' : 'Details',
                 'new'               => $indonesian ? 'Baru' : 'New',
                 'open'              => $indonesian ? 'Buka' : 'Open',
+                'mode-cards'        => $indonesian ? 'Kartu Tim' : 'Team cards',
+                'mode-kanban'       => $indonesian ? 'Kanban Proyek' : 'Project kanban',
+                'drop-here'         => $indonesian ? 'Lepas di sini' : 'Drop here',
             ],
         ];
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    protected function kanbanColumns(?User $user): array
+    {
+        if (! $user || ! Schema::hasTable('projects_projects') || ! Schema::hasTable('projects_project_employees')) {
+            return [];
+        }
+
+        $cards = $this->cardsFor($user);
+        $projectIds = collect($cards)
+            ->flatMap(fn (array $card) => collect($card['projects'] ?? [])->pluck('id'))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        if ($projectIds === []) {
+            return [];
+        }
+
+        $projects = Project::query()
+            ->withoutGlobalScopes()
+            ->with(['employees' => fn ($q) => $q->select('employees_employees.id', 'employees_employees.name', 'employees_employees.user_id')])
+            ->whereIn('id', $projectIds)
+            ->orderBy('name')
+            ->get();
+
+        $palette = ['#6366f1', '#0ea5e9', '#14b8a6', '#f59e0b', '#ec4899', '#8b5cf6'];
+
+        return $projects->map(function (Project $project, int $index) use ($palette): array {
+            return [
+                'id'        => $project->id,
+                'name'      => $project->name,
+                'href'      => $this->projectViewUrl($project),
+                'employees' => $project->employees->map(function (Employee $employee, int $i) use ($palette): array {
+                    return [
+                        'id'       => $employee->id,
+                        'name'     => $employee->name,
+                        'initials' => Str::upper(Str::substr($employee->name, 0, 1)),
+                        'color'    => $palette[$i % count($palette)],
+                        'href'     => $this->employeeViewUrl($employee),
+                    ];
+                })->values()->all(),
+            ];
+        })->values()->all();
     }
 
     protected static function managesTeams(): bool

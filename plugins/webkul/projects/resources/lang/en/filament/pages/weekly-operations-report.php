@@ -14,4 +14,11 @@ return [
         'value'  => 'Value',
         'notes'  => 'Notes',
     ],
+    'load' => [
+        'title'     => 'Workforce load (this week)',
+        'subtitle'  => 'Active assigned employees: project count and timesheet hours this week.',
+        'employee'  => 'Employee',
+        'projects'  => 'Projects',
+        'hours'     => 'Hours',
+    ],
 ];

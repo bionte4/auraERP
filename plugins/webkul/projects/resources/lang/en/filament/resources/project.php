@@ -71,6 +71,7 @@ return [
             'project-value'   => 'Project Value',
             'expiry-reminder' => 'End Date Reminder',
             'remaining-hours' => 'Remaining Hours',
+            'health'          => 'Health',
             'project-manager' => 'Project Manager',
         ],
 

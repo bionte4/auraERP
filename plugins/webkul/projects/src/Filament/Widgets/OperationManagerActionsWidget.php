@@ -10,6 +10,7 @@ use Throwable;
 use Webkul\Employee\Models\Employee;
 use Webkul\Project\Enums\TaskState;
 use Webkul\Project\Models\Task;
+use Webkul\Project\Services\OperationalScope;
 use Webkul\TimeOff\Enums\State as LeaveState;
 use Webkul\TimeOff\Models\Leave;
 
@@ -36,31 +37,33 @@ class OperationManagerActionsWidget extends BaseWidget
      */
     protected function getStats(): array
     {
+        $scope = app(OperationalScope::class);
+
         return [
             Stat::make(
                 __('projects::filament/widgets/operation-manager-actions.stats.pending-leaves'),
-                (string) $this->pendingLeavesCount()
+                (string) $this->pendingLeavesCount($scope)
             )
                 ->description(__('projects::filament/widgets/operation-manager-actions.stats.pending-leaves-help'))
                 ->color('warning')
                 ->url(url('/admin/time-off/time-offs')),
             Stat::make(
                 __('projects::filament/widgets/operation-manager-actions.stats.expiring-contracts'),
-                (string) $this->expiringContractsCount()
+                (string) $this->expiringContractsCount($scope)
             )
                 ->description(__('projects::filament/widgets/operation-manager-actions.stats.expiring-contracts-help'))
                 ->color('danger')
                 ->url(url('/admin/employees/employees')),
             Stat::make(
                 __('projects::filament/widgets/operation-manager-actions.stats.overdue-tasks'),
-                (string) $this->overdueTasksCount()
+                (string) $this->overdueTasksCount($scope)
             )
                 ->description(__('projects::filament/widgets/operation-manager-actions.stats.overdue-tasks-help'))
                 ->color('danger')
                 ->url(url('/admin/project/tasks')),
             Stat::make(
                 __('projects::filament/widgets/operation-manager-actions.stats.without-user'),
-                (string) $this->assignedWithoutUserCount()
+                (string) $this->assignedWithoutUserCount($scope)
             )
                 ->description(__('projects::filament/widgets/operation-manager-actions.stats.without-user-help'))
                 ->color('gray')
@@ -68,66 +71,105 @@ class OperationManagerActionsWidget extends BaseWidget
         ];
     }
 
-    protected function pendingLeavesCount(): int
+    protected function pendingLeavesCount(OperationalScope $scope): int
     {
         try {
             if (! class_exists(Leave::class) || ! Schema::hasTable('time_off_leaves')) {
                 return 0;
             }
 
-            return Leave::query()
-                ->whereIn('state', [LeaveState::CONFIRM->value, LeaveState::VALIDATE_ONE->value])
-                ->count();
+            $query = Leave::query()->whereIn('state', [LeaveState::CONFIRM->value, LeaveState::VALIDATE_ONE->value]);
+            $employeeIds = $scope->employeeIdsInScope();
+
+            if (! $scope->isUnscoped()) {
+                if ($employeeIds->isEmpty()) {
+                    return 0;
+                }
+
+                $query->whereIn('employee_id', $employeeIds->all());
+            }
+
+            return $query->count();
         } catch (Throwable) {
             return 0;
         }
     }
 
-    protected function expiringContractsCount(): int
+    protected function expiringContractsCount(OperationalScope $scope): int
     {
         try {
             if (! class_exists(Employee::class) || ! Schema::hasTable('employees_employees')) {
                 return 0;
             }
 
-            return Employee::query()
+            $query = Employee::query()
                 ->whereNotNull('contract_end_date')
                 ->whereDate('contract_end_date', '>=', now()->toDateString())
-                ->whereDate('contract_end_date', '<=', now()->addDays(30)->toDateString())
-                ->count();
+                ->whereDate('contract_end_date', '<=', now()->addDays(30)->toDateString());
+
+            $employeeIds = $scope->employeeIdsInScope();
+
+            if (! $scope->isUnscoped()) {
+                if ($employeeIds->isEmpty()) {
+                    return 0;
+                }
+
+                $query->whereIn('id', $employeeIds->all());
+            }
+
+            return $query->count();
         } catch (Throwable) {
             return 0;
         }
     }
 
-    protected function overdueTasksCount(): int
+    protected function overdueTasksCount(OperationalScope $scope): int
     {
         try {
             if (! Schema::hasTable('projects_tasks')) {
                 return 0;
             }
 
-            return Task::query()
+            $query = Task::query()
                 ->whereNotNull('deadline')
                 ->where('deadline', '<', now())
-                ->whereNotIn('state', [TaskState::DONE->value, TaskState::CANCELLED->value, TaskState::APPROVED->value])
-                ->count();
+                ->whereNotIn('state', [TaskState::DONE->value, TaskState::CANCELLED->value, TaskState::APPROVED->value]);
+
+            if (! $scope->isUnscoped()) {
+                $projectIds = $scope->projectIds();
+
+                if ($projectIds === []) {
+                    return 0;
+                }
+
+                $query->whereIn('project_id', $projectIds);
+            }
+
+            return $query->count();
         } catch (Throwable) {
             return 0;
         }
     }
 
-    protected function assignedWithoutUserCount(): int
+    protected function assignedWithoutUserCount(OperationalScope $scope): int
     {
         try {
             if (! Schema::hasTable('projects_project_employees') || ! Schema::hasTable('employees_employees')) {
                 return 0;
             }
 
-            return Employee::query()
-                ->whereNull('user_id')
-                ->whereHas('projects')
-                ->count();
+            $query = Employee::query()->whereNull('user_id')->whereHas('projects');
+            $employeeIds = $scope->employeeIdsInScope();
+
+            if (! $scope->isUnscoped()) {
+                if ($employeeIds->isEmpty()) {
+                    return 0;
+                }
+
+                $query->whereIn('id', $employeeIds->all());
+            }
+
+            return $query->count();
         } catch (Throwable) {
             return 0;
         }

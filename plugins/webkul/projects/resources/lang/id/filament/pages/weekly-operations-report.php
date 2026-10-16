@@ -14,4 +14,11 @@ return [
         'value'  => 'Nilai',
         'notes'  => 'Catatan',
     ],
+    'load' => [
+        'title'     => 'Beban tenaga kerja (minggu ini)',
+        'subtitle'  => 'Karyawan ditugaskan aktif: jumlah proyek dan jam timesheet minggu ini.',
+        'employee'  => 'Karyawan',
+        'projects'  => 'Proyek',
+        'hours'     => 'Jam',
+    ],
 ];

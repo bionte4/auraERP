@@ -78,8 +78,11 @@ class RolePermissionSynchronizer
             'page_project_assign_project_employees',
             'widget_project_operation_manager_workload_widget',
             'widget_project_operation_manager_actions_widget',
+            'widget_project_attendance_presence_widget',
             'page_integrations_manage_integrations',
             'page_support_welcome_dashboard',
+            'page_support_my_day_dashboard',
+            'page_support_team_board',
             'page_project_weekly_operations_report',
 
             // Projects & Timesheets
@@ -142,7 +145,12 @@ class RolePermissionSynchronizer
             || str_contains($p->name, 'time_off')
             || str_contains($p->name, 'recruitment')
             || str_contains($p->name, 'maintenance_equipment')
-            || $p->name === 'page_project_weekly_operations_report'
+            || in_array($p->name, [
+                'page_project_weekly_operations_report',
+                'page_support_my_day_dashboard',
+                'widget_project_attendance_presence_widget',
+                'widget_project_operation_manager_actions_widget',
+            ], true)
         );
         $hrdRole->givePermissionTo($hrdPermissions);
         $rolesSynced[] = $hrdRole->name;
@@ -174,7 +182,10 @@ class RolePermissionSynchronizer
                 'page_project_assign_project_employees',
                 'widget_project_operation_manager_workload_widget',
                 'widget_project_operation_manager_actions_widget',
+                'widget_project_attendance_presence_widget',
                 'page_project_weekly_operations_report',
+                'page_support_my_day_dashboard',
+                'page_support_team_board',
                 'page_evaluation_performance_evaluation_dashboard',
                 'page_attendance_clock_page',
             ], true)
@@ -191,6 +202,7 @@ class RolePermissionSynchronizer
             || in_array($p->name, [
                 'page_pos_pos_terminal_page',
                 'page_attendance_clock_page',
+                'page_support_my_day_dashboard',
                 'view_any_product_product',
                 'view_product_product',
                 'view_any_partner_partner',
@@ -208,6 +220,8 @@ class RolePermissionSynchronizer
         );
         $staffPermissions = $allPermissions->filter(fn (Permission $p): bool => in_array($p->name, [
             'page_attendance_clock_page',
+            'page_support_my_day_dashboard',
+            'page_support_team_board',
             'view_any_attendance_attendance',
             'create_attendance_attendance',
             'view_any_time_off_my::time::off',

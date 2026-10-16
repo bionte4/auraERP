@@ -71,6 +71,7 @@ return [
             'project-value'   => 'Nilai Proyek',
             'expiry-reminder' => 'Pengingat Akhir Proyek',
             'remaining-hours' => 'Jam Tersisa',
+            'health'          => 'Kesehatan',
             'project-manager' => 'Manajer Proyek',
         ],
 

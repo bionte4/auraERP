@@ -253,12 +253,17 @@ Buka menu **Employees → Performance Plans → Evaluations** (`/admin/evaluatio
    - Hak akses juga dipengaruhi **Visibilitas (`Visibility`)** proyek.
 4. **Dashboard beban kerja Operation Manager (`Project → Dashboard`):**
    - Buka **Project → Dashboard** (`/admin/project`).
-   - Widget **Item aksi OM**: cuti pending, kontrak ≤ 30 hari, tugas terlambat, karyawan ditugaskan tanpa Related User (klik menuju halaman terkait).
-   - Widget **Operation Manager — Proyek sebagai Manajer Proyek** menampilkan semua user ber-role **Operation Manager**, jumlah proyek aktif di mana mereka = **Manajer Proyek** (`user_id`), serta daftar nama proyek yang dapat diklik menuju detail proyek.
-   - Catatan: role **Operation Manager** ≠ otomatis Manajer Proyek; hitungan hanya dari field **Manajer Proyek** pada masing-masing proyek.
-   - Laporan unduhan: **Dashboard → Laporan Ops Mingguan** (`/admin/weekly-operations-report`) — Excel untuk OM/HRD/Admin.
-   - Permission: `widget_project_operation_manager_workload_widget`, `widget_project_operation_manager_actions_widget`, `page_project_weekly_operations_report` (setelah `php artisan security:sync-rbac`).
-5. **Link Tim ↔ Proyek eksplisit:** di **Settings → Teams** pilih **Proyek terkait**. Sinkron anggota & Team Board mengutamakan link ini; jika kosong, fallback cocok nama.
+   - Widget **Item aksi OM** (scope OM/Admin/HRD): cuti pending, kontrak ≤ 30 hari, tugas terlambat, karyawan ditugaskan tanpa Related User.
+   - Widget **Kehadiran hari ini**: hadir / terlambat / belum absen (scope).
+   - Widget **Operation Manager — Proyek sebagai Manajer Proyek** menampilkan OM + jumlah proyek aktif sebagai **Manajer Proyek**.
+   - **Dashboard → Hari Saya** (`/admin/my-day`) — kartu fokus harian per peran (Admin/HRD/OM/Staff/Kasir).
+   - **Laporan Ops Mingguan** (`/admin/weekly-operations-report`) — tabel metrik + beban jam/proyek per karyawan + unduh Excel.
+   - Daftar **Projects**: kolom **Kesehatan** (progress task, anggota, overdue, sisa hari).
+   - **Tugaskan Karyawan**: opsi karyawan menampilkan kapasitas (`N proyek · X jam/minggu`); tombol **Buat Related User yang hilang**.
+   - **Employee → Ringkasan 360** (`…/overview`) — proyek, kapasitas, cuti, aset, evaluasi, buat Related User 1-klik.
+   - **Team Board**: mode **Kanban Proyek** (seret karyawan antar proyek) untuk Admin/OM.
+   - Permission baru: `page_support_my_day_dashboard`, `widget_project_attendance_presence_widget` (setelah `security:sync-rbac`).
+5. **Link Tim ↔ Proyek eksplisit:** di **Settings → Teams** pilih **Proyek terkait**. Sinkron anggota & Team Board mengutamakan link ini; jika kosong, fallback cocok nama. Melepas karyawan dari proyek juga melepaskan mereka dari task terbuka proyek tersebut.
 5. **Reminder Berjenjang 3, 2, dan 1 Bulan Sebelum `End Date` Proyek:**
    - Sistem memberi badge peringatan dan notifikasi otomatis pada sisa waktu `61–90 hari` (**3 Bulan**), `31–60 hari` (**2 Bulan**), `0–30 hari` (**1 Bulan**), dan saat **Berakhir** (`php artisan projects:notify-expiring-projects`).
 6. **Bulk Import Proyek:**

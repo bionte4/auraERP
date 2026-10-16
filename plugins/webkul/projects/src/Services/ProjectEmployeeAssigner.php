@@ -8,7 +8,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Webkul\Employee\Models\Employee;
 use Webkul\Partner\Models\Partner;
+use Webkul\Project\Enums\TaskState;
 use Webkul\Project\Models\Project;
+use Webkul\Project\Models\Task;
 use Webkul\Security\Enums\SecurityAuditEvent;
 use Webkul\Security\Services\SecurityAuditLogger;
 
@@ -66,12 +68,14 @@ class ProjectEmployeeAssigner
         DB::transaction(function () use ($project, $syncPayload, $previousEmployees, $employees): void {
             $project->employees()->sync($syncPayload);
 
+            $assignedIds = collect(array_keys($syncPayload));
+            $removed = $previousEmployees->reject(fn (Employee $employee): bool => $assignedIds->contains($employee->id));
+
+            $this->detachRemovedUsersFromOpenTasks($project, $removed);
+
             if (! method_exists($project, 'addFollower') || ! Schema::hasTable('chatter_followers')) {
                 return;
             }
-
-            $assignedIds = collect(array_keys($syncPayload));
-            $removed = $previousEmployees->reject(fn (Employee $employee): bool => $assignedIds->contains($employee->id));
 
             foreach ($removed as $employee) {
                 $partner = $this->resolvePartner($employee);
@@ -241,6 +245,80 @@ class ProjectEmployeeAssigner
             ->with(['partner', 'user'])
             ->orderBy('name')
             ->get();
+    }
+
+    /**
+     * When employees leave a project, detach their users from open (non-done) tasks.
+     *
+     * @param  Collection<int, Employee>  $removed
+     */
+    protected function detachRemovedUsersFromOpenTasks(Project $project, Collection $removed): void
+    {
+        if ($removed->isEmpty() || ! Schema::hasTable('projects_tasks') || ! Schema::hasTable('projects_task_users')) {
+            return;
+        }
+
+        $userIds = $removed->pluck('user_id')->filter()->map(fn ($id): int => (int) $id)->unique()->values()->all();
+
+        if ($userIds === []) {
+            return;
+        }
+
+        $taskIds = Task::query()
+            ->where('project_id', $project->id)
+            ->whereNotIn('state', [TaskState::DONE->value, TaskState::CANCELLED->value, TaskState::APPROVED->value])
+            ->pluck('id')
+            ->all();
+
+        if ($taskIds === []) {
+            return;
+        }
+
+        DB::table('projects_task_users')
+            ->whereIn('task_id', $taskIds)
+            ->whereIn('user_id', $userIds)
+            ->delete();
+    }
+
+    /**
+     * Task assignees on a project whose user is not linked to an assigned employee.
+     *
+     * @return Collection<int, array{task_id: int, task: string, user_id: int, user: string}>
+     */
+    public function assigneeInconsistencies(Project $project): Collection
+    {
+        if (! Schema::hasTable('projects_task_users') || ! Schema::hasTable('projects_tasks')) {
+            return collect();
+        }
+
+        $assignedUserIds = $project->employees()
+            ->whereNotNull('employees_employees.user_id')
+            ->pluck('employees_employees.user_id')
+            ->map(fn ($id): int => (int) $id)
+            ->all();
+
+        if ($project->user_id) {
+            $assignedUserIds[] = (int) $project->user_id;
+        }
+
+        $assignedUserIds = array_values(array_unique($assignedUserIds));
+
+        return Task::query()
+            ->with(['users:id,name'])
+            ->where('project_id', $project->id)
+            ->whereNotIn('state', [TaskState::DONE->value, TaskState::CANCELLED->value, TaskState::APPROVED->value])
+            ->get()
+            ->flatMap(function (Task $task) use ($assignedUserIds): Collection {
+                return $task->users
+                    ->reject(fn ($user): bool => in_array((int) $user->id, $assignedUserIds, true))
+                    ->map(fn ($user): array => [
+                        'task_id' => $task->id,
+                        'task'    => (string) $task->title,
+                        'user_id' => (int) $user->id,
+                        'user'    => (string) $user->name,
+                    ]);
+            })
+            ->values();
     }
 
     protected function resolvePartner(Employee $employee): ?Partner

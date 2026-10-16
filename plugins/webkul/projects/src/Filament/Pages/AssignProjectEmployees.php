@@ -18,8 +18,10 @@ use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Webkul\Employee\Models\Employee;
+use Webkul\Employee\Services\EmployeeUserProvisioner;
 use Webkul\PluginManager\Package;
 use Webkul\Project\Models\Project;
+use Webkul\Project\Services\EmployeeCapacity;
 use Webkul\Project\Services\ProjectEmployeeAssigner;
 use Webkul\Support\Enums\NavigationGroup;
 
@@ -116,15 +118,11 @@ class AssignProjectEmployees extends Page implements HasForms
                             ->multiple()
                             ->searchable()
                             ->preload()
-                            ->options(fn (): array => Employee::query()
-                                ->where('is_active', true)
-                                ->orderBy('name')
-                                ->pluck('name', 'id')
-                                ->all())
+                            ->options(fn (): array => $this->employeeOptions())
                             ->getSearchResultsUsing(function (string $search): array {
                                 $term = '%'.$search.'%';
 
-                                return Employee::query()
+                                $employees = Employee::query()
                                     ->where('is_active', true)
                                     ->where(function (Builder $query) use ($term): void {
                                         $query->where('name', 'like', $term)
@@ -132,8 +130,9 @@ class AssignProjectEmployees extends Page implements HasForms
                                     })
                                     ->orderBy('name')
                                     ->limit(50)
-                                    ->pluck('name', 'id')
-                                    ->all();
+                                    ->get(['id', 'name']);
+
+                                return $this->optionsWithCapacity($employees);
                             })
                             ->disabled(fn (Get $get): bool => blank($get('project_id')))
                             ->columnSpanFull(),
@@ -146,12 +145,59 @@ class AssignProjectEmployees extends Page implements HasForms
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('provisionMissingUsers')
+                ->label(__('projects::filament/pages/assign-project-employees.actions.provision-users'))
+                ->icon('heroicon-o-user-plus')
+                ->color('warning')
+                ->requiresConfirmation()
+                ->modalHeading(__('projects::filament/pages/assign-project-employees.actions.provision-heading'))
+                ->modalDescription(__('projects::filament/pages/assign-project-employees.actions.provision-description'))
+                ->action(function (): void {
+                    $result = app(EmployeeUserProvisioner::class)->provisionMissingForAssignedEmployees();
+
+                    Notification::make()
+                        ->success()
+                        ->title(__('projects::filament/pages/assign-project-employees.notifications.provisioned.title'))
+                        ->body(__('projects::filament/pages/assign-project-employees.notifications.provisioned.body', [
+                            'count' => $result['provisioned'],
+                            'skip'  => $result['skipped'],
+                        ]))
+                        ->send();
+                }),
             Action::make('save')
                 ->label(__('projects::filament/pages/assign-project-employees.actions.save'))
                 ->icon('heroicon-o-check')
                 ->color('primary')
                 ->action(fn () => $this->save()),
         ];
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    protected function employeeOptions(): array
+    {
+        $employees = Employee::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        return $this->optionsWithCapacity($employees);
+    }
+
+    /**
+     * @param  Collection<int, Employee>  $employees
+     * @return array<int, string>
+     */
+    protected function optionsWithCapacity(Collection $employees): array
+    {
+        $capacity = app(EmployeeCapacity::class)->forEmployees($employees);
+
+        return $employees->mapWithKeys(function (Employee $employee) use ($capacity): array {
+            $extra = $capacity[$employee->id]['label'] ?? '';
+
+            return [$employee->id => trim($employee->name.' — '.$extra)];
+        })->all();
     }
 
     public function save(): void

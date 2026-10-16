@@ -15,7 +15,10 @@ return [
     ],
 
     'actions' => [
-        'save' => 'Save Assignment',
+        'save'                   => 'Save Assignment',
+        'provision-users'        => 'Create missing Related Users',
+        'provision-heading'      => 'Create login users for assigned employees?',
+        'provision-description'  => 'Creates Staff users from work email for employees assigned to projects but still missing a Related User. Temporary passwords are generated.',
     ],
 
     'notifications' => [
@@ -23,6 +26,10 @@ return [
             'title'       => 'Employee assignment saved',
             'body'        => ':count employee(s) assigned to the project.',
             'body-warn'   => ':count employee(s) assigned. :without of them have no Related User yet — link a user account so they can access the project.',
+        ],
+        'provisioned' => [
+            'title' => 'Related Users processed',
+            'body'  => ':count created/linked, :skip skipped.',
         ],
         'missing-project' => [
             'title' => 'Please select a project first',
