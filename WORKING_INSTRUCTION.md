@@ -41,13 +41,13 @@ Saat membuat atau mengedit User di **Settings → Users**, terdapat pengaturan *
    - **Daftar proyek yang dapat diklik** menuju detail masing-masing proyek.
 
 ### D. Audit Trail (khusus Admin — Security Access)
-1. Menu **Settings → Audit Trail** (`/admin/audit-trail`) **hanya tampil dan dapat dibuka oleh role Admin**.
+1. Menu **Settings → Audit Trail** (`/admin/audit-trail`) **hanya tampil dan dapat dibuka oleh role Admin** (hard-check role + policy; HRD/OM/Kasir/Staff ditolak).
 2. Mencatat peristiwa akses keamanan: login berhasil/gagal, logout, perubahan user (email/status/password), perubahan peran user, serta CRUD role.
-3. Setiap entri menampilkan waktu, pelaku, objek, IP, guard, dan detail tambahan. Hanya mode lihat (tidak dapat diubah/dihapus dari UI).
-4. Setelah deploy: pastikan migrasi jalan (`php artisan migrate`) lalu `sudo -u www-data php artisan security:sync-rbac` bila perlu.
+3. Setiap entri menampilkan waktu, pelaku, objek, IP, guard, dan detail tambahan. **CRUD dinonaktifkan** (hanya lihat; create/update/delete/force-delete = false).
+4. Setelah deploy: pastikan migrasi jalan (`php artisan migrate`) lalu `sudo -u www-data php artisan security:sync-rbac` (sync juga **mencabut** permission audit/backup dari role non-Admin).
 
 ### E. Backup Database Berkala & Restore (khusus Admin)
-1. Menu **Settings → Backup Database** (`/admin/database-backups`) **hanya untuk role Admin**.
+1. Menu **Settings → Backup Database** (`/admin/database-backups`) **hanya untuk role Admin** (termasuk unduh file via route auth).
 2. Backup otomatis harian (default pukul **02:00** server) via scheduler; pembersihan backup lama default pukul **03:15**.
 3. Dari UI Admin dapat: **buat backup sekarang**, **unduh**, **restore** (konfirmasi ketik `RESTORE`), **hapus**, dan **bersihkan backup lama**.
 4. File disimpan di `storage/app/private/database-backups` (bisa diubah lewat `SECURITY_BACKUP_PATH`).

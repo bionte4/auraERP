@@ -10,6 +10,7 @@ use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 use Throwable;
 use Webkul\Security\Filament\Resources\RoleResource;
+use Webkul\Security\Support\AdminAccess;
 
 class RolePermissionSynchronizer
 {
@@ -225,6 +226,15 @@ class RolePermissionSynchronizer
         ], true));
         $staffRole->givePermissionTo($staffPermissions);
         $rolesSynced[] = $staffRole->name;
+
+        // Hard revoke: Audit Trail + Database Backups remain Admin-only even if previously granted.
+        $adminOnlyPermissions = $allPermissions->whereIn('name', AdminAccess::adminOnlyPermissionNames());
+
+        foreach ([$hrdRole, $operationManagerRole, $kasirRole, $staffRole] as $nonAdminRole) {
+            if ($adminOnlyPermissions->isNotEmpty()) {
+                $nonAdminRole->revokePermissionTo($adminOnlyPermissions);
+            }
+        }
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 

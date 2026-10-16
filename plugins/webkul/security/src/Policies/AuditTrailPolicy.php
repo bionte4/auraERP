@@ -5,6 +5,7 @@ namespace Webkul\Security\Policies;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Webkul\Security\Models\AuditTrail;
 use Webkul\Security\Models\User;
+use Webkul\Security\Support\AdminAccess;
 
 class AuditTrailPolicy
 {
@@ -12,12 +13,12 @@ class AuditTrailPolicy
 
     public function viewAny(User $user): bool
     {
-        return $this->isAdmin($user);
+        return AdminAccess::check($user);
     }
 
     public function view(User $user, AuditTrail $auditTrail): bool
     {
-        return $this->isAdmin($user);
+        return AdminAccess::check($user);
     }
 
     public function create(User $user): bool
@@ -40,14 +41,23 @@ class AuditTrailPolicy
         return false;
     }
 
-    protected function isAdmin(User $user): bool
+    public function restore(User $user, AuditTrail $auditTrail): bool
     {
-        if (! method_exists($user, 'hasRole')) {
-            return false;
-        }
+        return false;
+    }
 
-        $adminRole = config('filament-shield.panel_user.name', 'Admin');
+    public function restoreAny(User $user): bool
+    {
+        return false;
+    }
 
-        return $user->hasRole($adminRole);
+    public function forceDelete(User $user, AuditTrail $auditTrail): bool
+    {
+        return false;
+    }
+
+    public function forceDeleteAny(User $user): bool
+    {
+        return false;
     }
 }

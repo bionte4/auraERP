@@ -7,12 +7,13 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Database\Eloquent\Model;
 use Webkul\Security\Filament\Resources\AuditTrailResource\Pages\ListAuditTrails;
 use Webkul\Security\Filament\Resources\AuditTrailResource\Pages\ViewAuditTrail;
 use Webkul\Security\Filament\Resources\AuditTrailResource\Schemas\AuditTrailInfolist;
 use Webkul\Security\Filament\Resources\AuditTrailResource\Tables\AuditTrailsTable;
 use Webkul\Security\Models\AuditTrail;
-use Webkul\Security\Models\User;
+use Webkul\Security\Support\AdminAccess;
 use Webkul\Support\Enums\NavigationGroup;
 
 class AuditTrailResource extends Resource
@@ -55,17 +56,22 @@ class AuditTrailResource extends Resource
 
     public static function canAccess(): bool
     {
-        return static::viewerIsAdmin();
+        return AdminAccess::check();
     }
 
     public static function shouldRegisterNavigation(): bool
     {
-        return static::viewerIsAdmin();
+        return AdminAccess::check();
     }
 
     public static function canViewAny(): bool
     {
-        return static::viewerIsAdmin();
+        return AdminAccess::check();
+    }
+
+    public static function canView(Model $record): bool
+    {
+        return AdminAccess::check();
     }
 
     public static function canCreate(): bool
@@ -73,17 +79,37 @@ class AuditTrailResource extends Resource
         return false;
     }
 
-    public static function canEdit($record): bool
+    public static function canEdit(Model $record): bool
     {
         return false;
     }
 
-    public static function canDelete($record): bool
+    public static function canDelete(Model $record): bool
     {
         return false;
     }
 
     public static function canDeleteAny(): bool
+    {
+        return false;
+    }
+
+    public static function canForceDelete(Model $record): bool
+    {
+        return false;
+    }
+
+    public static function canForceDeleteAny(): bool
+    {
+        return false;
+    }
+
+    public static function canRestore(Model $record): bool
+    {
+        return false;
+    }
+
+    public static function canRestoreAny(): bool
     {
         return false;
     }
@@ -109,16 +135,5 @@ class AuditTrailResource extends Resource
     public static function getNavigationIcon(): string|BackedEnum|Htmlable|null
     {
         return 'heroicon-o-shield-exclamation';
-    }
-
-    protected static function viewerIsAdmin(): bool
-    {
-        $user = auth()->user();
-
-        if (! $user instanceof User || ! method_exists($user, 'hasRole')) {
-            return false;
-        }
-
-        return $user->hasRole(config('filament-shield.panel_user.name', 'Admin'));
     }
 }

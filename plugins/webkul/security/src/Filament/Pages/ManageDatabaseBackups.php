@@ -10,8 +10,8 @@ use Filament\Pages\Page;
 use Filament\Support\Enums\Width;
 use Illuminate\Contracts\Support\Htmlable;
 use Throwable;
-use Webkul\Security\Models\User;
 use Webkul\Security\Services\DatabaseBackupManager;
+use Webkul\Security\Support\AdminAccess;
 use Webkul\Support\Enums\NavigationGroup;
 
 class ManageDatabaseBackups extends Page
@@ -33,18 +33,18 @@ class ManageDatabaseBackups extends Page
 
     public function mount(): void
     {
-        abort_unless(static::canAccess(), 403);
+        AdminAccess::ensure();
         $this->refreshBackups();
     }
 
     public static function canAccess(): bool
     {
-        return static::viewerIsAdmin();
+        return AdminAccess::check();
     }
 
     public static function shouldRegisterNavigation(): bool
     {
-        return static::viewerIsAdmin();
+        return AdminAccess::check();
     }
 
     public static function getNavigationLabel(): string
@@ -84,6 +84,8 @@ class ManageDatabaseBackups extends Page
                 ->modalHeading(__('security::filament/pages/manage-database-backups.actions.create-heading'))
                 ->modalDescription(__('security::filament/pages/manage-database-backups.actions.create-description'))
                 ->action(function (): void {
+                    AdminAccess::ensure();
+
                     try {
                         $meta = app(DatabaseBackupManager::class)->create('manual');
 
@@ -110,6 +112,8 @@ class ManageDatabaseBackups extends Page
                 ->color('gray')
                 ->requiresConfirmation()
                 ->action(function (): void {
+                    AdminAccess::ensure();
+
                     $deleted = app(DatabaseBackupManager::class)->prune();
 
                     Notification::make()
@@ -139,7 +143,7 @@ class ManageDatabaseBackups extends Page
                         ->rule('in:'.$phrase),
                 ])
                 ->action(function (): void {
-                    abort_unless(static::canAccess(), 403);
+                    AdminAccess::ensure();
 
                     $filename = (string) $this->pendingRestoreFilename;
 
@@ -174,7 +178,7 @@ class ManageDatabaseBackups extends Page
 
     public function deleteBackup(string $filename): void
     {
-        abort_unless(static::canAccess(), 403);
+        AdminAccess::ensure();
 
         try {
             app(DatabaseBackupManager::class)->delete($filename);
@@ -196,7 +200,7 @@ class ManageDatabaseBackups extends Page
 
     public function requestRestore(string $filename): void
     {
-        abort_unless(static::canAccess(), 403);
+        AdminAccess::ensure();
 
         $this->pendingRestoreFilename = basename($filename);
         $this->mountAction('confirmRestore');
@@ -214,16 +218,5 @@ class ManageDatabaseBackups extends Page
             'enabled'        => (bool) config('security-backup.enabled', true),
             'directory'      => app(DatabaseBackupManager::class)->directory(),
         ];
-    }
-
-    protected static function viewerIsAdmin(): bool
-    {
-        $user = auth()->user();
-
-        if (! $user instanceof User || ! method_exists($user, 'hasRole')) {
-            return false;
-        }
-
-        return $user->hasRole(config('filament-shield.panel_user.name', 'Admin'));
     }
 }
