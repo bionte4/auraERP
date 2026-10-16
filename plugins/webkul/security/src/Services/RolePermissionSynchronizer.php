@@ -70,6 +70,7 @@ class RolePermissionSynchronizer
             'view_any_performance_performance::plan', 'view_performance_performance::plan', 'create_performance_performance::plan', 'update_performance_performance::plan', 'delete_performance_performance::plan', 'delete_any_performance_performance::plan',
             'view_any_evaluation_evaluation', 'view_evaluation_evaluation', 'create_evaluation_evaluation', 'update_evaluation_evaluation', 'delete_evaluation_evaluation', 'delete_any_evaluation_evaluation',
             'page_evaluation_performance_evaluation_dashboard',
+            'page_project_dashboard',
 
             // Projects & Timesheets
             'view_any_project_project', 'view_project_project', 'create_project_project', 'update_project_project', 'delete_project_project', 'delete_any_project_project',

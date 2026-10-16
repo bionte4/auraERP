@@ -54,10 +54,15 @@ class AdminPanelProvider extends PanelProvider
                 'gray'    => Color::Slate,
             ])
             ->unsavedChangesAlerts()
-            ->topNavigation()
+            ->sidebarCollapsibleOnDesktop()
+            ->sidebarWidth('15.5rem')
             ->renderHook(
-                PanelsRenderHook::GLOBAL_SEARCH_END,
-                fn () => view('filament.components.language-switcher'),
+                PanelsRenderHook::TOPBAR_START,
+                fn () => view('filament.components.topbar-left'),
+            )
+            ->renderHook(
+                PanelsRenderHook::GLOBAL_SEARCH_AFTER,
+                fn () => view('filament.components.topbar-utilities'),
             )
             ->renderHook(
                 PanelsRenderHook::SIMPLE_LAYOUT_START,
@@ -81,7 +86,8 @@ class AdminPanelProvider extends PanelProvider
                     fn (NavigationGroup $case) => [
                         $case->name => FilamentNavigationGroup::make()
                             ->label(fn () => $case->getLabel())
-                            ->icon(fn () => $case->getIcon()),
+                            ->icon(fn () => $case->getIcon())
+                            ->collapsible(),
                     ]
                 )->all()
             )

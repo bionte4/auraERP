@@ -126,10 +126,119 @@ html.fi .fi-wi-stats-overview-stat-value {
     letter-spacing: -0.025em;
 }
 
-/* Section Headers */
+/* Section Headers — Dispatchanel / Dhonu Left Vertical Accent Bar */
 html.fi .fi-section-header-heading {
     font-weight: 600;
     letter-spacing: -0.01em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+}
+
+html.fi .fi-section-header-heading::before,
+html.fi .fi-wi-stats-overview-stat-label::before {
+    content: "";
+    display: inline-block;
+    width: 3px;
+    height: 0.95rem;
+    border-radius: 9999px;
+    background: linear-gradient(180deg, #3b6ef6 0%, #38b2ac 100%);
+    flex-shrink: 0;
+}
+
+html.fi .fi-wi-stats-overview-stat-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: #334155;
+}
+
+html.fi.dark .fi-wi-stats-overview-stat-label {
+    color: #e2e8f0;
+}
+
+.dhonu-accent-bar {
+    display: inline-block;
+    width: 3px;
+    height: 1rem;
+    border-radius: 9999px;
+    background: linear-gradient(180deg, #3b6ef6 0%, #38b2ac 100%);
+    flex-shrink: 0;
+}
+
+/* ==========================================================================
+   2B. Dispatchanel / Dhonu Left Sidebar Styling
+   ========================================================================== */
+
+html.fi .fi-sidebar {
+    background-color: #ffffff !important;
+    border-right: 1px solid rgba(226, 232, 240, 0.9);
+    box-shadow: 1px 0 6px 0 rgba(15, 23, 42, 0.02);
+}
+
+html.fi.dark .fi-sidebar {
+    background-color: #0f172a !important;
+    border-right: 1px solid rgba(51, 65, 85, 0.75);
+}
+
+html.fi .fi-sidebar-header {
+    background-color: transparent !important;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.75);
+}
+
+html.fi.dark .fi-sidebar-header {
+    border-bottom: 1px solid rgba(51, 65, 85, 0.65);
+}
+
+html.fi .fi-sidebar-group-label {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #94a3b8;
+}
+
+html.fi .fi-sidebar-item-btn {
+    border-radius: 0.5rem;
+    padding: 0.45rem 0.65rem;
+    transition: all 0.15s ease;
+}
+
+html.fi .fi-sidebar-item-label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #475569;
+}
+
+html.fi.dark .fi-sidebar-item-label {
+    color: #cbd5e1;
+}
+
+html.fi .fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
+    background-color: color-mix(in oklab, var(--primary-500, #4f46e5) 10%, transparent);
+    box-shadow: inset 3px 0 0 0 var(--primary-600, #4f46e5);
+}
+
+html.fi .fi-sidebar-item.fi-active > .fi-sidebar-item-btn .fi-sidebar-item-label {
+    font-weight: 600;
+    color: var(--primary-600, #4f46e5);
+}
+
+html.fi.dark .fi-sidebar-item.fi-active > .fi-sidebar-item-btn .fi-sidebar-item-label {
+    color: var(--primary-400, #818cf8);
+}
+
+/* Hide redundant default global search when our custom Dispatchanel Quick Search is visible on desktop */
+@media (min-width: 768px) {
+    html.fi .fi-topbar .fi-global-search-ctn {
+        display: none;
+    }
+}
+
+/* Hide only the default page title. The content lives in the same wrapper, so the wrapper itself must stay visible. */
+html.fi .fi-page:has(.dhonu-dashboard) .fi-page-header-main-ctn > .fi-header {
+    display: none;
 }
 
 /* ==========================================================================
@@ -267,4 +376,271 @@ html.fi.dark .fi-simple-main {
     box-shadow:
         0 20px 40px -10px rgba(0, 0, 0, 0.55),
         0 8px 16px -6px rgba(0, 0, 0, 0.4);
+}
+
+/* Welcome dashboard grid. These rules live here because this Blade view is outside the compiled Tailwind scan. */
+html.fi .dhonu-dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+html.fi .dhonu-top,
+html.fi .dhonu-bottom {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+    align-items: stretch;
+}
+
+html.fi .dhonu-kpis {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+}
+
+@media (min-width: 720px) {
+    html.fi .dhonu-kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1280px) {
+    html.fi .dhonu-top {
+        grid-template-columns: minmax(320px, 0.92fr) minmax(0, 1.35fr);
+    }
+
+    html.fi .dhonu-bottom {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+html.fi .dhonu-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0.85rem;
+    min-width: 0;
+    min-height: 9.5rem;
+    padding: 1.05rem 1.15rem;
+    border-radius: 0.875rem;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    color: inherit;
+    text-decoration: none;
+}
+
+html.fi a.dhonu-link {
+    cursor: pointer;
+    transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+
+html.fi a.dhonu-link:hover {
+    transform: translateY(-2px);
+    border-color: #8eacf8;
+    box-shadow: 0 14px 28px -16px rgba(59, 110, 246, 0.55);
+}
+
+html.fi .aura-lang-switch {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.15rem;
+    border-radius: 0.55rem;
+    border: 1px solid rgba(226, 232, 240, 0.95);
+    background: #f8fafc;
+}
+
+html.fi.dark .aura-lang-switch {
+    border-color: rgba(51, 65, 85, 0.8);
+    background: rgba(15, 23, 42, 0.7);
+}
+
+html.fi .aura-lang-switch a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.45rem;
+    border-radius: 0.4rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: #64748b;
+    text-decoration: none;
+}
+
+html.fi .aura-lang-switch a.is-active {
+    background: #fff;
+    color: #312e81;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+
+html.fi.dark .aura-lang-switch a.is-active {
+    background: #1e293b;
+    color: #e0e7ff;
+}
+
+html.fi .dhonu-open {
+    margin-left: auto;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #3b6ef6;
+}
+
+html.fi .dhonu-panel {
+    min-height: 26rem;
+}
+
+html.fi .dhonu-kpi-foot,
+html.fi .dhonu-kpi-change {
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+html.fi .dhonu-goals {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+}
+
+html.fi .dhonu-goal-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.2rem 0.6rem;
+    align-items: center;
+    font-size: 0.75rem;
+}
+
+html.fi .dhonu-goal-row strong {
+    color: #1e293b;
+    font-weight: 650;
+}
+
+html.fi .dhonu-goal-row span {
+    font-weight: 700;
+    color: #334155;
+}
+
+html.fi .dhonu-goal-row em,
+html.fi .dhonu-goal-bar {
+    grid-column: 1 / -1;
+}
+
+html.fi .dhonu-goal-row em {
+    font-style: normal;
+    color: #94a3b8;
+}
+
+html.fi .dhonu-goal-bar {
+    height: 0.4rem;
+    border-radius: 999px;
+    background: #e8eefc;
+    overflow: hidden;
+}
+
+html.fi .dhonu-goal-bar i {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+}
+
+html.fi.dark .dhonu-card {
+    border-color: rgba(51, 65, 85, 0.75);
+    background: rgba(15, 23, 42, 0.92);
+}
+
+html.fi .dhonu-chart {
+    min-height: 22rem;
+}
+
+html.fi .dhonu-map {
+    gap: 0.75rem;
+    min-height: 0;
+}
+
+html.fi .dhonu-card-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+html.fi .dhonu-card-title h3 {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 650;
+    color: #1e293b;
+}
+
+html.fi.dark .dhonu-card-title h3 {
+    color: #f1f5f9;
+}
+
+html.fi .dhonu-map-total {
+    margin-left: auto;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #3b6ef6;
+    background: rgba(59, 110, 246, 0.1);
+    border-radius: 999px;
+    padding: 0.15rem 0.5rem;
+}
+
+html.fi .dhonu-map-canvas {
+    width: 100%;
+    height: 11.5rem;
+    overflow: hidden;
+}
+
+html.fi .dhonu-map-canvas svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+html.fi .dhonu-map-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    max-height: 5.5rem;
+    overflow: auto;
+}
+
+html.fi .dhonu-map-site {
+    display: flex;
+    gap: 0.45rem;
+    align-items: flex-start;
+    font-size: 0.75rem;
+    color: #475569;
+}
+
+html.fi .dhonu-map-site strong {
+    display: block;
+    color: #0f172a;
+}
+
+html.fi.dark .dhonu-map-site,
+html.fi.dark .dhonu-map-site strong {
+    color: #e2e8f0;
+}
+
+html.fi .dhonu-map-site span,
+html.fi .dhonu-map-site em {
+    display: block;
+    font-style: normal;
+    color: #64748b;
+}
+
+html.fi .dhonu-map-dot {
+    width: 0.55rem;
+    height: 0.55rem;
+    margin-top: 0.25rem;
+    border-radius: 999px;
+    flex: 0 0 auto;
+}
+
+html.fi .dhonu-map-empty {
+    margin: 0;
+    font-size: 0.75rem;
+    line-height: 1.35;
+    color: #64748b;
 }
