@@ -154,13 +154,15 @@ class TeamMembershipSynchronizer
         }
 
         if (method_exists($project, 'employees') && Schema::hasTable('projects_project_employees')) {
-            $employeeUserIds = $project->employees()
-                ->whereNotNull('employees_employees.user_id')
-                ->pluck('employees_employees.user_id')
-                ->map(fn ($id): int => (int) $id)
-                ->all();
+            $project->loadMissing('employees');
 
-            $userIds = array_merge($userIds, $employeeUserIds);
+            foreach ($project->employees as $employee) {
+                $userId = $employee->user_id ?: $employee->pivot?->user_id;
+
+                if ($userId) {
+                    $userIds[] = (int) $userId;
+                }
+            }
         }
 
         return array_values(array_unique(array_filter($userIds)));

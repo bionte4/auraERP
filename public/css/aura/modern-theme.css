@@ -863,6 +863,136 @@ html.fi .team-stats strong {
     font-weight: 700;
 }
 
+html.fi .team-members-label.is-clickable {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #2563eb;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+html.fi .team-members-label.is-clickable:hover {
+    text-decoration: underline;
+}
+
+html.fi .team-members-toggle {
+    font-size: 0.65rem;
+    color: #64748b;
+}
+
+html.fi .team-avatars {
+    cursor: pointer;
+}
+
+html.fi .team-member-list {
+    margin-top: 0.75rem;
+    padding: 0.7rem 0.75rem;
+    border: 1px solid #e8eef8;
+    border-radius: 0.75rem;
+    background: #f8fafc;
+}
+
+html.fi .team-member-list > strong {
+    display: block;
+    margin-bottom: 0.45rem;
+    color: #64748b;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+html.fi .team-member-list ul {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+html.fi .team-member-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+html.fi .team-member-dot {
+    width: 0.55rem;
+    height: 0.55rem;
+    margin-top: 0.35rem;
+    border-radius: 999px;
+    flex: 0 0 auto;
+}
+
+html.fi .team-member-list a,
+html.fi .team-member-name {
+    color: #0f172a;
+    font-size: 0.84rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+html.fi .team-member-list a:hover {
+    color: #2563eb;
+    text-decoration: underline;
+}
+
+html.fi .team-member-list em {
+    display: block;
+    color: #64748b;
+    font-size: 0.72rem;
+    font-style: normal;
+}
+
+html.fi .team-member-empty {
+    margin: 0;
+    color: #94a3b8;
+    font-size: 0.8rem;
+}
+
+html.fi .team-project-list {
+    margin-top: 0.85rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #eef2f7;
+}
+
+html.fi .team-project-list > strong {
+    display: block;
+    margin-bottom: 0.4rem;
+    color: #64748b;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+html.fi .team-project-list ul {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+html.fi .team-project-list a {
+    color: #2563eb;
+    font-size: 0.84rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+html.fi .team-project-list a:hover {
+    text-decoration: underline;
+}
+
 html.fi .team-progress {
     margin-top: 0.85rem;
 }

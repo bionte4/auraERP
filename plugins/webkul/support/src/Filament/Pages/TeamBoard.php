@@ -10,7 +10,12 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Throwable;
+use Webkul\Employee\Filament\Resources\EmployeeResource;
+use Webkul\Employee\Models\Employee;
+use Webkul\Project\Filament\Resources\ProjectResource;
 use Webkul\Project\Models\Project;
+use Webkul\Project\Services\TeamMembershipSynchronizer;
 use Webkul\Security\Models\Team;
 use Webkul\Security\Models\User;
 use Webkul\Support\Enums\NavigationGroup;
@@ -83,21 +88,27 @@ class TeamBoard extends Page
             'cards'    => $cards,
             'empty'    => $manages
                 ? ($indonesian
-                    ? 'Belum ada tim. Buat tim, lalu tambahkan anggota supaya proyek mereka muncul di papan ini.'
-                    : 'No team yet. Create a team and add members so their projects appear on this board.')
+                    ? 'Belum ada tim. Buat tim, atau pastikan nama Tim sama dengan nama Proyek agar anggota tersinkron.'
+                    : 'No team yet. Create a team, or match the team name to a project name so members sync.')
                 : ($indonesian
                     ? 'Anda belum masuk ke sebuah tim. Minta Operation Manager menambahkan Anda.'
                     : 'You are not on a team yet. Ask an Operation Manager to add you.'),
             'labels'   => [
-                'members'  => $indonesian ? 'anggota' : 'members',
-                'about'    => $indonesian ? 'Tentang tim' : 'About team',
-                'projects' => $indonesian ? 'Proyek' : 'Projects',
-                'tasks'    => $indonesian ? 'Tugas' : 'Tasks',
-                'value'    => $indonesian ? 'Nilai' : 'Value',
-                'status'   => $indonesian ? 'Status proyek berjalan' : 'Status of current projects',
-                'updated'  => $indonesian ? 'Diperbarui' : 'Updated',
-                'details'  => $indonesian ? 'Detail' : 'Details',
-                'new'      => $indonesian ? 'Baru' : 'New',
+                'members'           => $indonesian ? 'anggota' : 'members',
+                'members-click'     => $indonesian ? 'Klik untuk melihat daftar karyawan' : 'Click to view employees',
+                'members-list'      => $indonesian ? 'Karyawan terlibat' : 'Involved employees',
+                'role-manager'      => $indonesian ? 'Manajer Proyek' : 'Project Manager',
+                'role-assigned'     => $indonesian ? 'Ditugaskan ke proyek' : 'Assigned to project',
+                'role-team'         => $indonesian ? 'Anggota tim' : 'Team member',
+                'about'             => $indonesian ? 'Tentang tim' : 'About team',
+                'projects'          => $indonesian ? 'Proyek' : 'Projects',
+                'tasks'             => $indonesian ? 'Tugas' : 'Tasks',
+                'value'             => $indonesian ? 'Nilai' : 'Value',
+                'status'            => $indonesian ? 'Status proyek berjalan' : 'Status of current projects',
+                'updated'           => $indonesian ? 'Diperbarui' : 'Updated',
+                'details'           => $indonesian ? 'Detail' : 'Details',
+                'new'               => $indonesian ? 'Baru' : 'New',
+                'open'              => $indonesian ? 'Buka' : 'Open',
             ],
         ];
     }
@@ -158,7 +169,7 @@ class TeamBoard extends Page
             ->with(['users' => fn ($users) => $users->withoutGlobalScopes()->select('users.id', 'users.name')->orderBy('users.name')])
             ->orderBy('id')
             ->get();
-        $primaryTeamByUser = $this->primaryTeamByUser($allTeams);
+
         $teams = $user->hasRole($adminRole)
             ? $allTeams
             : $allTeams->filter(function (Team $team) use ($user): bool {
@@ -169,13 +180,23 @@ class TeamBoard extends Page
         if ($teams->isEmpty()) {
             return [];
         }
-        $projects = $this->projectsFor(array_keys($primaryTeamByUser));
-        $taskStats = $this->taskStats($projects->pluck('id')->all());
 
-        return $teams->map(function (Team $team) use ($primaryTeamByUser, $projects, $taskStats): array {
-            $teamProjects = $projects
-                ->filter(fn (Project $project): bool => ($primaryTeamByUser[(int) $project->user_id] ?? null) === $team->id)
-                ->values();
+        if (class_exists(TeamMembershipSynchronizer::class)) {
+            foreach ($teams as $team) {
+                try {
+                    app(TeamMembershipSynchronizer::class)->syncForTeam($team);
+                    $team->load(['users' => fn ($users) => $users->withoutGlobalScopes()->select('users.id', 'users.name')->orderBy('users.name')]);
+                } catch (Throwable) {
+                }
+            }
+        }
+
+        $projectsByTeam = $this->projectsGroupedByTeam($teams);
+        $allProjectIds = $projectsByTeam->flatten(1)->pluck('id')->unique()->all();
+        $taskStats = $this->taskStats($allProjectIds);
+
+        return $teams->map(function (Team $team) use ($projectsByTeam, $taskStats): array {
+            $teamProjects = $projectsByTeam->get($team->id, collect());
 
             return $this->presentCard($team, $teamProjects, $taskStats, str_starts_with((string) app()->getLocale(), 'id'));
         })->all();
@@ -183,37 +204,72 @@ class TeamBoard extends Page
 
     /**
      * @param  Collection<int, Team>  $teams
-     * @return array<int, int>
+     * @return Collection<int, Collection<int, Project>>
      */
-    protected function primaryTeamByUser(Collection $teams): array
+    protected function projectsGroupedByTeam(Collection $teams): Collection
     {
-        $primary = [];
-
-        foreach ($teams as $team) {
-            foreach ($team->users as $member) {
-                $primary[(int) $member->id] ??= $team->id;
-            }
-        }
-
-        return $primary;
-    }
-
-    /**
-     * @param  array<int, int>  $userIds
-     * @return Collection<int, Project>
-     */
-    protected function projectsFor(array $userIds): Collection
-    {
-        if ($userIds === [] || ! Schema::hasTable('projects_projects')) {
+        if (! Schema::hasTable('projects_projects') || $teams->isEmpty()) {
             return collect();
         }
 
-        return Project::query()
+        $names = $teams->map(fn (Team $team): string => mb_strtolower(trim($team->name)))->unique()->values();
+        $memberIds = $teams->flatMap(fn (Team $team) => $team->users->pluck('id'))->unique()->values()->all();
+
+        $projectsQuery = Project::query()
             ->withoutGlobalScopes()
             ->whereNull('deleted_at')
-            ->whereIn('user_id', $userIds)
-            ->orderByDesc('updated_at')
-            ->get();
+            ->where(function ($query) use ($names, $memberIds): void {
+                $query->where(function ($nameQuery) use ($names): void {
+                    foreach ($names as $name) {
+                        $nameQuery->orWhereRaw('LOWER(TRIM(name)) = ?', [$name]);
+                    }
+                });
+
+                if ($memberIds !== []) {
+                    $query->orWhereIn('user_id', $memberIds);
+                }
+            })
+            ->orderByDesc('updated_at');
+
+        $with = [
+            'user' => fn ($query) => $query->select('users.id', 'users.name'),
+        ];
+
+        if (class_exists(Employee::class) && Schema::hasTable('projects_project_employees')) {
+            $with['employees'] = fn ($query) => $query->select(
+                'employees_employees.id',
+                'employees_employees.name',
+                'employees_employees.user_id'
+            );
+        }
+
+        $projects = $projectsQuery->with($with)->get();
+
+        $teamsByName = $teams->keyBy(fn (Team $team): string => mb_strtolower(trim($team->name)));
+
+        $grouped = collect();
+
+        foreach ($teams as $team) {
+            $grouped[$team->id] = collect();
+        }
+
+        foreach ($projects as $project) {
+            $matched = $teamsByName->get(mb_strtolower(trim((string) $project->name)));
+
+            if ($matched instanceof Team) {
+                $grouped[$matched->id] = $grouped[$matched->id]->push($project)->unique('id')->values();
+
+                continue;
+            }
+
+            foreach ($teams as $team) {
+                if ($project->user_id && $team->users->contains('id', (int) $project->user_id)) {
+                    $grouped[$team->id] = $grouped[$team->id]->push($project)->unique('id')->values();
+                }
+            }
+        }
+
+        return $grouped;
     }
 
     /**
@@ -273,35 +329,178 @@ class TeamBoard extends Page
                 : $projects->pluck('name')->take(3)->implode(', ').'.';
         }
 
-        $palette = ['#6366f1', '#0ea5e9', '#14b8a6', '#f59e0b', '#ec4899', '#8b5cf6'];
-        $members = $team->users->take(4)->values()->map(function (User $member, int $index) use ($palette): array {
-            $parts = preg_split('/\s+/', trim($member->name)) ?: [];
-            $initials = '';
-
-            foreach (array_slice($parts, 0, 2) as $part) {
-                $initials .= Str::upper(Str::substr($part, 0, 1));
-            }
-
-            return [
-                'name'     => $member->name,
-                'initials' => $initials !== '' ? $initials : '?',
-                'color'    => $palette[$index % count($palette)],
-            ];
-        })->all();
+        $members = $this->presentMembers($team, $projects, $indonesian);
+        $projectLinks = $projects->map(fn (Project $project): array => [
+            'id'   => $project->id,
+            'name' => $project->name,
+            'href' => $this->projectViewUrl($project),
+        ])->values()->all();
 
         return [
             'name'          => $team->name,
             'is_new'        => $team->created_at instanceof Carbon && $team->created_at->gte(now()->subDays(14)),
-            'member_count'  => $team->users->count(),
-            'extra_members' => max($team->users->count() - 4, 0),
-            'members'       => $members,
+            'member_count'  => count($members),
+            'extra_members' => max(count($members) - 6, 0),
+            'members'       => array_slice($members, 0, 6),
+            'members_all'   => $members,
             'about'         => Str::limit($about, 180),
             'project_count' => $projects->count(),
+            'projects'      => $projectLinks,
             'task_count'    => $totalTasks,
             'value'         => $value > 0 ? 'Rp '.number_format($value, 0, ',', '.') : '—',
             'progress'      => $totalTasks > 0 ? (int) round(($doneTasks / $totalTasks) * 100) : 0,
             'updated'       => $latest?->locale(app()->getLocale())->diffForHumans() ?? '—',
-            'href'          => $lead ? url('/admin/project/projects/'.$lead->id) : url('/admin/project/projects'),
+            'href'          => url('/admin/teams'),
         ];
+    }
+
+    /**
+     * @param  Collection<int, Project>  $projects
+     * @return array<int, array{name: string, initials: string, color: string, role: string, href: ?string, projects: string}>
+     */
+    protected function presentMembers(Team $team, Collection $projects, bool $indonesian): array
+    {
+        $palette = ['#6366f1', '#0ea5e9', '#14b8a6', '#f59e0b', '#ec4899', '#8b5cf6'];
+        $roleManager = $indonesian ? 'Manajer Proyek' : 'Project Manager';
+        $roleAssigned = $indonesian ? 'Ditugaskan ke proyek' : 'Assigned to project';
+        $roleTeam = $indonesian ? 'Anggota tim' : 'Team member';
+        $seen = [];
+        $members = [];
+
+        foreach ($projects as $project) {
+            if ($project->user instanceof User) {
+                $key = 'user:'.$project->user->id;
+
+                if (! isset($seen[$key])) {
+                    $seen[$key] = count($members);
+                    $members[] = $this->memberChip(
+                        $project->user->name,
+                        count($members),
+                        $palette,
+                        $roleManager,
+                        null,
+                        [$project->name],
+                    );
+                } else {
+                    $members[$seen[$key]]['projects'] = $this->appendProjectLabel(
+                        $members[$seen[$key]]['projects'],
+                        $project->name,
+                    );
+                    if ($members[$seen[$key]]['role'] !== $roleManager) {
+                        $members[$seen[$key]]['role'] = $roleManager;
+                    }
+                }
+            }
+
+            foreach ($project->employees ?? [] as $employee) {
+                if (! $employee instanceof Employee) {
+                    continue;
+                }
+
+                $key = $employee->user_id
+                    ? 'user:'.$employee->user_id
+                    : 'employee:'.$employee->id;
+
+                if (! isset($seen[$key])) {
+                    $seen[$key] = count($members);
+                    $members[] = $this->memberChip(
+                        $employee->name,
+                        count($members),
+                        $palette,
+                        $roleAssigned,
+                        $this->employeeViewUrl($employee),
+                        [$project->name],
+                    );
+                } else {
+                    $members[$seen[$key]]['projects'] = $this->appendProjectLabel(
+                        $members[$seen[$key]]['projects'],
+                        $project->name,
+                    );
+                }
+            }
+        }
+
+        foreach ($team->users as $member) {
+            $key = 'user:'.$member->id;
+
+            if (isset($seen[$key])) {
+                continue;
+            }
+
+            $seen[$key] = count($members);
+            $members[] = $this->memberChip(
+                $member->name,
+                count($members),
+                $palette,
+                $roleTeam,
+                null,
+                [],
+            );
+        }
+
+        return $members;
+    }
+
+    /**
+     * @param  array<int, string>  $palette
+     * @param  array<int, string>  $projectNames
+     * @return array{name: string, initials: string, color: string, role: string, href: ?string, projects: string}
+     */
+    protected function memberChip(
+        string $name,
+        int $index,
+        array $palette,
+        string $role,
+        ?string $href,
+        array $projectNames,
+    ): array {
+        $parts = preg_split('/\s+/', trim($name)) ?: [];
+        $initials = '';
+
+        foreach (array_slice($parts, 0, 2) as $part) {
+            $initials .= Str::upper(Str::substr($part, 0, 1));
+        }
+
+        return [
+            'name'     => $name,
+            'initials' => $initials !== '' ? $initials : '?',
+            'color'    => $palette[$index % count($palette)],
+            'role'     => $role,
+            'href'     => $href,
+            'projects' => implode(', ', array_values(array_unique($projectNames))),
+        ];
+    }
+
+    protected function appendProjectLabel(string $current, string $projectName): string
+    {
+        $parts = array_filter(array_map('trim', explode(',', $current)));
+
+        if (! in_array($projectName, $parts, true)) {
+            $parts[] = $projectName;
+        }
+
+        return implode(', ', $parts);
+    }
+
+    protected function projectViewUrl(Project $project): string
+    {
+        try {
+            return ProjectResource::getUrl('view', ['record' => $project]);
+        } catch (Throwable) {
+            return url('/admin/project/projects/'.$project->getRouteKey());
+        }
+    }
+
+    protected function employeeViewUrl(Employee $employee): ?string
+    {
+        try {
+            if (! class_exists(EmployeeResource::class)) {
+                return null;
+            }
+
+            return EmployeeResource::getUrl('view', ['record' => $employee]);
+        } catch (Throwable) {
+            return url('/admin/employees/employees/'.$employee->getRouteKey());
+        }
     }
 }

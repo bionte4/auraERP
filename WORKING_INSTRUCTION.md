@@ -35,7 +35,10 @@ Saat membuat atau mengedit User di **Settings → Users**, terdapat pengaturan *
    - **Manajer Proyek** + karyawan yang ditugaskan ke proyek (yang punya Related User) otomatis masuk anggota Tim.
    - Dipicu saat simpan proyek, Assign Employees, atau simpan Tim.
    - Backfill sekali setelah deploy: `sudo -u www-data php artisan projects:sync-team-memberships`.
-5. Papan **Dashboard → Team Board / Manage Teams** menampilkan anggota & proyek di mana anggota = **Manajer Proyek**.
+5. Papan **Dashboard → Team Board / Manage Teams** menampilkan:
+   - **Anggota**: Manajer Proyek + karyawan yang di-assign ke proyek (nama Tim = nama Proyek).
+   - **Total N anggota** dapat diklik → membuka daftar karyawan terlibat (peran + nama proyek).
+   - **Daftar proyek yang dapat diklik** menuju detail masing-masing proyek.
 
 *(Akun Demo: `hrd@opsora.my.id` / `Demo-hrd-2026` dan `karyawan@opsora.my.id` / `Demo-karyawan-2026`. Untuk menyinkronkan ulang seluruh Role & Permission kapan saja: `sudo -u www-data php artisan security:sync-rbac`)*
 
