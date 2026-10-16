@@ -10,6 +10,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Illuminate\Contracts\Support\Htmlable;
 use Webkul\Partner\Models\Partner;
+use Webkul\Project\Filament\Widgets\OperationManagerWorkloadWidget;
 use Webkul\Project\Filament\Widgets\StatsOverviewWidget;
 use Webkul\Project\Filament\Widgets\TaskByStageChart;
 use Webkul\Project\Filament\Widgets\TaskByStateChart;
@@ -102,6 +103,7 @@ class Dashboard extends BaseDashboard
     {
         return [
             StatsOverviewWidget::class,
+            OperationManagerWorkloadWidget::class,
             TaskByStageChart::class,
             TaskByStateChart::class,
             TopAssigneesWidget::class,

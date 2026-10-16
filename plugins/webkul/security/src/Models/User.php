@@ -22,6 +22,7 @@ use Spatie\Permission\Traits\HasRoles;
 use Webkul\Employee\Models\Department;
 use Webkul\Employee\Models\Employee;
 use Webkul\Partner\Models\Partner;
+use Webkul\Project\Models\Project;
 use Webkul\Security\Enums\PermissionType;
 use Webkul\Security\Support\OwnerSource;
 use Webkul\Security\Traits\HasOwnershipScope;
@@ -97,6 +98,11 @@ class User extends BaseUser implements FilamentUser, HasAppAuthentication, HasAp
     public function employee(): HasOne
     {
         return $this->hasOne(Employee::class, 'user_id');
+    }
+
+    public function managedProjects(): HasMany
+    {
+        return $this->hasMany(Project::class, 'user_id');
     }
 
     public function departments(): HasMany

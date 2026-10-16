@@ -177,9 +177,14 @@ Buka menu **Employees → Performance Plans → Evaluations** (`/admin/evaluatio
    - **Manajer Proyek (satu orang):** Pada form proyek, isi **Manajer Proyek (`Project Manager`)**.
    - **Penugasan kerja harian:** **Project → Tasks** → isi **Penerima Tugas (`Assignees`)** (daftar **User**).
    - Hak akses juga dipengaruhi **Visibilitas (`Visibility`)** proyek.
-4. **Reminder Berjenjang 3, 2, dan 1 Bulan Sebelum `End Date` Proyek:**
+4. **Dashboard beban kerja Operation Manager (`Project → Dashboard`):**
+   - Buka **Project → Dashboard** (`/admin/project`).
+   - Widget **Operation Manager — Proyek sebagai Manajer Proyek** menampilkan semua user ber-role **Operation Manager**, jumlah proyek aktif di mana mereka = **Manajer Proyek** (`user_id`), serta daftar nama proyek yang dapat diklik menuju detail proyek.
+   - Catatan: role **Operation Manager** ≠ otomatis Manajer Proyek; hitungan hanya dari field **Manajer Proyek** pada masing-masing proyek.
+   - Permission widget: `widget_project_operation_manager_workload_widget` (Admin & Operation Manager setelah `php artisan security:sync-rbac`).
+5. **Reminder Berjenjang 3, 2, dan 1 Bulan Sebelum `End Date` Proyek:**
    - Sistem memberi badge peringatan dan notifikasi otomatis pada sisa waktu `61–90 hari` (**3 Bulan**), `31–60 hari` (**2 Bulan**), `0–30 hari` (**1 Bulan**), dan saat **Berakhir** (`php artisan projects:notify-expiring-projects`).
-5. **Bulk Import Proyek:**
+6. **Bulk Import Proyek:**
    - Klik **`Unduh Template`** (`template-import-projects.xlsx`) di halaman **Projects**, lalu unggah melalui tombol **`Impor Excel / CSV`**.
 
 ---

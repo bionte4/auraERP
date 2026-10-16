@@ -72,6 +72,7 @@ class RolePermissionSynchronizer
             'page_evaluation_performance_evaluation_dashboard',
             'page_project_dashboard',
             'page_project_assign_project_employees',
+            'widget_project_operation_manager_workload_widget',
             'page_integrations_manage_integrations',
             'page_support_welcome_dashboard',
 
@@ -164,6 +165,7 @@ class RolePermissionSynchronizer
                 'view_employee_department',
                 'page_project_dashboard',
                 'page_project_assign_project_employees',
+                'widget_project_operation_manager_workload_widget',
                 'page_evaluation_performance_evaluation_dashboard',
                 'page_attendance_clock_page',
             ], true)

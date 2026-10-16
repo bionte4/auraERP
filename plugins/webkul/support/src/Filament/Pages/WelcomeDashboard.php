@@ -13,6 +13,7 @@ use Throwable;
 use Webkul\Employee\Filament\Resources\EmployeeResource;
 use Webkul\Project\Filament\Resources\ProjectResource;
 use Webkul\Support\Enums\NavigationGroup;
+use Webkul\Support\Models\Scopes\CompanyScope;
 use Webkul\Support\Services\CompanyContext;
 
 class WelcomeDashboard extends BaseDashboard
@@ -298,6 +299,10 @@ class WelcomeDashboard extends BaseDashboard
 
     /**
      * Apply soft-delete and company filters used by Welcome KPI queries.
+     *
+     * Mirrors {@see CompanyScope}: include rows whose
+     * company_id is in the active company set OR is null, and skip company filtering
+     * entirely when the user bypasses company scope (e.g. Admin).
      */
     protected function scopedQuery(string $table): Builder
     {
@@ -307,12 +312,30 @@ class WelcomeDashboard extends BaseDashboard
             $query->whereNull('deleted_at');
         }
 
-        if (Schema::hasColumn($table, 'company_id')) {
+        if (! Schema::hasColumn($table, 'company_id')) {
+            return $query;
+        }
+
+        try {
+            $context = app(CompanyContext::class);
+
+            if (! $context->internalUser() || $context->bypassed()) {
+                return $query;
+            }
+
             $companyIds = $this->activeCompanyIds();
 
-            if ($companyIds !== []) {
-                $query->whereIn('company_id', $companyIds);
+            if ($companyIds === []) {
+                return $query;
             }
+
+            $query->where(function (Builder $companyQuery) use ($companyIds): void {
+                $companyQuery
+                    ->whereIn('company_id', $companyIds)
+                    ->orWhereNull('company_id');
+            });
+        } catch (Throwable) {
+            // Keep unfiltered count if company context is unavailable.
         }
 
         return $query;
