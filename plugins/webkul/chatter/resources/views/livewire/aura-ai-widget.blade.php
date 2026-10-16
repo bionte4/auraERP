@@ -2,10 +2,35 @@
     <style>
         .aura-ai-assistant-root {
             position: fixed;
+            /* Sit above Filament table pagination / sticky page footer */
             right: 1.25rem;
-            bottom: 1.25rem;
-            z-index: 45;
+            bottom: 5.5rem;
+            z-index: 40;
             font-family: inherit;
+            pointer-events: none;
+        }
+
+        .aura-ai-assistant-root > * {
+            pointer-events: auto;
+        }
+
+        /* Keep pagination controls clickable and clear of the FAB */
+        .fi-pagination,
+        .fi-ta-pagination {
+            padding-inline-end: 9.5rem !important;
+        }
+
+        @media (max-width: 640px) {
+            .aura-ai-assistant-root {
+                right: 0.75rem;
+                bottom: 6.25rem;
+            }
+
+            .fi-pagination,
+            .fi-ta-pagination {
+                padding-inline-end: 0.75rem !important;
+                padding-bottom: 3.5rem !important;
+            }
         }
 
         .aura-ai-fab {
