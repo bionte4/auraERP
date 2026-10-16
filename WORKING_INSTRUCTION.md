@@ -1,6 +1,6 @@
 # WORKING INSTRUCTION (WI) — AURA ERP
 
-Dokumen ini berisi panduan operasional lengkap untuk seluruh modul kustom, sistem hak akses berjenjang (**RBAC & Struktur Organisasi**), **Evaluasi Kinerja PKWT & Outtask/Outsource**, **Dashboard Evaluasi**, **Point of Sale (POS)**, **Manajemen Proyek**, **Manajemen Aset**, serta **auraAI** di **auraERP** (`https://opsora.my.id` / `https://auraerp.my.id`).
+Dokumen ini berisi panduan operasional lengkap untuk seluruh modul kustom, sistem hak akses berjenjang (**RBAC & Struktur Organisasi**), **Evaluasi Kinerja PKWT & Outtask/Outsource**, **Dashboard Evaluasi**, **Point of Sale (POS)**, **Manajemen Proyek & Penugasan Karyawan**, **Integrasi (SMTP / auraAI / Jira)**, **Manajemen Aset**, serta **auraAI** di **auraERP** (`https://opsora.my.id` / `https://auraerp.my.id`).
 
 ---
 
@@ -14,7 +14,7 @@ Halaman login Admin Panel: **`/admin/login`**
 | :--- | :--- |
 | **Admin** | Akses penuh ke seluruh modul, pengaturan perusahaan, manajemen User, Role & Permission, dan instalasi plugin. |
 | **HRD** | Mengelola Karyawan, Kontrak, Departemen, Lokasi Kerja (Geofence), Rekap Absensi, Cuti/Izin (`Time Off`), Rencana Kinerja (`Performance Plans`), Evaluasi Kinerja (`Evaluations`), Dashboard Evaluasi + Export Excel/PDF, Rekrutmen, dan Aset Karyawan. |
-| **Operation Manager** | Mengelola Proyek (`Projects`), Tugas (`Tasks`), `Timesheets`, Gudang & Stok (`Inventory` & `Products`), Perawatan & Aset (`Maintenance` & `Equipment`), Pembelian (`Purchases`), Penjualan (`Sales`), Mitra (`Partners`), serta melakukan **Penilaian Kinerja (L1/L2)** dan **Approval Cuti/Absensi** untuk tim/bawahannya. |
+| **Operation Manager** | Mengelola Proyek (`Projects`), **Tugaskan Karyawan ke Proyek**, Tugas (`Tasks`), `Timesheets`, Gudang & Stok (`Inventory` & `Products`), Perawatan & Aset (`Maintenance` & `Equipment`), Pembelian (`Purchases`), Penjualan (`Sales`), Mitra (`Partners`), serta melakukan **Penilaian Kinerja (L1/L2)** dan **Approval Cuti/Absensi** untuk tim/bawahannya. |
 | **Kasir** | Mengoperasikan **POS Terminal** (`/admin/pos-terminal`), membuka/menutup sesi shift kasir (`POS Sessions`), membuat transaksi penjualan kasir (`POS Orders`), melihat katalog produk & pelanggan, serta melakukan absensi (`/admin/absen`). |
 | **Staff (Karyawan)** | Self-service karyawan: melakukan Absensi (`/admin/absen`), mengajukan & memantau Cuti/Izin pribadi (`My Time Off` & `My Allocations`), mengisi `Timesheet` & tugas proyek, melihat `Performance Plan` & mengonfirmasi hasil `Evaluation` miliknya sendiri, serta menggunakan `auraAI` untuk data pribadinya. |
 
@@ -52,7 +52,13 @@ Saat membuat atau mengedit User di **Settings → Users**, terdapat pengaturan *
 3. Isi kolom: `name`, `work_email`, `work_phone`, `mobile_phone`, `job_title`, `department`, `employment_type`, `join_date`, `contract_end_date`, `identification_id`.
 4. Klik tombol **`Impor Excel / CSV` (`Import Excel / CSV`)**, unggah file yang sudah diisi, lalu klik **Submit**.
 
-### D. Memantau Kontrak yang Akan Habis (Alert 30 Hari) & Approval Cuti Berjenjang (SLA 24 Jam)
+### D. Menugaskan Proyek dari Profil Karyawan (`Assigned Projects`)
+1. Buka **Employees → Employees** → pilih karyawan → pastikan **Pengguna Terkait (`Related User`)** sudah diisi bila karyawan perlu login/akses proyek.
+2. Buka tab **Proyek Ditugaskan (`Assigned Projects`)** (`/admin/employees/employees/{id}/assigned-projects`).
+3. Pilih satu atau beberapa **Proyek**, lalu klik **Simpan Penugasan**.
+4. Penugasan ini tersinkron dengan layar **Project → Tugaskan Karyawan** (data & followers yang sama). Lihat juga **§7**.
+
+### E. Memantau Kontrak yang Akan Habis (Alert 30 Hari) & Approval Cuti Berjenjang (SLA 24 Jam)
 - **Tab Filter Cepat Kontrak:** Klik tab **`Kontrak Segera Berakhir` (`Expiring Contracts`)** di daftar **Employees** untuk melihat karyawan dengan sisa kontrak `≤ 30 hari`.
 - **Approval Cuti/Izin Berjenjang & Eskalasi Otomatis 24 Jam (`Time Off`):**
   - Saat karyawan mengajukan izin/cuti di **Time Off → My Time Off**, sistem otomatis menetapkan **Approver Level 1 (Atasan Langsung)** dan **Approver Level 2 (Atasan dari Atasan / Kepala Dept)**.
@@ -189,16 +195,29 @@ Buka menu **Employees → Performance Plans → Evaluations** (`/admin/evaluatio
 
 ---
 
-## 9. Penggunaan `auraAI Assistant` & Pengaturan Tema Modern (`Branding`)
+## 9. Integrasi SMTP, auraAI & Jira (`Settings → Integrations`)
+
+1. Buka **Settings → Integrations** (`/admin/integrations/manage-integrations`) — role **Admin** (permission `page_integrations_manage_integrations`).
+2. Isi konfigurasi per konektor:
+   - **SMTP:** host, port, enkripsi, username/password, from address — lalu **Test Connection**.
+   - **AI (auraAI):** provider/base URL, API key, model — lalu **Test Connection**.
+   - **Jira:** base URL, email/username, API token — lalu **Test Connection**.
+3. Rahasia (password/token) disimpan terenkripsi di settings; biarkan kosong saat edit jika tidak ingin mengubah nilai yang sudah tersimpan.
+4. Setelah plugin baru dipasang di server, jalankan `php artisan integrations:install` (lihat **§12**).
+
+---
+
+## 10. Penggunaan `auraAI Assistant` & Pengaturan Tema Modern (`Branding`)
 
 1. **Floating Chatbot `✨ auraAI` & Tombol `✨ Tanya AI` di Chatter:**
    - Klik tombol **`✨ auraAI`** di pojok kanan bawah atau gunakan **`✨ Tanya AI`** / mention **`@ai`** di panel Chatter dokumen apa pun. Data yang disajikan otomatis mengikuti hak akses & scope user yang sedang login.
+   - Konfigurasi koneksi AI dapat diatur di **Settings → Integrations** (§9).
 2. **Preset Tema Warna 1-Klik (`Settings → Manage Branding`):**
    - Buka **Settings → General → Manage Branding** untuk memilih tema warna instan (`Aura Indigo`, `Emerald Fresh`, `Ocean Blue`, `Royal Violet`, `Sunset Amber`, `Rose Modern`, atau `Slate Minimal`).
 
 ---
 
-## 10. Ringkasan Menu yang Mendukung Export / Bulk Import Excel (`.xlsx`)
+## 11. Ringkasan Menu yang Mendukung Export / Bulk Import Excel (`.xlsx`)
 
 | Modul | Halaman / URL | Fitur Excel (`.xlsx`) |
 | :--- | :--- | :--- |
@@ -210,20 +229,29 @@ Buka menu **Employees → Performance Plans → Evaluations** (`/admin/evaluatio
 
 ---
 
-## 11. Panduan Update / Deploy di Server VPS
+## 12. Panduan Update / Deploy di Server VPS
 
-Setiap kali ada pembaruan kode dari GitHub (`bionte4/auraERP` branch `main`), jalankan perintah berikut di VPS (`ubuntu@VM-18-102-ubuntu`):
+Setiap kali ada pembaruan kode dari GitHub (`bionte4/auraERP` branch `main`), jalankan perintah berikut di VPS (`ubuntu@VM-18-102-ubuntu`).
+
+**Langkah standar (setelah ada plugin/composer baru, gunakan blok lengkap di bawah):**
 
 ```bash
 cd /var/www/auraerp && \
 sudo chown -R ubuntu:www-data /var/www/auraerp && \
 git fetch origin main && \
 git reset --hard origin/main && \
-sudo chown -R www-data:www-data storage bootstrap/cache && \
-sudo chmod -R ug+rwx storage bootstrap/cache && \
+composer dump-autoload -o && \
 sudo -u www-data php artisan migrate --force --no-interaction && \
+sudo -u www-data php artisan integrations:install --no-interaction && \
 sudo -u www-data php artisan security:sync-rbac && \
-sudo -u www-data php artisan employees:notify-expiring-contracts && \
-sudo -u www-data php artisan projects:notify-expiring-projects && \
+sudo chown -R www-data:www-data storage bootstrap/cache public && \
+sudo chmod -R ug+rwx storage bootstrap/cache && \
 sudo -u www-data php artisan optimize:clear
 ```
+
+**Catatan deploy:**
+1. `sudo chown ... ubuntu:www-data` diperlukan sebelum `composer dump-autoload` agar `filament:upgrade` (post-autoload-dump) bisa menulis ke `public/js` & `public/css`.
+2. `composer dump-autoload -o` wajib jika ada **plugin baru** (mis. `integrations`) agar namespace Artisan & autoload PSR-4 terdaftar.
+3. `integrations:install` aman dijalankan ulang (idempotent) bila plugin sudah terpasang.
+4. `security:sync-rbac` menyinkronkan permission baru (termasuk **Tugaskan Karyawan** & **Integrations**).
+5. Setelah deploy, uji: login Admin → **Project → Tugaskan Karyawan**, **Employees → tab Proyek Ditugaskan**, **Settings → Integrations**.
