@@ -8,6 +8,7 @@ use Filament\Auth\Pages\Login as BaseLogin;
 use Filament\Facades\Filament;
 use Illuminate\Auth\SessionGuard;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Timebox;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
@@ -15,6 +16,24 @@ use Webkul\Security\Services\LoginProtection;
 
 class Login extends BaseLogin
 {
+    public function getHeading(): string|Htmlable|null
+    {
+        if (filled($this->userUndertakingMultiFactorAuthentication)) {
+            return parent::getHeading();
+        }
+
+        return __('security::auth.login.heading');
+    }
+
+    public function getSubheading(): string|Htmlable|null
+    {
+        if (filled($this->userUndertakingMultiFactorAuthentication)) {
+            return parent::getSubheading();
+        }
+
+        return __('security::auth.login.subheading');
+    }
+
     public function authenticate(): ?LoginResponse
     {
         $protection = app(LoginProtection::class);

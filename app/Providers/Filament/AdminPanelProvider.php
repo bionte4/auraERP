@@ -24,6 +24,7 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use LaraZeus\SpatieTranslatable\SpatieTranslatablePlugin;
+use Webkul\Security\Filament\Auth\Login;
 use Webkul\Support\Enums\NavigationGroup;
 use Webkul\Support\Filament\Pages\Profile;
 use Webkul\Support\GlobalSearchProvider;
@@ -40,7 +41,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login()
+            ->login(Login::class)
             ->favicon(asset('images/favicon.ico'))
             ->brandLogo(asset('images/logo-full-light.svg'))
             ->darkModeBrandLogo(asset('images/logo-full-dark.svg'))
@@ -64,7 +65,15 @@ class AdminPanelProvider extends PanelProvider
             )
             ->renderHook(
                 PanelsRenderHook::SIMPLE_LAYOUT_START,
-                fn () => view('filament.components.language-switcher'),
+                fn () => filament()->auth()->check()
+                    ? view('filament.components.language-switcher')
+                    : '',
+            )
+            ->renderHook(
+                PanelsRenderHook::SIMPLE_PAGE_START,
+                fn () => filament()->auth()->check()
+                    ? ''
+                    : view('filament.components.language-switcher', ['compact' => true]),
             )
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
