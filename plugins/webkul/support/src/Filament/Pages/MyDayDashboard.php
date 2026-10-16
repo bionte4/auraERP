@@ -14,6 +14,7 @@ use Webkul\Project\Models\Task;
 use Webkul\Project\Services\OperationalScope;
 use Webkul\Security\Support\AdminAccess;
 use Webkul\Support\Enums\NavigationGroup;
+use Webkul\Support\Services\AccountingTeamInsights;
 use Webkul\TimeOff\Enums\State as LeaveState;
 use Webkul\TimeOff\Models\Leave;
 
@@ -60,10 +61,12 @@ class MyDayDashboard extends Page
         $scope = app(OperationalScope::class);
 
         $cards = match (true) {
-            AdminAccess::check($user) || (method_exists($user, 'hasRole') && $user->hasRole('HRD')) => $this->hrdAdminCards($indonesian, $scope),
-            method_exists($user, 'hasRole') && $user->hasRole('Operation Manager')                  => $this->omCards($indonesian, $scope),
-            method_exists($user, 'hasRole') && $user->hasRole('Kasir')                              => $this->kasirCards($indonesian),
-            default                                                                                 => $this->staffCards($indonesian, $user),
+            AdminAccess::check($user)                                                              => $this->hrdAdminCards($indonesian, $scope),
+            method_exists($user, 'hasRole') && $user->hasRole('Accounting')                        => $this->accountingCards($indonesian),
+            method_exists($user, 'hasRole') && $user->hasRole('HRD')                               => $this->hrdAdminCards($indonesian, $scope),
+            method_exists($user, 'hasRole') && $user->hasRole('Operation Manager')                 => $this->omCards($indonesian, $scope),
+            method_exists($user, 'hasRole') && $user->hasRole('Kasir')                             => $this->kasirCards($indonesian),
+            default                                                                                => $this->staffCards($indonesian, $user),
         };
 
         return [
@@ -222,6 +225,77 @@ class MyDayDashboard extends Page
                 'info'
             ),
         ];
+    }
+
+    /**
+     * Budget control for Accounting: invoices, payments, overdue AR/AP scoped to the user's teams.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    protected function accountingCards(bool $indonesian): array
+    {
+        $summary = app(AccountingTeamInsights::class)->summary();
+        $scopeHint = $summary['scoped']
+            ? ($indonesian ? ' (tim saya)' : ' (my team)')
+            : ($indonesian ? ' (perusahaan)' : ' (company)');
+
+        return [
+            $this->card(
+                ($indonesian ? 'Invoice terbuka' : 'Open invoices').$scopeHint,
+                (string) $summary['open_invoices'],
+                $this->safeUrl([
+                    'Webkul\\Invoice\\Filament\\Clusters\\Customers\\Resources\\InvoiceResource',
+                ], '/admin/invoices/customers/invoices'),
+                'primary'
+            ),
+            $this->card(
+                ($indonesian ? 'Overdue AR' : 'Overdue AR').$scopeHint,
+                (string) $summary['overdue_ar'],
+                $this->safeUrl([
+                    'Webkul\\Invoice\\Filament\\Clusters\\Customers\\Resources\\InvoiceResource',
+                ], '/admin/invoices/customers/invoices'),
+                'danger'
+            ),
+            $this->card(
+                ($indonesian ? 'Overdue AP' : 'Overdue AP').$scopeHint,
+                (string) $summary['overdue_ap'],
+                $this->safeUrl([
+                    'Webkul\\Invoice\\Filament\\Clusters\\Vendors\\Resources\\BillResource',
+                ], '/admin/invoices/vendors/bills'),
+                'warning'
+            ),
+            $this->card(
+                ($indonesian ? 'Payment pending' : 'Pending payments').$scopeHint,
+                (string) $summary['payments_pending'],
+                $this->safeUrl([
+                    'Webkul\\Invoice\\Filament\\Clusters\\Customers\\Resources\\PaymentResource',
+                ], '/admin/invoices/customers/payments'),
+                'info'
+            ),
+            $this->card(
+                ($indonesian ? 'Budget proyek tim' : 'Team project budget').$scopeHint,
+                'Rp '.number_format($summary['team_budget'], 0, ',', '.'),
+                url('/admin/project/projects'),
+                'success'
+            ),
+        ];
+    }
+
+    /**
+     * @param  array<int, class-string>  $resourceClasses
+     */
+    protected function safeUrl(array $resourceClasses, string $fallback): string
+    {
+        foreach ($resourceClasses as $class) {
+            try {
+                if (class_exists($class) && method_exists($class, 'getUrl')) {
+                    return $class::getUrl('index');
+                }
+            } catch (Throwable) {
+            }
+        }
+
+        return url($fallback);
     }
 
     /**

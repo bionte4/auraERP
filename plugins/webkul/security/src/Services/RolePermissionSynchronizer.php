@@ -193,7 +193,31 @@ class RolePermissionSynchronizer
         $operationManagerRole->givePermissionTo($operationManagerPermissions);
         $rolesSynced[] = $operationManagerRole->name;
 
-        // 4. Kasir (POS) Role
+        // 4. Accounting Role — invoices, bills, payments, partners (team budget control via My Day)
+        $accountingRole = Role::query()->firstOrCreate(
+            ['name' => 'Accounting', 'guard_name' => $guard],
+            ['is_default' => false]
+        );
+        $accountingPermissions = $allPermissions->filter(fn (Permission $p): bool => str_contains($p->name, 'invoice')
+            || str_contains($p->name, 'account')
+            || str_contains($p->name, 'payment')
+            || str_contains($p->name, 'bill')
+            || str_contains($p->name, 'partner')
+            || str_contains($p->name, 'contact')
+            || str_contains($p->name, 'product')
+            || in_array($p->name, [
+                'page_support_my_day_dashboard',
+                'page_support_team_board',
+                'page_project_dashboard',
+                'view_any_project_project',
+                'view_project_project',
+                'page_attendance_clock_page',
+            ], true)
+        );
+        $accountingRole->givePermissionTo($accountingPermissions);
+        $rolesSynced[] = $accountingRole->name;
+
+        // 5. Kasir (POS) Role
         $kasirRole = Role::query()->firstOrCreate(
             ['name' => 'Kasir', 'guard_name' => $guard],
             ['is_default' => false]
@@ -213,7 +237,7 @@ class RolePermissionSynchronizer
         $kasirRole->givePermissionTo($kasirPermissions);
         $rolesSynced[] = $kasirRole->name;
 
-        // 4. Staff / Karyawan Role
+        // 6. Staff / Karyawan Role
         $staffRole = Role::query()->firstOrCreate(
             ['name' => 'Staff', 'guard_name' => $guard],
             ['is_default' => false]
@@ -250,7 +274,7 @@ class RolePermissionSynchronizer
         // Hard revoke: Audit Trail + Database Backups remain Admin-only even if previously granted.
         $adminOnlyPermissions = $allPermissions->whereIn('name', AdminAccess::adminOnlyPermissionNames());
 
-        foreach ([$hrdRole, $operationManagerRole, $kasirRole, $staffRole] as $nonAdminRole) {
+        foreach ([$hrdRole, $operationManagerRole, $accountingRole, $kasirRole, $staffRole] as $nonAdminRole) {
             if ($adminOnlyPermissions->isNotEmpty()) {
                 $nonAdminRole->revokePermissionTo($adminOnlyPermissions);
             }
