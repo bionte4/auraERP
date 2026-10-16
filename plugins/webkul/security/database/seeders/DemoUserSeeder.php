@@ -11,6 +11,7 @@ use Webkul\Employee\Models\Employee;
 use Webkul\Security\Enums\PermissionType;
 use Webkul\Security\Models\Role;
 use Webkul\Security\Models\User;
+use Webkul\Security\Services\RolePermissionSynchronizer;
 use Webkul\Support\Models\Company;
 
 class DemoUserSeeder extends Seeder
@@ -36,8 +37,16 @@ class DemoUserSeeder extends Seeder
         $staffRole = $this->roleWithPermissions('Karyawan', $this->permissionNames(['attendance'])
             ->reject(fn (string $name): bool => str_contains($name, 'delete')));
 
+        app(RolePermissionSynchronizer::class)->syncAll(false);
+
+        $accountingRole = Role::query()->firstOrCreate([
+            'name'       => 'Accounting',
+            'guard_name' => 'web',
+        ]);
+
         $hrUser = $this->user('HRD Demo', 'hrd@opsora.my.id', 'Demo-hrd-2026', $company->id, $hrRole);
         $staffUser = $this->user('Karyawan Demo', 'karyawan@opsora.my.id', 'Demo-karyawan-2026', $company->id, $staffRole);
+        $this->user('Accounting Demo', 'accounting@opsora.my.id', 'Demo-accounting-2026', $company->id, $accountingRole);
 
         $this->linkStaffToEmployee($staffUser);
 
@@ -45,6 +54,7 @@ class DemoUserSeeder extends Seeder
 
         $this->command?->info('Demo HRD: hrd@opsora.my.id / Demo-hrd-2026');
         $this->command?->info('Demo karyawan: karyawan@opsora.my.id / Demo-karyawan-2026');
+        $this->command?->info('Demo Accounting: accounting@opsora.my.id / Demo-accounting-2026');
     }
 
     /**

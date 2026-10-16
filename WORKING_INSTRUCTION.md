@@ -89,7 +89,11 @@ sudo -u www-data php artisan optimize:clear
 ```
 
 ### H. Akun Demo
-- Demo: `hrd@opsora.my.id` / `Demo-hrd-2026`, `karyawan@opsora.my.id` / `Demo-karyawan-2026`.
+- Demo:
+  - HRD: `hrd@opsora.my.id` / `Demo-hrd-2026`
+  - Karyawan: `karyawan@opsora.my.id` / `Demo-karyawan-2026`
+  - Accounting: `accounting@opsora.my.id` / `Demo-accounting-2026`
+- Seed/ulang akun demo: `sudo -u www-data php artisan db:seed --class="Webkul\\Security\\Database\\Seeders\\DemoUserSeeder" --force --no-interaction`
 - Untuk go-live tanpa demo: set `SECURITY_DEMO_ACCOUNTS_ALLOWED=false` di `.env` (login demo ditolak).
 - Sync RBAC kapan saja: `sudo -u www-data php artisan security:sync-rbac`.
 

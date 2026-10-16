@@ -11,7 +11,7 @@ return [
         'trim',
         explode(',', (string) env(
             'SECURITY_DEMO_ACCOUNT_EMAILS',
-            'hrd@opsora.my.id,karyawan@opsora.my.id,admin@example.com'
+            'hrd@opsora.my.id,karyawan@opsora.my.id,accounting@opsora.my.id,admin@example.com'
         ))
     ))),
 ];
