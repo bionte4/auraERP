@@ -31,6 +31,7 @@ class ProjectBulkImportService
             'start_date',
             'end_date',
             'project_value',
+            'operational_cost',
             'allocated_hours',
             'visibility',
             'description',
@@ -147,6 +148,7 @@ class ProjectBulkImportService
             $startDate = $this->parseDate($row['start_date'] ?? $row['tanggal_mulai'] ?? null);
             $endDate = $this->parseDate($row['end_date'] ?? $row['tanggal_akhir'] ?? null);
             $projectValue = $this->parseAmount($row['project_value'] ?? $row['nilai_proyek'] ?? $row['value'] ?? 0);
+            $operationalCost = $this->parseAmount($row['operational_cost'] ?? $row['biaya_operasional'] ?? $row['opex'] ?? 0);
             $allocatedHours = isset($row['allocated_hours']) && $row['allocated_hours'] !== '' ? (float) $row['allocated_hours'] : null;
             $visibilityRaw = strtolower(trim((string) ($row['visibility'] ?? 'internal')));
             $visibility = in_array($visibilityRaw, ['private', 'internal', 'public'], true) ? $visibilityRaw : 'internal';
@@ -171,6 +173,10 @@ class ProjectBulkImportService
 
             if (Schema::hasColumn('projects_projects', 'project_value')) {
                 $attributes['project_value'] = $projectValue;
+            }
+
+            if (Schema::hasColumn('projects_projects', 'operational_cost')) {
+                $attributes['operational_cost'] = $operationalCost;
             }
 
             $existingQuery = Project::withoutGlobalScopes()

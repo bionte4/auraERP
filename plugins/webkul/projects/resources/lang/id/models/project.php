@@ -13,6 +13,7 @@ return [
         'start_date'               => 'Tanggal Mulai',
         'end_date'                 => 'Tanggal Akhir',
         'project_value'            => 'Nilai Proyek',
+        'operational_cost'         => 'Biaya Operasional',
         'allocated_hours'          => 'Jam yang Dialokasikan',
         'allow_timesheets'         => 'Izinkan Lembar Waktu',
         'allow_milestones'         => 'Izinkan Tonggak Pencapaian',

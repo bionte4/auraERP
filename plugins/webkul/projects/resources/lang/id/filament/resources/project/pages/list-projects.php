@@ -18,7 +18,7 @@ return [
         'import' => [
             'label'             => 'Impor Excel / CSV',
             'modal-heading'     => 'Bulk Import Proyek',
-            'modal-description' => 'Unggah file .xlsx atau .csv sesuai format template (kolom: name, customer, project_manager, stage, start_date, end_date, project_value, allocated_hours, visibility, description). Satu customer dapat memiliki banyak baris proyek.',
+            'modal-description' => 'Unggah file .xlsx atau .csv sesuai format template (kolom: name, customer, project_manager, stage, start_date, end_date, project_value, operational_cost, allocated_hours, visibility, description). Satu customer dapat memiliki banyak baris proyek.',
             'file-label'        => 'File Excel (.xlsx) atau CSV (.csv)',
             'notification'      => [
                 'title' => 'Impor proyek selesai',

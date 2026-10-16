@@ -39,8 +39,48 @@ it('exposes total project and total employee kpi labels for admins', function ()
     $page = app(WelcomeDashboard::class);
     $titles = collect($page->getDashboardData()['kpis'] ?? [])->pluck('title')->all();
 
-    expect($titles)->toContain('Total Project', 'Total Employee')
+    expect($titles)->toContain('Total Project', 'Total Employee', 'Total Revenue')
         ->and($titles)->not->toContain('Total Work Orders', 'Active Customers');
+});
+
+it('sums project operational_cost into total revenue opex detail', function () {
+    $company = Company::factory()->create();
+    $adminRoleName = config('filament-shield.panel_user.name', 'Admin');
+
+    foreach (['web', 'sanctum'] as $guard) {
+        Role::query()->firstOrCreate([
+            'name'       => $adminRoleName,
+            'guard_name' => $guard,
+        ]);
+    }
+
+    $admin = CompanyHelper::actingAsCompanyUser($company, ['bypass_company_scope']);
+    $admin->syncRoles([$adminRoleName]);
+
+    Project::factory()->create([
+        'name'             => 'Revenue Project A',
+        'company_id'       => $company->id,
+        'is_active'        => true,
+        'project_value'    => 1_000_000,
+        'operational_cost' => 250_000,
+    ]);
+    Project::factory()->create([
+        'name'             => 'Revenue Project B',
+        'company_id'       => $company->id,
+        'is_active'        => true,
+        'project_value'    => 500_000,
+        'operational_cost' => 100_000,
+    ]);
+
+    app()->forgetInstance(CompanyContext::class);
+
+    $page = app(WelcomeDashboard::class);
+    $revenueKpi = collect($page->getDashboardData()['kpis'] ?? [])
+        ->firstWhere('title', 'Total Revenue');
+
+    expect($revenueKpi['raw_value'] ?? null)->toBe(1_500_000.0)
+        ->and($revenueKpi['detail'] ?? '')->toContain('OpEx:')
+        ->and($revenueKpi['detail'] ?? '')->toContain('Margin:');
 });
 
 it('counts projects with null company_id in total project kpi like the projects list', function () {

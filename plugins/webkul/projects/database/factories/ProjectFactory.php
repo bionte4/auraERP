@@ -40,6 +40,7 @@ class ProjectFactory extends Factory
             'start_date'              => fake()->date(),
             'end_date'                => fake()->date(),
             'project_value'           => 0,
+            'operational_cost'        => 0,
             'allocated_hours'         => fake()->numberBetween(1, 999999),
             'allow_timesheets'        => true,
             'allow_milestones'        => false,

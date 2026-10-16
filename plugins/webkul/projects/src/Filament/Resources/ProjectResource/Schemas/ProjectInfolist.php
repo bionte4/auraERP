@@ -76,6 +76,11 @@ class ProjectInfolist
                                             ->icon('heroicon-o-banknotes')
                                             ->state(fn (Project $record): string => $record->formattedProjectValue()),
 
+                                        TextEntry::make('operational_cost')
+                                            ->label(__('projects::filament/resources/project.infolist.sections.additional.entries.operational-cost'))
+                                            ->icon('heroicon-o-currency-dollar')
+                                            ->state(fn (Project $record): string => $record->formattedOperationalCost()),
+
                                         TextEntry::make('expiry_reminder')
                                             ->label(__('projects::filament/resources/project.infolist.sections.additional.entries.expiry-reminder'))
                                             ->badge()

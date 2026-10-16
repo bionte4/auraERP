@@ -106,6 +106,14 @@ class ProjectForm
                                     ->default(0)
                                     ->helperText(__('projects::filament/resources/project.form.sections.additional.fields.project-value-helper-text'))
                                     ->rules(['nullable', 'numeric', 'min:0']),
+                                TextInput::make('operational_cost')
+                                    ->label(__('projects::filament/resources/project.form.sections.additional.fields.operational-cost'))
+                                    ->prefix('Rp')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->default(0)
+                                    ->helperText(__('projects::filament/resources/project.form.sections.additional.fields.operational-cost-helper-text'))
+                                    ->rules(['nullable', 'numeric', 'min:0']),
                                 TextInput::make('allocated_hours')
                                     ->label(__('projects::filament/resources/project.form.sections.additional.fields.allocated-hours'))
                                     ->suffixIcon('heroicon-o-clock')

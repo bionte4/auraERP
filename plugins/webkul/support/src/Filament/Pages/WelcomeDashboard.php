@@ -69,8 +69,12 @@ class WelcomeDashboard extends BaseDashboard
         $totalTasks = $this->safeCount('projects_tasks');
         $completedTasks = $this->safeCountWhere('projects_tasks', fn (Builder $q) => $q->whereIn('state', ['1_done', 'done', '04_done']));
 
-        // Welcome "Total Revenue" is the sum of active project values, not sales/POS/invoices.
+        // Welcome "Total Revenue" / OpEx are project fields (project_value + operational_cost).
         $totalRevenue = $this->safeSum('projects_projects', 'project_value', ['is_active' => true]);
+        $operationalCost = $this->operationalCostTotal();
+        $grossMargin = $totalRevenue > 0
+            ? round((($totalRevenue - $operationalCost) / $totalRevenue) * 100, 1)
+            : null;
 
         $totalEvaluations = $this->safeCount('evaluations');
         $approvedEvaluations = $this->safeCountWhere(
@@ -168,6 +172,7 @@ class WelcomeDashboard extends BaseDashboard
                     'title'     => 'Total Revenue',
                     'value'     => 'Rp '.$this->formatCompactNumber($totalRevenue),
                     'raw_value' => $totalRevenue,
+                    'detail'    => $this->revenueCostDetail($operationalCost, $grossMargin),
                     'change'    => $revenueDelta['label'],
                     'trend'     => $revenueDelta['trend'],
                     'period'    => $revenueDelta['period'],
@@ -453,6 +458,27 @@ class WelcomeDashboard extends BaseDashboard
         }
 
         return (float) ($query->sum($column) ?? 0.0);
+    }
+
+    /**
+     * Sum of operational_cost on active projects (same source pattern as Total Revenue).
+     */
+    protected function operationalCostTotal(): float
+    {
+        return $this->safeSum('projects_projects', 'operational_cost', ['is_active' => true]);
+    }
+
+    protected function revenueCostDetail(float $operationalCost, ?float $grossMargin): string
+    {
+        $indonesian = str_starts_with((string) app()->getLocale(), 'id');
+        $opex = 'Rp '.$this->formatCompactNumber($operationalCost);
+
+        if ($grossMargin === null) {
+            return ($indonesian ? 'OpEx: ' : 'OpEx: ').$opex;
+        }
+
+        return ($indonesian ? 'OpEx: ' : 'OpEx: ').$opex
+            .' · '.($indonesian ? 'Margin: ' : 'Margin: ').number_format($grossMargin, 1).'%';
     }
 
     protected function projectIndexUrl(): string

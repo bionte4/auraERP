@@ -84,6 +84,17 @@ class ProjectsTable
                     ])
                         ->visible(fn (Project $record): bool => (float) ($record->project_value ?? 0) > 0),
                     Stack::make([
+                        TextColumn::make('operational_cost')
+                            ->label(__('projects::filament/resources/project.table.columns.operational-cost'))
+                            ->icon('heroicon-o-currency-dollar')
+                            ->badge()
+                            ->color('warning')
+                            ->sortable()
+                            ->state(fn (Project $record): string => $record->formattedOperationalCost())
+                            ->tooltip(__('projects::filament/resources/project.table.columns.operational-cost')),
+                    ])
+                        ->visible(fn (Project $record): bool => (float) ($record->operational_cost ?? 0) > 0),
+                    Stack::make([
                         TextColumn::make('expiry_reminder')
                             ->label(__('projects::filament/resources/project.table.columns.expiry-reminder'))
                             ->icon('heroicon-m-bell-alert')
@@ -181,6 +192,9 @@ class ProjectsTable
                         NumberConstraint::make('project_value')
                             ->label(__('projects::filament/resources/project.table.filters.project-value'))
                             ->icon('heroicon-o-banknotes'),
+                        NumberConstraint::make('operational_cost')
+                            ->label(__('projects::filament/resources/project.table.filters.operational-cost'))
+                            ->icon('heroicon-o-currency-dollar'),
                         BooleanConstraint::make('allow_timesheets')
                             ->label(__('projects::filament/resources/project.table.filters.allow-timesheets'))
                             ->icon('heroicon-o-clock'),

@@ -73,6 +73,12 @@
                             </span>
                         </div>
 
+                        @if (filled($kpi['detail'] ?? null))
+                            <div class="mb-2 text-center text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                                {{ $kpi['detail'] }}
+                            </div>
+                        @endif
+
                         {{-- Bottom Trend Line --}}
                         @if (filled($kpi['change'] ?? null) || filled($kpi['period'] ?? null))
                             <div class="dhonu-kpi-foot">

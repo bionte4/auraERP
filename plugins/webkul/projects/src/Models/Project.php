@@ -62,6 +62,7 @@ class Project extends Model implements Sortable
         'start_date',
         'end_date',
         'project_value',
+        'operational_cost',
         'allocated_hours',
         'allow_timesheets',
         'allow_milestones',
@@ -78,6 +79,7 @@ class Project extends Model implements Sortable
         'start_date'              => 'date',
         'end_date'                => 'date',
         'project_value'           => 'float',
+        'operational_cost'        => 'float',
         'allocated_hours'         => 'integer',
         'is_active'               => 'boolean',
         'allow_timesheets'        => 'boolean',
@@ -97,6 +99,7 @@ class Project extends Model implements Sortable
             'start_date'              => __('projects::models/project.log-attributes.start_date'),
             'end_date'                => __('projects::models/project.log-attributes.end_date'),
             'project_value'           => __('projects::models/project.log-attributes.project_value'),
+            'operational_cost'        => __('projects::models/project.log-attributes.operational_cost'),
             'allocated_hours'         => __('projects::models/project.log-attributes.allocated_hours'),
             'allow_timesheets'        => __('projects::models/project.log-attributes.allow_timesheets'),
             'allow_milestones'        => __('projects::models/project.log-attributes.allow_milestones'),
@@ -259,6 +262,13 @@ class Project extends Model implements Sortable
     public function formattedProjectValue(): string
     {
         $value = (float) ($this->project_value ?? 0);
+
+        return 'Rp '.number_format($value, 0, ',', '.');
+    }
+
+    public function formattedOperationalCost(): string
+    {
+        $value = (float) ($this->operational_cost ?? 0);
 
         return 'Rp '.number_format($value, 0, ',', '.');
     }
