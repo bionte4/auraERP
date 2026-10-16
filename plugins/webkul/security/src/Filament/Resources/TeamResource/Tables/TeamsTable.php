@@ -22,6 +22,16 @@ class TeamsTable
                     ->searchable()
                     ->limit(50)
                     ->sortable(),
+                TextColumn::make('users_count')
+                    ->counts('users')
+                    ->label(__('security::filament/resources/team.table.columns.members'))
+                    ->alignCenter()
+                    ->sortable(),
+                TextColumn::make('users.name')
+                    ->label(__('security::filament/resources/team.table.columns.member-names'))
+                    ->badge()
+                    ->limitList(3)
+                    ->toggleable(),
                 TextColumn::make('creator.name')
                     ->label(__('security::filament/resources/team.table.columns.created-by'))
                     ->searchable()

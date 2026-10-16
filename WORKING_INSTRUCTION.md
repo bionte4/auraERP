@@ -27,6 +27,16 @@ Saat membuat atau mengedit User di **Settings → Users**, terdapat pengaturan *
    - **Seluruh bawahan langsung (Level 1) maupun bawahan tidak langsung (Level 2 dst.)** berdasarkan pohon struktur organisasi karyawan (`Manager / parent_id` serta `Department Manager`).
 3. **`Individual`**: User hanya dapat melihat dan mengelola data miliknya sendiri (*Self-Service*).
 
+### C. Mengelola Anggota Tim (`Settings → Teams`) & Papan Manage Teams
+1. Buka **Settings → Teams** (`/admin/teams`) → **New team** / **Edit**.
+2. Isi **Nama** (disarankan **sama dengan nama Proyek**), lalu simpan. Anggota bisa dipilih manual, atau terisi otomatis (lihat poin 4).
+3. Alternatif manual: **Settings → Users** → edit user → bagian Teams (Resource Permission **Group**).
+4. **Sinkron otomatis anggota Tim** (nama Tim = nama Proyek, case-insensitive):
+   - **Manajer Proyek** + karyawan yang ditugaskan ke proyek (yang punya Related User) otomatis masuk anggota Tim.
+   - Dipicu saat simpan proyek, Assign Employees, atau simpan Tim.
+   - Backfill sekali setelah deploy: `sudo -u www-data php artisan projects:sync-team-memberships`.
+5. Papan **Dashboard → Team Board / Manage Teams** menampilkan anggota & proyek di mana anggota = **Manajer Proyek**.
+
 *(Akun Demo: `hrd@opsora.my.id` / `Demo-hrd-2026` dan `karyawan@opsora.my.id` / `Demo-karyawan-2026`. Untuk menyinkronkan ulang seluruh Role & Permission kapan saja: `sudo -u www-data php artisan security:sync-rbac`)*
 
 ---
@@ -257,6 +267,7 @@ git reset --hard origin/main && \
 composer dump-autoload -o && \
 sudo -u www-data php artisan migrate --force --no-interaction && \
 sudo -u www-data php artisan integrations:install --no-interaction && \
+sudo -u www-data php artisan projects:sync-team-memberships && \
 sudo -u www-data php artisan security:sync-rbac && \
 sudo chown -R www-data:www-data storage bootstrap/cache public && \
 sudo chmod -R ug+rwx storage bootstrap/cache && \

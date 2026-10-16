@@ -94,6 +94,11 @@ class ProjectEmployeeAssigner
             }
         });
 
+        try {
+            app(TeamMembershipSynchronizer::class)->syncForProject($project->fresh() ?? $project);
+        } catch (\Throwable) {
+        }
+
         return [
             'assigned'     => count($syncPayload),
             'without_user' => $withoutUser,
@@ -174,6 +179,18 @@ class ProjectEmployeeAssigner
                 }
             }
         });
+
+        $projectIdsToSync = array_values(array_unique(array_merge($desiredProjectIds, $toDetach)));
+
+        if ($projectIdsToSync !== []) {
+            try {
+                Project::query()
+                    ->whereIn('id', $projectIdsToSync)
+                    ->get()
+                    ->each(fn (Project $project) => app(TeamMembershipSynchronizer::class)->syncForProject($project));
+            } catch (\Throwable) {
+            }
+        }
 
         return [
             'assigned'     => count($desiredProjectIds),

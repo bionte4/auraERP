@@ -23,6 +23,7 @@ use Webkul\Partner\Enums\AccountType;
 use Webkul\Partner\Models\Partner;
 use Webkul\Project\Database\Factories\ProjectFactory;
 use Webkul\Project\Services\ProjectExpiryNotifier;
+use Webkul\Project\Services\TeamMembershipSynchronizer;
 use Webkul\Security\Models\User;
 use Webkul\Security\Support\OwnerSource;
 use Webkul\Security\Traits\HasOwnershipScope;
@@ -340,6 +341,11 @@ class Project extends Model implements Sortable
         });
 
         static::saved(function (self $project): void {
+            try {
+                app(TeamMembershipSynchronizer::class)->syncForProject($project);
+            } catch (Throwable) {
+            }
+
             if (! $project->end_date || ! $project->is_active || $project->expiryReminderStage() === null) {
                 return;
             }

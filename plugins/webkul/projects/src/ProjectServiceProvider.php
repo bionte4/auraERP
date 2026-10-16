@@ -17,8 +17,11 @@ use Webkul\PluginManager\Console\Commands\UninstallCommand;
 use Webkul\PluginManager\Package;
 use Webkul\PluginManager\PackageServiceProvider;
 use Webkul\Project\Console\Commands\NotifyExpiringProjectsCommand;
+use Webkul\Project\Console\Commands\SyncTeamMembershipsCommand;
 use Webkul\Project\Models\Project;
 use Webkul\Project\Models\Task;
+use Webkul\Project\Services\TeamMembershipSynchronizer;
+use Webkul\Security\Models\Team;
 
 class ProjectServiceProvider extends PackageServiceProvider
 {
@@ -47,7 +50,10 @@ class ProjectServiceProvider extends PackageServiceProvider
                 '2026_10_16_140000_create_projects_project_employees_table',
             ])
             ->runsMigrations()
-            ->hasCommand(NotifyExpiringProjectsCommand::class)
+            ->hasCommands([
+                NotifyExpiringProjectsCommand::class,
+                SyncTeamMembershipsCommand::class,
+            ])
             ->hasSettings([
                 '2024_12_16_094021_create_project_task_settings',
                 '2024_12_16_094021_create_project_time_settings',
@@ -74,6 +80,15 @@ class ProjectServiceProvider extends PackageServiceProvider
                 Schedule::command('projects:notify-expiring-projects')->dailyAt('08:00');
             }
         });
+
+        if (class_exists(Team::class)) {
+            Team::saved(function (Team $team): void {
+                try {
+                    app(TeamMembershipSynchronizer::class)->syncForTeam($team);
+                } catch (\Throwable) {
+                }
+            });
+        }
 
         if (class_exists(PartnerSchemaRegistry::class)) {
             PartnerSchemaRegistry::infolist('tabs.append', fn (): array => [

@@ -9,14 +9,18 @@ return [
 
     'form' => [
         'fields' => [
-            'name' => 'Nama',
+            'name'          => 'Nama',
+            'members'       => 'Anggota tim',
+            'members-help'  => 'Pilih user yang menjadi anggota tim ini. Manage Teams menghitung proyek di mana anggota ini = Manajer Proyek.',
         ],
     ],
 
     'table' => [
         'columns' => [
-            'name'       => 'Nama',
-            'created-by' => 'Dibuat Oleh',
+            'name'         => 'Nama',
+            'members'      => 'Anggota',
+            'member-names' => 'Nama anggota',
+            'created-by'   => 'Dibuat Oleh',
         ],
 
         'actions' => [
@@ -46,25 +50,9 @@ return [
     ],
 
     'infolist' => [
-        'sections' => [
-            'entries' => [
-                'name'          => 'Nama',
-                'job-title'     => 'Jabatan',
-                'work-email'    => 'Email Kerja',
-                'work-mobile'   => 'Ponsel Kerja',
-                'work-phone'    => 'Telepon Kerja',
-                'manager'       => 'Manajer',
-                'department'    => 'Departemen',
-                'job-position'  => 'Jabatan',
-                'team-tags'     => 'Tag Tim',
-                'coach'         => 'Pembimbing',
-            ],
-        ],
-    ],
-
-    'infolist' => [
         'entries' => [
-            'name' => 'Nama',
+            'name'    => 'Nama',
+            'members' => 'Anggota tim',
         ],
     ],
 ];

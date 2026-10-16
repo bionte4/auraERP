@@ -12,9 +12,14 @@ class TeamInfolist
         return $schema
             ->components([
                 TextEntry::make('name')
-                    ->icon('heroicon-o-user')
+                    ->icon('heroicon-o-user-group')
                     ->placeholder('—')
                     ->label(__('security::filament/resources/team.infolist.entries.name')),
+                TextEntry::make('users.name')
+                    ->icon('heroicon-o-users')
+                    ->badge()
+                    ->placeholder('—')
+                    ->label(__('security::filament/resources/team.infolist.entries.members')),
             ]);
     }
 }

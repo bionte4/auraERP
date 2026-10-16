@@ -9,14 +9,18 @@ return [
 
     'form' => [
         'fields' => [
-            'name' => 'Name',
+            'name'          => 'Name',
+            'members'       => 'Team members',
+            'members-help'  => 'Select users who belong to this team. Manage Teams counts projects where these users are Project Manager.',
         ],
     ],
 
     'table' => [
         'columns' => [
-            'name'       => 'Name',
-            'created-by' => 'Created By',
+            'name'         => 'Name',
+            'members'      => 'Members',
+            'member-names' => 'Member names',
+            'created-by'   => 'Created By',
         ],
 
         'actions' => [
@@ -46,25 +50,9 @@ return [
     ],
 
     'infolist' => [
-        'sections' => [
-            'entries' => [
-                'name'          => 'Name',
-                'job-title'     => 'Job Title',
-                'work-email'    => 'Work Email',
-                'work-mobile'   => 'Work Mobile',
-                'work-phone'    => 'Work Phone',
-                'manager'       => 'Manager',
-                'department'    => 'Department',
-                'job-position'  => 'Job Position',
-                'team-tags'     => 'Team Tags',
-                'coach'         => 'Coach',
-            ],
-        ],
-    ],
-
-    'infolist' => [
         'entries' => [
-            'name' => 'Name',
+            'name'    => 'Name',
+            'members' => 'Team members',
         ],
     ],
 ];
