@@ -9,11 +9,16 @@ return [
     ],
 
     'form' => [
-        'name'            => 'Nama',
-        'company'         => 'Perusahaan',
-        'location-type'   => 'Tipe Lokasi',
-        'location-number' => 'Nomor Lokasi',
-        'status'          => 'Status',
+        'name'               => 'Nama',
+        'company'            => 'Perusahaan',
+        'location-type'      => 'Tipe Lokasi',
+        'location-number'    => 'Nomor Lokasi',
+        'city'               => 'Kota',
+        'city-help'          => 'Label kota yang ditampilkan di peta penempatan Welcome.',
+        'latitude'           => 'Latitude',
+        'longitude'          => 'Longitude',
+        'coordinates-help'   => 'Opsional. Diperlukan agar muncul di peta Welcome (penempatan karyawan). Absensi geofence tetap memakai Lokasi kerja (Attendance Sites).',
+        'status'             => 'Status',
     ],
 
     'table' => [
@@ -24,6 +29,7 @@ return [
             'company'         => 'Perusahaan',
             'location-type'   => 'Tipe Lokasi',
             'location-number' => 'Nomor Lokasi',
+            'city'            => 'Kota',
             'deleted-at'      => 'Dihapus Pada',
             'created-by'      => 'Dibuat Oleh',
             'created-at'      => 'Dibuat Pada',
@@ -110,6 +116,9 @@ return [
         'company'         => 'Perusahaan',
         'location-type'   => 'Tipe Lokasi',
         'location-number' => 'Nomor Lokasi',
+        'city'            => 'Kota',
+        'latitude'        => 'Latitude',
+        'longitude'       => 'Longitude',
         'status'          => 'Status',
     ],
 ];

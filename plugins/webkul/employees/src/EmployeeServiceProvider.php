@@ -43,6 +43,7 @@ class EmployeeServiceProvider extends PackageServiceProvider
                 '2025_08_20_082638_add_unique_user_id_to_employees_employees_table',
                 '2026_08_09_000000_create_employees_employee_resume_attachments_table',
                 '2026_10_14_180000_add_contract_dates_and_employment_type_to_employees_table',
+                '2026_10_16_161111_add_placement_coordinates_to_employees_work_locations_table',
             ])
             ->runsMigrations()
             ->hasCommand(NotifyExpiringContractsCommand::class)

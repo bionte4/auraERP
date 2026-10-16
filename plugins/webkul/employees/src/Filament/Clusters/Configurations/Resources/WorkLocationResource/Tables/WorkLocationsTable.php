@@ -42,6 +42,10 @@ class WorkLocationsTable
                     ->label(__('employees::filament/clusters/configurations/resources/work-location.table.columns.location-type'))
                     ->badge()
                     ->searchable(),
+                TextColumn::make('city')
+                    ->label(__('employees::filament/clusters/configurations/resources/work-location.table.columns.city'))
+                    ->searchable()
+                    ->toggleable(),
                 IconColumn::make('is_active')
                     ->label(__('employees::filament/clusters/configurations/resources/work-location.table.columns.status'))
                     ->boolean(),

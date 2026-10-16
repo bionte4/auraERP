@@ -194,12 +194,12 @@
             <a href="{{ $data['links']['sites'] ?? url('/admin/welcome') }}" class="dhonu-card dhonu-map dhonu-link">
                 <div class="dhonu-card-title">
                     <span class="dhonu-accent-bar"></span>
-                    <h3>Karyawan di Lokasi Kerja</h3>
+                    <h3>Penempatan Karyawan</h3>
                     <span class="dhonu-open">Buka</span>
                 </div>
 
                 <div class="dhonu-map-canvas">
-                    <svg viewBox="0 0 900 390" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Peta Indonesia">
+                    <svg viewBox="0 0 900 390" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Peta penempatan karyawan Indonesia">
                         <g fill="#b9cffc" stroke="#5b82f0" stroke-width="2" stroke-linejoin="round">
                             @foreach ($sites['islands'] ?? [] as $island)
                                 <polygon points="{{ $island }}" />
@@ -224,12 +224,12 @@
                                 @if ($marker['names'] !== [])
                                     <em>{{ implode(', ', $marker['names']) }}{{ $marker['extra'] > 0 ? ' +'.$marker['extra'] : '' }}</em>
                                 @else
-                                    <em>Belum ada yang clock-in</em>
+                                    <em>Belum ada karyawan ditempatkan</em>
                                 @endif
                             </div>
                         </div>
                     @empty
-                        <p class="dhonu-map-empty">{{ $sites['total'] ?? 0 }} karyawan sedang di site. Daftarkan lokasi kerja agar titik muncul di peta.</p>
+                        <p class="dhonu-map-empty">Belum ada titik penempatan. Isi kota &amp; koordinat pada Work Location, lalu tetapkan di profil karyawan.</p>
                     @endforelse
                 </div>
             </a>

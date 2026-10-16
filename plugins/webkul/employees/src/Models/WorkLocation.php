@@ -28,12 +28,17 @@ class WorkLocation extends Model
         'name',
         'location_type',
         'location_number',
+        'city',
+        'latitude',
+        'longitude',
         'is_active',
     ];
 
     protected $casts = [
-        'is_active'      => 'boolean',
-        'location_type'  => WorkLocationEnum::class,
+        'is_active'     => 'boolean',
+        'location_type' => WorkLocationEnum::class,
+        'latitude'      => 'float',
+        'longitude'     => 'float',
     ];
 
     public function company(): BelongsTo

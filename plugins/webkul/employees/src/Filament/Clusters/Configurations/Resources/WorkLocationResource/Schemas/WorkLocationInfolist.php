@@ -24,6 +24,16 @@ class WorkLocationInfolist
                     ->placeholder('—')
                     ->icon('heroicon-o-map')
                     ->label(__('employees::filament/clusters/configurations/resources/work-location.infolist.location-number')),
+                TextEntry::make('city')
+                    ->placeholder('—')
+                    ->icon('heroicon-o-map-pin')
+                    ->label(__('employees::filament/clusters/configurations/resources/work-location.infolist.city')),
+                TextEntry::make('latitude')
+                    ->placeholder('—')
+                    ->label(__('employees::filament/clusters/configurations/resources/work-location.infolist.latitude')),
+                TextEntry::make('longitude')
+                    ->placeholder('—')
+                    ->label(__('employees::filament/clusters/configurations/resources/work-location.infolist.longitude')),
                 TextEntry::make('company.name')
                     ->placeholder('—')
                     ->icon('heroicon-o-building-office')

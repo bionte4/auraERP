@@ -28,9 +28,12 @@ class WorkLocationFactory extends Factory
     {
         return [
             'creator_id'      => User::query()->value('id') ?? User::factory(),
-            'name'            => fake()->name,
+            'name'            => fake()->company(),
             'location_type'   => WorkLocationEnum::Office,
             'location_number' => fake()->numberBetween(1, 100),
+            'city'            => fake()->city(),
+            'latitude'        => fake()->latitude(-11, 6),
+            'longitude'       => fake()->longitude(95, 141),
             'is_active'       => true,
         ];
     }

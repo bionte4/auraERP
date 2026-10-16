@@ -84,8 +84,8 @@ class WelcomeDashboard extends BaseDashboard
             '/admin/performance-evaluation-dashboard',
             '/admin/welcome',
         ]);
-        $sitesUrl = $this->firstExistingUrl([
-            '/admin/attendance-sites',
+        $placementUrl = $this->firstExistingUrl([
+            '/admin/employees/configurations/work-locations',
             '/admin/employees/employees',
             '/admin/welcome',
         ]);
@@ -116,7 +116,7 @@ class WelcomeDashboard extends BaseDashboard
         $monthlyCurve = $this->monthlyTaskCompletionRates();
         $monthlyRevenueTrend = $this->monthlyRevenueSeries();
 
-        $sites = $this->getIndonesiaSitePresence();
+        $placements = $this->getIndonesiaPlacementPresence();
 
         $evalCompleted = $totalEvaluations;
         $evalTarget = max($totalEmployees, $totalEvaluations, 1);
@@ -206,12 +206,12 @@ class WelcomeDashboard extends BaseDashboard
                 'revenueTrend' => $monthlyRevenueTrend,
             ],
             'goals' => $goals,
-            'sites' => $sites,
+            'sites' => $placements,
             'links' => [
                 'project'  => $projectUrl,
                 'employee' => $employeeUrl,
                 'goals'    => $goalsUrl,
-                'sites'    => $sitesUrl,
+                'sites'    => $placementUrl,
             ],
         ];
     }
@@ -596,9 +596,11 @@ class WelcomeDashboard extends BaseDashboard
     }
 
     /**
+     * Welcome Indonesia map shows employee placement by Work Location (not attendance geofence).
+     *
      * @return array{islands: array<int, string>, markers: array<int, array<string, mixed>>, total: int}
      */
-    protected function getIndonesiaSitePresence(): array
+    protected function getIndonesiaPlacementPresence(): array
     {
         $islands = [];
 
@@ -618,46 +620,52 @@ class WelcomeDashboard extends BaseDashboard
         $palette = ['#3b6ef6', '#38a169', '#f6ad55', '#31b8c6', '#7c3aed', '#e11d48'];
 
         try {
-            if (! Schema::hasTable('attendances_sites')) {
+            if (
+                ! Schema::hasTable('employees_work_locations')
+                || ! Schema::hasTable('employees_employees')
+                || ! Schema::hasColumn('employees_work_locations', 'latitude')
+                || ! Schema::hasColumn('employees_work_locations', 'longitude')
+            ) {
                 return ['islands' => $islands, 'markers' => [], 'total' => 0];
             }
 
-            $presentBySite = [];
+            $placedByLocation = [];
 
-            if (Schema::hasTable('attendances_attendances') && Schema::hasTable('employees_employees') && Schema::hasColumn('attendances_attendances', 'check_in_site_id')) {
-                $rows = DB::table('attendances_attendances as a')
-                    ->join('employees_employees as e', 'e.id', '=', 'a.employee_id')
-                    ->whereDate('a.work_date', now()->toDateString())
-                    ->whereNotNull('a.check_in')
-                    ->whereNull('a.check_out')
-                    ->whereNotNull('a.check_in_site_id')
-                    ->orderBy('e.name')
-                    ->get(['a.check_in_site_id', 'e.name']);
+            $employeeRows = $this->scopedQuery('employees_employees')
+                ->when(Schema::hasColumn('employees_employees', 'is_active'), fn ($query) => $query->where('is_active', true))
+                ->whereNotNull('work_location_id')
+                ->orderBy('name')
+                ->get(['work_location_id', 'name']);
 
-                foreach ($rows as $row) {
-                    $presentBySite[(int) $row->check_in_site_id][] = (string) $row->name;
-                }
+            foreach ($employeeRows as $row) {
+                $placedByLocation[(int) $row->work_location_id][] = (string) $row->name;
             }
 
-            $sites = DB::table('attendances_sites')
-                ->when(Schema::hasColumn('attendances_sites', 'is_active'), fn ($query) => $query->where('is_active', true))
+            $locations = $this->scopedQuery('employees_work_locations')
+                ->when(Schema::hasColumn('employees_work_locations', 'is_active'), fn ($query) => $query->where('is_active', true))
+                ->whereNotNull('latitude')
+                ->whereNotNull('longitude')
                 ->orderBy('name')
-                ->get(['id', 'name', 'latitude', 'longitude']);
+                ->get(['id', 'name', 'city', 'latitude', 'longitude']);
 
-            foreach ($sites->values() as $index => $site) {
-                $names = $presentBySite[(int) $site->id] ?? [];
+            foreach ($locations->values() as $index => $location) {
+                $names = $placedByLocation[(int) $location->id] ?? [];
                 $count = count($names);
                 $total += $count;
-                [$x, $y] = $this->projectIndonesia((float) $site->latitude, (float) $site->longitude);
+                [$x, $y] = $this->projectIndonesia((float) $location->latitude, (float) $location->longitude);
+
+                $label = filled($location->city ?? null)
+                    ? (string) $location->city
+                    : (string) $location->name;
 
                 $markers[] = [
-                    'name'    => (string) $site->name,
-                    'count'   => $count,
-                    'names'   => array_slice($names, 0, 4),
-                    'extra'   => max(0, $count - 4),
-                    'x'       => $x,
-                    'y'       => $y,
-                    'color'   => $palette[$index % count($palette)],
+                    'name'  => $label,
+                    'count' => $count,
+                    'names' => array_slice($names, 0, 4),
+                    'extra' => max(0, $count - 4),
+                    'x'     => $x,
+                    'y'     => $y,
+                    'color' => $palette[$index % count($palette)],
                 ];
             }
 

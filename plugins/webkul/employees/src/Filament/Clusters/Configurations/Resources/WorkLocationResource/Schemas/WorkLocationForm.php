@@ -26,6 +26,23 @@ class WorkLocationForm
                     ->required(),
                 TextInput::make('location_number')
                     ->label(__('employees::filament/clusters/configurations/resources/work-location.form.location-number')),
+                TextInput::make('city')
+                    ->label(__('employees::filament/clusters/configurations/resources/work-location.form.city'))
+                    ->helperText(__('employees::filament/clusters/configurations/resources/work-location.form.city-help'))
+                    ->maxLength(255),
+                TextInput::make('latitude')
+                    ->label(__('employees::filament/clusters/configurations/resources/work-location.form.latitude'))
+                    ->helperText(__('employees::filament/clusters/configurations/resources/work-location.form.coordinates-help'))
+                    ->numeric()
+                    ->minValue(-90)
+                    ->maxValue(90)
+                    ->step(0.0000001),
+                TextInput::make('longitude')
+                    ->label(__('employees::filament/clusters/configurations/resources/work-location.form.longitude'))
+                    ->numeric()
+                    ->minValue(-180)
+                    ->maxValue(180)
+                    ->step(0.0000001),
                 Select::make('company_id')
                     ->searchable()
                     ->label(__('employees::filament/clusters/configurations/resources/work-location.form.company'))
@@ -35,6 +52,7 @@ class WorkLocationForm
                     ->relationship('company', 'name'),
                 Toggle::make('is_active')
                     ->label(__('employees::filament/clusters/configurations/resources/work-location.form.status'))
+                    ->default(true)
                     ->required(),
             ]);
     }

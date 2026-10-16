@@ -9,11 +9,16 @@ return [
     ],
 
     'form' => [
-        'name'            => 'Name',
-        'company'         => 'Company',
-        'location-type'   => 'Location Type',
-        'location-number' => 'Location Number',
-        'status'          => 'Status',
+        'name'               => 'Name',
+        'company'            => 'Company',
+        'location-type'      => 'Location Type',
+        'location-number'    => 'Location Number',
+        'city'               => 'City',
+        'city-help'          => 'City label shown on the Welcome placement map.',
+        'latitude'           => 'Latitude',
+        'longitude'          => 'Longitude',
+        'coordinates-help'   => 'Optional. Required for the Welcome map (employee placement). Attendance geofence still uses Work sites.',
+        'status'             => 'Status',
     ],
 
     'table' => [
@@ -24,6 +29,7 @@ return [
             'company'         => 'Company',
             'location-type'   => 'Location Type',
             'location-number' => 'Location Number',
+            'city'            => 'City',
             'deleted-at'      => 'Deleted At',
             'created-by'      => 'Created By',
             'created-at'      => 'Created At',
@@ -110,6 +116,9 @@ return [
         'company'         => 'Company',
         'location-type'   => 'Location Type',
         'location-number' => 'Location Number',
+        'city'            => 'City',
+        'latitude'        => 'Latitude',
+        'longitude'       => 'Longitude',
         'status'          => 'Status',
     ],
 ];

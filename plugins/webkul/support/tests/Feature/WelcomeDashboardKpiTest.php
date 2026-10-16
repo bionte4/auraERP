@@ -5,6 +5,8 @@ require_once __DIR__.'/../Helpers/SecurityHelper.php';
 require_once __DIR__.'/../Helpers/TestBootstrapHelper.php';
 
 use Spatie\Permission\Models\Role;
+use Webkul\Employee\Models\Employee;
+use Webkul\Employee\Models\WorkLocation;
 use Webkul\Project\Models\Project;
 use Webkul\Security\Models\User;
 use Webkul\Support\Filament\Pages\WelcomeDashboard;
@@ -13,6 +15,7 @@ use Webkul\Support\Services\CompanyContext;
 
 beforeEach(function (): void {
     TestBootstrapHelper::ensurePluginInstalled('projects');
+    TestBootstrapHelper::ensurePluginInstalled('employees');
     SecurityHelper::disableUserEvents();
 });
 
@@ -113,6 +116,61 @@ it('includes null-company projects for company-scoped users without bypass', fun
 
     expect($projectKpi['raw_value'] ?? null)->toBe(2);
 });
+it('maps employee placement markers from work locations with coordinates', function () {
+    $company = Company::factory()->create();
+    $adminRoleName = config('filament-shield.panel_user.name', 'Admin');
+
+    foreach (['web', 'sanctum'] as $guard) {
+        Role::query()->firstOrCreate([
+            'name'       => $adminRoleName,
+            'guard_name' => $guard,
+        ]);
+    }
+
+    $admin = CompanyHelper::actingAsCompanyUser($company, ['bypass_company_scope']);
+    $admin->syncRoles([$adminRoleName]);
+
+    $jakarta = WorkLocation::factory()->create([
+        'name'       => 'Kantor Jakarta',
+        'city'       => 'Jakarta',
+        'company_id' => $company->id,
+        'latitude'   => -6.2088,
+        'longitude'  => 106.8456,
+        'is_active'  => true,
+    ]);
+    WorkLocation::factory()->create([
+        'name'       => 'Tanpa Koordinat',
+        'city'       => 'Bandung',
+        'company_id' => $company->id,
+        'latitude'   => null,
+        'longitude'  => null,
+        'is_active'  => true,
+    ]);
+
+    Employee::create([
+        'name'             => 'Budi Penempatan',
+        'company_id'       => $company->id,
+        'work_location_id' => $jakarta->id,
+        'is_active'        => true,
+    ]);
+    Employee::create([
+        'name'             => 'Siti Penempatan',
+        'company_id'       => $company->id,
+        'work_location_id' => $jakarta->id,
+        'is_active'        => true,
+    ]);
+
+    app()->forgetInstance(CompanyContext::class);
+
+    $page = app(WelcomeDashboard::class);
+    $placements = $page->getDashboardData()['sites'] ?? [];
+
+    expect($placements['total'] ?? 0)->toBe(2)
+        ->and(collect($placements['markers'] ?? [])->pluck('name')->all())->toContain('Jakarta')
+        ->and(collect($placements['markers'] ?? [])->firstWhere('name', 'Jakarta')['count'] ?? 0)->toBe(2)
+        ->and(collect($placements['markers'] ?? [])->pluck('name')->all())->not->toContain('Bandung');
+});
+
 it('denies welcome dashboard access to non-admin roles', function () {
     foreach (['HRD', 'Operation Manager', 'Staff', 'Kasir'] as $roleName) {
         Role::query()->firstOrCreate([

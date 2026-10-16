@@ -68,12 +68,21 @@ Saat membuat atau mengedit User di **Settings → Users**, terdapat pengaturan *
 
 ## 3. Absensi Geofence Multi-Lokasi & Kamera (HP vs Laptop)
 
-### A. Mendaftarkan Lokasi Kerja / Proyek (Oleh HRD / Admin)
+### A. Penempatan Karyawan (Peta Welcome) vs Lokasi Kerja Absensi
+Dua master data terpisah:
+1. **Work Location / Penempatan** (`Employees → Configurations → Work Locations`, `/admin/employees/configurations/work-locations`):
+   - Isi **Nama**, **Kota**, **Latitude & Longitude** (opsional tapi wajib agar muncul di peta Welcome).
+   - Di form karyawan (**Work Information → Work Location**), pilih penempatan tersebut.
+   - Peta **Welcome → Penempatan Karyawan** menghitung jumlah karyawan aktif per Work Location (bukan clock-in absensi).
+2. **Lokasi kerja absensi / Work sites** (`Employees → Attendance ▾ → Lokasi kerja`, `/admin/employees/attendance-sites`):
+   - Khusus geofence **Clock In / Clock Out** (lat/lng + radius). Tidak dipakai sebagai sumber peta Welcome.
+
+### B. Mendaftarkan Lokasi Kerja Absensi (Oleh HRD / Admin)
 1. Buka menu **Employees → Attendance ▾ → Lokasi kerja (`Work sites`)** (`/admin/employees/attendance-sites`).
 2. Klik **Lokasi kerja baru (`New work site`)**, isi **Nama lokasi**, **Latitude & Longitude** (bisa klik **Gunakan posisi GPS saat ini**), dan **Radius diizinkan (meter)** (`20` s/d `5000` meter).
 3. Pastikan toggle **Aktif** menyala, lalu klik **Save**.
 
-### B. Cara Karyawan Melakukan Clock In / Clock Out
+### C. Cara Karyawan Melakukan Clock In / Clock Out
 1. Buka menu **Employees → Attendance ▾ → Absen (`Clock`)** (`/admin/absen`).
 2. Izinkan akses **Lokasi (GPS)** pada browser. Sistem otomatis menghitung jarak ke lokasi kerja aktif terdekat.
 3. **Aturan Kamera Otomatis Berdasarkan Perangkat:**
