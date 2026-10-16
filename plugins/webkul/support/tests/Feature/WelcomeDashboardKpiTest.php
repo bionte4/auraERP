@@ -206,6 +206,7 @@ it('maps employee placement markers from work locations with coordinates', funct
     $placements = $page->getDashboardData()['sites'] ?? [];
 
     expect($placements['total'] ?? 0)->toBe(2)
+        ->and($placements['cities'] ?? 0)->toBe(1)
         ->and(collect($placements['markers'] ?? [])->pluck('name')->all())->toContain('Jakarta')
         ->and(collect($placements['markers'] ?? [])->firstWhere('name', 'Jakarta')['count'] ?? 0)->toBe(2)
         ->and(collect($placements['markers'] ?? [])->pluck('name')->all())->not->toContain('Bandung');

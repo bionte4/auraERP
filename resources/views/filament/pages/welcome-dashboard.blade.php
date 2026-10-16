@@ -3,7 +3,7 @@
     $kpis = $data['kpis'] ?? [];
     $chart = $data['chart'] ?? [];
     $goals = $data['goals'] ?? [];
-    $sites = $data['sites'] ?? ['islands' => [], 'markers' => [], 'total' => 0];
+    $sites = $data['sites'] ?? ['islands' => [], 'markers' => [], 'total' => 0, 'cities' => 0];
 
     $iconPalette = [
         'blue'  => ['bg' => 'background: linear-gradient(135deg, #3b6ef6 0%, #2b54d4 100%); box-shadow: 0 6px 14px -3px rgba(59, 110, 246, 0.45);'],
@@ -197,49 +197,91 @@
                 </div>
             </a>
 
-            <a href="{{ $data['links']['sites'] ?? url('/admin/welcome') }}" class="dhonu-card dhonu-map dhonu-link">
-                <div class="dhonu-card-title">
-                    <span class="dhonu-accent-bar"></span>
-                    <h3>Penempatan Karyawan</h3>
-                    <span class="dhonu-open">Buka</span>
-                </div>
+        </div>
 
+        <section class="dhonu-card dhonu-map-wide" x-data="{ q: '' }">
+            <div class="dhonu-card-title">
+                <span class="dhonu-accent-bar"></span>
+                <h3>Peta Operasional</h3>
+                <span class="dhonu-map-total">{{ number_format($sites['total'] ?? 0) }} karyawan · {{ number_format($sites['cities'] ?? 0) }} kota</span>
+                <a href="{{ $data['links']['sites'] ?? url('/admin/welcome') }}" class="dhonu-open">Buka</a>
+            </div>
+
+            <div class="dhonu-map-wide-body">
                 <div class="dhonu-map-canvas">
                     <svg viewBox="0 0 900 390" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Peta penempatan karyawan Indonesia">
-                        <g fill="#b9cffc" stroke="#5b82f0" stroke-width="2" stroke-linejoin="round">
+                        <g fill="#c7d7fb" stroke="#5b82f0" stroke-width="1.75" stroke-linejoin="round">
                             @foreach ($sites['islands'] ?? [] as $island)
                                 <polygon points="{{ $island }}" />
                             @endforeach
                         </g>
                         @foreach ($sites['markers'] ?? [] as $marker)
-                            <g>
-                                <circle cx="{{ $marker['x'] }}" cy="{{ $marker['y'] }}" r="{{ max(7, min(16, 6 + $marker['count'])) }}" fill="{{ $marker['color'] }}" stroke="#ffffff" stroke-width="2" />
-                                <text x="{{ $marker['x'] }}" y="{{ $marker['y'] + 3.5 }}" text-anchor="middle" fill="#ffffff" font-size="9" font-weight="700">{{ $marker['count'] }}</text>
+                            <g class="dhonu-map-marker">
+                                <circle
+                                    cx="{{ $marker['x'] }}"
+                                    cy="{{ $marker['y'] }}"
+                                    r="{{ max(9, min(20, 7 + (int) $marker['count'])) }}"
+                                    fill="{{ $marker['color'] }}"
+                                    stroke="#ffffff"
+                                    stroke-width="2.25"
+                                >
+                                    <title>{{ $marker['name'] }} — {{ $marker['count'] }} karyawan</title>
+                                </circle>
+                                <text
+                                    x="{{ $marker['x'] }}"
+                                    y="{{ $marker['y'] + 4 }}"
+                                    text-anchor="middle"
+                                    fill="#ffffff"
+                                    font-size="10"
+                                    font-weight="700"
+                                >{{ $marker['count'] }}</text>
                             </g>
                         @endforeach
                     </svg>
                 </div>
 
-                <div class="dhonu-map-legend">
-                    @forelse ($sites['markers'] ?? [] as $marker)
-                        <div class="dhonu-map-site">
-                            <span class="dhonu-map-dot" style="background: {{ $marker['color'] }}"></span>
-                            <div>
-                                <strong>{{ $marker['name'] }}</strong>
-                                <span>{{ $marker['count'] }} karyawan</span>
-                                @if ($marker['names'] !== [])
-                                    <em>{{ implode(', ', $marker['names']) }}{{ $marker['extra'] > 0 ? ' +'.$marker['extra'] : '' }}</em>
-                                @else
-                                    <em>Belum ada karyawan ditempatkan</em>
-                                @endif
+                <aside class="dhonu-map-side">
+                    <div class="dhonu-map-side-head">
+                        <strong>Penempatan per kota</strong>
+                        <input
+                            type="search"
+                            class="dhonu-map-search"
+                            placeholder="Cari kota…"
+                            x-model="q"
+                            autocomplete="off"
+                        />
+                    </div>
+
+                    <div class="dhonu-map-legend">
+                        @forelse ($sites['markers'] ?? [] as $marker)
+                            <div
+                                class="dhonu-map-site"
+                                data-name="{{ mb_strtolower($marker['name']) }}"
+                                x-show="!q || ($el.dataset.name || '').includes(q.toLowerCase())"
+                            >
+                                <span class="dhonu-map-dot" style="background: {{ $marker['color'] }}"></span>
+                                <div>
+                                    <strong>{{ $marker['name'] }}</strong>
+                                    <span>
+                                        {{ $marker['count'] }} karyawan
+                                        @if (($marker['sites'] ?? 1) > 1)
+                                            · {{ $marker['sites'] }} lokasi
+                                        @endif
+                                    </span>
+                                    @if ($marker['names'] !== [])
+                                        <em>{{ implode(', ', $marker['names']) }}{{ $marker['extra'] > 0 ? ' +'.$marker['extra'] : '' }}</em>
+                                    @else
+                                        <em>Belum ada karyawan ditempatkan</em>
+                                    @endif
+                                </div>
                             </div>
-                        </div>
-                    @empty
-                        <p class="dhonu-map-empty">Belum ada titik penempatan. Isi kota &amp; koordinat pada Work Location, lalu tetapkan di profil karyawan.</p>
-                    @endforelse
-                </div>
-            </a>
-        </div>
+                        @empty
+                            <p class="dhonu-map-empty">Belum ada titik penempatan. Isi kota &amp; koordinat pada Work Location, lalu tetapkan di profil karyawan.</p>
+                        @endforelse
+                    </div>
+                </aside>
+            </div>
+        </section>
     </div>
 
     @assets

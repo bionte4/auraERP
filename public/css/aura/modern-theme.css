@@ -441,7 +441,7 @@ html.fi .dhonu-kpis {
     }
 
     html.fi .dhonu-bottom {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
@@ -586,6 +586,93 @@ html.fi .dhonu-chart {
 html.fi .dhonu-map {
     gap: 0.75rem;
     min-height: 0;
+}
+
+html.fi .dhonu-map-wide {
+    gap: 0.9rem;
+    min-height: 0;
+}
+
+html.fi .dhonu-map-wide-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+    align-items: stretch;
+}
+
+@media (min-width: 1024px) {
+    html.fi .dhonu-map-wide-body {
+        grid-template-columns: minmax(0, 1.7fr) minmax(16rem, 0.85fr);
+    }
+}
+
+html.fi .dhonu-map-wide .dhonu-map-canvas {
+    height: 16.5rem;
+    border-radius: 0.75rem;
+    background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+    border: 1px solid rgba(226, 232, 240, 0.95);
+    padding: 0.35rem 0.5rem;
+}
+
+html.fi.dark .dhonu-map-wide .dhonu-map-canvas {
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.95) 100%);
+    border-color: rgba(51, 65, 85, 0.75);
+}
+
+html.fi .dhonu-map-side {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    min-height: 0;
+}
+
+html.fi .dhonu-map-side-head {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+html.fi .dhonu-map-side-head strong {
+    font-size: 0.78rem;
+    font-weight: 650;
+    color: #334155;
+}
+
+html.fi.dark .dhonu-map-side-head strong {
+    color: #e2e8f0;
+}
+
+html.fi .dhonu-map-search {
+    width: 100%;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    padding: 0.4rem 0.65rem;
+    font-size: 0.75rem;
+    background: #fff;
+    color: inherit;
+}
+
+html.fi.dark .dhonu-map-search {
+    border-color: #334155;
+    background: #0f172a;
+}
+
+html.fi .dhonu-map-wide .dhonu-map-legend {
+    max-height: 14.5rem;
+    gap: 0.55rem;
+    padding-right: 0.15rem;
+}
+
+html.fi .dhonu-map-wide .dhonu-card-title {
+    flex-wrap: wrap;
+}
+
+html.fi .dhonu-map-wide .dhonu-map-total {
+    margin-left: 0;
+}
+
+html.fi .dhonu-map-wide .dhonu-open {
+    margin-left: auto;
 }
 
 html.fi .dhonu-card-title {

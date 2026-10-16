@@ -623,8 +623,9 @@ class WelcomeDashboard extends BaseDashboard
 
     /**
      * Welcome Indonesia map shows employee placement by Work Location (not attendance geofence).
+     * Markers are clustered by city so regional density stays readable.
      *
-     * @return array{islands: array<int, string>, markers: array<int, array<string, mixed>>, total: int}
+     * @return array{islands: array<int, string>, markers: array<int, array<string, mixed>>, total: int, cities: int}
      */
     protected function getIndonesiaPlacementPresence(): array
     {
@@ -652,7 +653,7 @@ class WelcomeDashboard extends BaseDashboard
                 || ! Schema::hasColumn('employees_work_locations', 'latitude')
                 || ! Schema::hasColumn('employees_work_locations', 'longitude')
             ) {
-                return ['islands' => $islands, 'markers' => [], 'total' => 0];
+                return ['islands' => $islands, 'markers' => [], 'total' => 0, 'cities' => 0];
             }
 
             $placedByLocation = [];
@@ -674,21 +675,54 @@ class WelcomeDashboard extends BaseDashboard
                 ->orderBy('name')
                 ->get(['id', 'name', 'city', 'latitude', 'longitude']);
 
-            foreach ($locations->values() as $index => $location) {
-                $names = $placedByLocation[(int) $location->id] ?? [];
-                $count = count($names);
-                $total += $count;
-                [$x, $y] = $this->projectIndonesia((float) $location->latitude, (float) $location->longitude);
+            /** @var array<string, array{name: string, names: array<int, string>, latSum: float, lngSum: float, points: int, sites: int}> $clusters */
+            $clusters = [];
 
+            foreach ($locations as $location) {
+                $names = $placedByLocation[(int) $location->id] ?? [];
                 $label = filled($location->city ?? null)
                     ? (string) $location->city
                     : (string) $location->name;
+                $key = mb_strtolower(trim($label));
+
+                if ($key === '') {
+                    continue;
+                }
+
+                if (! isset($clusters[$key])) {
+                    $clusters[$key] = [
+                        'name'   => $label,
+                        'names'  => [],
+                        'latSum' => 0.0,
+                        'lngSum' => 0.0,
+                        'points' => 0,
+                        'sites'  => 0,
+                    ];
+                }
+
+                $clusters[$key]['names'] = array_values(array_unique([
+                    ...$clusters[$key]['names'],
+                    ...$names,
+                ]));
+                $clusters[$key]['latSum'] += (float) $location->latitude;
+                $clusters[$key]['lngSum'] += (float) $location->longitude;
+                $clusters[$key]['points']++;
+                $clusters[$key]['sites']++;
+            }
+
+            foreach (array_values($clusters) as $index => $cluster) {
+                $count = count($cluster['names']);
+                $total += $count;
+                $lat = $cluster['latSum'] / max($cluster['points'], 1);
+                $lng = $cluster['lngSum'] / max($cluster['points'], 1);
+                [$x, $y] = $this->projectIndonesia($lat, $lng);
 
                 $markers[] = [
-                    'name'  => $label,
+                    'name'  => $cluster['name'],
                     'count' => $count,
-                    'names' => array_slice($names, 0, 4),
-                    'extra' => max(0, $count - 4),
+                    'sites' => $cluster['sites'],
+                    'names' => array_slice($cluster['names'], 0, 5),
+                    'extra' => max(0, $count - 5),
                     'x'     => $x,
                     'y'     => $y,
                     'color' => $palette[$index % count($palette)],
@@ -705,6 +739,7 @@ class WelcomeDashboard extends BaseDashboard
             'islands' => $islands,
             'markers' => $markers,
             'total'   => $total,
+            'cities'  => count($markers),
         ];
     }
 
