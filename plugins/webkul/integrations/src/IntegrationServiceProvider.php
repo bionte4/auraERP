@@ -48,7 +48,7 @@ class IntegrationServiceProvider extends PackageServiceProvider
     public function packageRegistered(): void
     {
         Panel::configureUsing(function (Panel $panel): void {
-            $panel->plugin(IntegrationsPlugin::make());
+            $panel->plugin(IntegrationPlugin::make());
         });
     }
 

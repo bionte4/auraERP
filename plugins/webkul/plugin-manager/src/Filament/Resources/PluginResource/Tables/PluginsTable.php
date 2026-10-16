@@ -109,7 +109,7 @@ class PluginsTable
                         ->label(__('plugin-manager::filament/resources/plugin.actions.install.title'))
                         ->icon('heroicon-o-arrow-down-tray')
                         ->color('success')
-                        ->visible(fn ($record) => ! $record->is_installed)
+                        ->visible(fn ($record) => ! $record->is_installed && $record->package && ! $record->isCorePackage())
                         ->requiresConfirmation()
                         ->modalHeading(fn ($record) => __('plugin-manager::filament/resources/plugin.actions.install.heading', ['name' => $record->name]))
                         ->modalDescription(fn ($record) => __('plugin-manager::filament/resources/plugin.actions.install.description', ['name' => $record->name]))
@@ -118,6 +118,18 @@ class PluginsTable
                             DB::beginTransaction();
 
                             try {
+                                if (! $record->package) {
+                                    throw new RuntimeException(
+                                        "Package for '{$record->name}' not found. Run composer dump-autoload -o, then Sync Available Plugins."
+                                    );
+                                }
+
+                                if ($record->isCorePackage()) {
+                                    throw new RuntimeException(
+                                        "Plugin '{$record->name}' is a system package and is managed automatically."
+                                    );
+                                }
+
                                 $phpPath = static::getPhpExecutablePath();
 
                                 $php = escapeshellarg($phpPath);
@@ -183,7 +195,7 @@ class PluginsTable
                         ->icon('heroicon-o-trash')
                         ->color('danger')
                         ->modalWidth(Width::ExtraLarge)
-                        ->visible(fn ($record) => $record->is_installed)
+                        ->visible(fn ($record) => $record->is_installed && $record->package && ! $record->isCorePackage())
                         ->modalHeading(__('plugin-manager::filament/resources/plugin.actions.uninstall.heading'))
                         ->modalSubmitActionLabel(__('plugin-manager::filament/resources/plugin.actions.uninstall.submit'))
                         ->modalSubmitAction(
@@ -239,6 +251,19 @@ class PluginsTable
     {
         $errors = [];
 
+        if ($record->isCorePackage()) {
+            Notification::make()
+                ->title(__('plugin-manager::filament/resources/plugin.notifications.uninstalled-blocked.title'))
+                ->body(__('plugin-manager::filament/resources/plugin.notifications.uninstalled-blocked.core', [
+                    'name' => $record->name,
+                ]))
+                ->danger()
+                ->persistent()
+                ->send();
+
+            return;
+        }
+
         $dependents = $record->getDependentsFromConfig();
 
         $installedDependents = collect($dependents)
@@ -270,7 +295,11 @@ class PluginsTable
 
                 try {
                     if (! $plugin->package) {
-                        throw new Exception("Package for '{$pluginName}' not found.");
+                        throw new Exception("Package for '{$pluginName}' not found. Run composer dump-autoload and Sync Available Plugins, then retry.");
+                    }
+
+                    if ($plugin->isCorePackage()) {
+                        throw new Exception("Plugin '{$pluginName}' is a system package and cannot be uninstalled.");
                     }
 
                     $uninstallCommand = static::resolveUninstallCommand($plugin->package);

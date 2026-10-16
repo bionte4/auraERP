@@ -5,7 +5,7 @@ namespace Webkul\Integrations;
 use Filament\Contracts\Plugin;
 use Filament\Panel;
 
-class IntegrationsPlugin implements Plugin
+class IntegrationPlugin implements Plugin
 {
     public function getId(): string
     {

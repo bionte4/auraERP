@@ -58,6 +58,7 @@ return [
         'uninstalled-blocked' => [
             'title' => 'Tidak Dapat Mencopot Plugin',
             'body'  => "Plugin ':name' memiliki dependensi terpasang yang harus dicopot pemasangannya terlebih dahulu: :dependents.",
+            'core'  => "Plugin ':name' adalah paket sistem dan tidak dapat dicopot dari halaman Plugins.",
         ],
     ],
 

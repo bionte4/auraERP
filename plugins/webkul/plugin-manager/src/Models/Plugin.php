@@ -55,42 +55,49 @@ class Plugin extends Model implements Sortable
         );
     }
 
-    protected static function getAllPluginPackages(): array
+    /**
+     * Resolve Package metadata from loaded PackageServiceProviders.
+     *
+     * Prefer provider discovery over Filament plugin class-name mangling
+     * (e.g. IntegrationPlugin → IntegrationServiceProvider), which breaks when
+     * names are plural/singular mismatched.
+     *
+     * @return array<string, Package>
+     */
+    public static function getAllPluginPackages(bool $includeCore = false): array
     {
         $packages = [];
 
-        $panels = app('filament')->getPanels();
-
-        foreach ($panels as $panel) {
-            foreach ($panel->getPlugins() as $pluginId => $plugin) {
-                $pluginClass = get_class($plugin);
-
-                $serviceProviderClass = str_replace('Plugin', 'ServiceProvider', $pluginClass);
-
-                if (! class_exists($serviceProviderClass)) {
-                    continue;
-                }
-
-                $reflection = new ReflectionClass($serviceProviderClass);
-
-                if (! $reflection->isSubclassOf(PackageServiceProvider::class)) {
-                    continue;
-                }
-
-                $serviceProvider = new $serviceProviderClass(app());
-
-                $package = new Package;
-
-                $serviceProvider->configureCustomPackage($package);
-
-                if ($package->isCore) {
-                    continue;
-                }
-
-                $package->basePath = dirname($reflection->getFileName(), 2);
-
-                $packages[$pluginId] = $package;
+        foreach (array_keys(app()->getLoadedProviders()) as $providerClass) {
+            if (! is_subclass_of($providerClass, PackageServiceProvider::class)) {
+                continue;
             }
+
+            if (! property_exists($providerClass, 'name') || ! is_string($providerClass::$name) || $providerClass::$name === '') {
+                continue;
+            }
+
+            $provider = app()->getProvider($providerClass);
+
+            if (! $provider instanceof PackageServiceProvider) {
+                continue;
+            }
+
+            $package = (function (): mixed {
+                return $this->package ?? null;
+            })->call($provider);
+
+            if (! $package instanceof Package) {
+                $package = new Package;
+                $provider->configureCustomPackage($package);
+                $package->setBasePath(dirname((new ReflectionClass($providerClass))->getFileName(), 2));
+            }
+
+            if ($package->isCore && ! $includeCore) {
+                continue;
+            }
+
+            $packages[$providerClass::$name] = $package;
         }
 
         return $packages;
@@ -98,9 +105,14 @@ class Plugin extends Model implements Sortable
 
     public function getPackageAttribute(): ?Package
     {
-        $packages = static::getAllPluginPackages();
+        $packages = static::getAllPluginPackages(includeCore: true);
 
         return $packages[$this->name] ?? null;
+    }
+
+    public function isCorePackage(): bool
+    {
+        return (bool) ($this->package?->isCore);
     }
 
     public function getDependenciesFromConfig(): array
@@ -110,7 +122,7 @@ class Plugin extends Model implements Sortable
 
     public function getDependentsFromConfig(): array
     {
-        $packages = static::getAllPluginPackages();
+        $packages = static::getAllPluginPackages(includeCore: true);
 
         $dependents = [];
 
@@ -119,7 +131,7 @@ class Plugin extends Model implements Sortable
                 continue;
             }
 
-            if (! in_array($this->name, $package->dependencies)) {
+            if (! in_array($this->name, $package->dependencies, true)) {
                 continue;
             }
 

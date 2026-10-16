@@ -58,6 +58,7 @@ return [
         'uninstalled-blocked' => [
             'title' => 'Cannot Uninstall Plugin',
             'body'  => "The ':name' plugin has installed dependents that must be uninstalled first: :dependents.",
+            'core'  => "The ':name' plugin is a system package and cannot be uninstalled from the Plugins page.",
         ],
     ],
 
