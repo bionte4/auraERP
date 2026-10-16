@@ -5,6 +5,7 @@ namespace Webkul\Employee\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
@@ -16,6 +17,7 @@ use Webkul\Employee\Database\Factories\EmployeeFactory;
 use Webkul\Field\Traits\HasCustomFields;
 use Webkul\Partner\Models\BankAccount;
 use Webkul\Partner\Models\Partner;
+use Webkul\Project\Models\Project;
 use Webkul\Security\Models\User;
 use Webkul\Support\Models\Company;
 use Webkul\Support\Models\Country;
@@ -247,6 +249,18 @@ class Employee extends Model
     public function resumes()
     {
         return $this->hasMany(EmployeeResume::class, 'employee_id');
+    }
+
+    public function projects(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Project::class,
+            'projects_project_employees',
+            'employee_id',
+            'project_id'
+        )
+            ->withPivot(['user_id', 'creator_id'])
+            ->withTimestamps();
     }
 
     protected static function newFactory(): EmployeeFactory

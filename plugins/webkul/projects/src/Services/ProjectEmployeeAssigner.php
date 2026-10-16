@@ -101,12 +101,104 @@ class ProjectEmployeeAssigner
     }
 
     /**
+     * Sync projects assigned to an employee and mirror access via Chatter followers.
+     *
+     * @param  array<int|string>  $projectIds
+     * @return array{assigned: int, without_user: int}
+     */
+    public function syncProjectsForEmployee(Employee $employee, array $projectIds, ?int $creatorId = null): array
+    {
+        $creatorId ??= Auth::id();
+        $projectIds = collect($projectIds)
+            ->filter(fn (mixed $id): bool => filled($id))
+            ->map(fn (mixed $id): int => (int) $id)
+            ->unique()
+            ->values();
+
+        $previousProjectIds = $employee->projects()->pluck('projects_projects.id')
+            ->map(fn ($id): int => (int) $id)
+            ->all();
+
+        $desiredProjectIds = $projectIds->all();
+        $toAttach = array_values(array_diff($desiredProjectIds, $previousProjectIds));
+        $toDetach = array_values(array_diff($previousProjectIds, $desiredProjectIds));
+
+        $withoutUser = $employee->user_id ? 0 : 1;
+
+        DB::transaction(function () use ($employee, $toAttach, $toDetach, $creatorId): void {
+            if ($toDetach !== []) {
+                $employee->projects()->detach($toDetach);
+
+                if (Schema::hasTable('chatter_followers')) {
+                    $partner = $this->resolvePartner($employee->loadMissing(['user', 'partner']));
+
+                    if ($partner instanceof Partner) {
+                        Project::query()
+                            ->whereIn('id', $toDetach)
+                            ->get()
+                            ->each(function (Project $project) use ($partner): void {
+                                if (method_exists($project, 'removeFollower')) {
+                                    $project->removeFollower($partner);
+                                }
+                            });
+                    }
+                }
+            }
+
+            if ($toAttach !== []) {
+                $now = now();
+                $payload = [];
+
+                foreach ($toAttach as $projectId) {
+                    $payload[$projectId] = [
+                        'user_id'    => $employee->user_id,
+                        'creator_id' => $creatorId,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ];
+                }
+
+                $employee->projects()->attach($payload);
+
+                $partner = $this->resolvePartner($employee->loadMissing(['user', 'partner']));
+
+                if ($partner instanceof Partner && Schema::hasTable('chatter_followers')) {
+                    Project::query()
+                        ->whereIn('id', $toAttach)
+                        ->get()
+                        ->each(function (Project $project) use ($partner): void {
+                            if (method_exists($project, 'addFollower')) {
+                                $project->addFollower($partner);
+                            }
+                        });
+                }
+            }
+        });
+
+        return [
+            'assigned'     => count($desiredProjectIds),
+            'without_user' => $withoutUser,
+        ];
+    }
+
+    /**
      * @return Collection<int, Employee>
      */
     public function assignedEmployees(Project $project): Collection
     {
         return $project->employees()
             ->with(['user', 'department'])
+            ->orderBy('name')
+            ->get();
+    }
+
+    /**
+     * @return Collection<int, Project>
+     */
+    public function assignedProjects(Employee $employee): Collection
+    {
+        return $employee->projects()
+            ->with(['partner', 'user'])
             ->orderBy('name')
             ->get();
     }

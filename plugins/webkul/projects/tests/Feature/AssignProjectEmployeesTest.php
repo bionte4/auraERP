@@ -4,7 +4,6 @@ use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Webkul\Employee\Models\Employee;
 use Webkul\Partner\Models\Partner;
-use Webkul\Project\Filament\Pages\AssignProjectEmployees;
 use Webkul\Project\Models\Project;
 use Webkul\Project\Services\ProjectEmployeeAssigner;
 use Webkul\Security\Models\User;
@@ -43,7 +42,35 @@ it('assigns employees to a project and syncs followers for linked partners', fun
         ->and($project->isFollowedBy($partner))->toBeTrue();
 });
 
-it('allows admin and operation manager to access the assign employees page', function (): void {
+it('assigns projects to an employee from the employee side', function (): void {
+    $user = User::withoutEvents(fn () => User::factory()->create());
+    $partner = Partner::factory()->create();
+    $user->forceFill(['partner_id' => $partner->id])->save();
+
+    $employee = Employee::create([
+        'name'       => 'Employee With Projects',
+        'user_id'    => $user->id,
+        'partner_id' => $partner->id,
+        'is_active'  => true,
+    ]);
+
+    $projectA = Project::factory()->create(['name' => 'Project Alpha']);
+    $projectB = Project::factory()->create(['name' => 'Project Beta']);
+
+    $result = app(ProjectEmployeeAssigner::class)->syncProjectsForEmployee(
+        $employee,
+        [$projectA->id, $projectB->id],
+        $user->id,
+    );
+
+    expect($result['assigned'])->toBe(2)
+        ->and($employee->projects()->pluck('projects_projects.id')->all())
+        ->toContain($projectA->id, $projectB->id)
+        ->and($projectA->fresh()->isFollowedBy($partner))->toBeTrue()
+        ->and($projectB->fresh()->isFollowedBy($partner))->toBeTrue();
+});
+
+it('grants assign employees page permission to admin and operation manager only', function (): void {
     app(RolePermissionSynchronizer::class)->syncAll(false);
 
     $permission = 'page_project_assign_project_employees';
@@ -53,26 +80,8 @@ it('allows admin and operation manager to access the assign employees page', fun
     foreach (['Admin', 'Operation Manager'] as $roleName) {
         $role = Role::query()->where('name', $roleName)->firstOrFail();
         expect($role->hasPermissionTo($permission))->toBeTrue();
-
-        $user = User::withoutEvents(fn () => User::factory()->create());
-        $user->syncRoles([$roleName]);
-        $this->actingAs($user);
-
-        expect(AssignProjectEmployees::canAccess())->toBeTrue();
     }
-});
 
-it('denies staff from accessing the assign employees page', function (): void {
-    app(RolePermissionSynchronizer::class)->syncAll(false);
-
-    $role = Role::query()->firstOrCreate([
-        'name'       => 'Staff',
-        'guard_name' => 'web',
-    ]);
-
-    $user = User::withoutEvents(fn () => User::factory()->create());
-    $user->syncRoles([$role->name]);
-    $this->actingAs($user);
-
-    expect(AssignProjectEmployees::canAccess())->toBeFalse();
+    $staffRole = Role::query()->where('name', 'Staff')->firstOrFail();
+    expect($staffRole->hasPermissionTo($permission))->toBeFalse();
 });

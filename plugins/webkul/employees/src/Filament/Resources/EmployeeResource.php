@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Webkul\Employee\Filament\Resources\EmployeeResource\Pages\CreateEmployee;
 use Webkul\Employee\Filament\Resources\EmployeeResource\Pages\EditEmployee;
 use Webkul\Employee\Filament\Resources\EmployeeResource\Pages\ListEmployees;
+use Webkul\Employee\Filament\Resources\EmployeeResource\Pages\ManageAssignedProjects;
 use Webkul\Employee\Filament\Resources\EmployeeResource\Pages\ManageResume;
 use Webkul\Employee\Filament\Resources\EmployeeResource\Pages\ManageSkill;
 use Webkul\Employee\Filament\Resources\EmployeeResource\Pages\ViewEmployee;
@@ -95,6 +96,7 @@ class EmployeeResource extends Resource
             EditEmployee::class,
             ManageSkill::class,
             ManageResume::class,
+            ManageAssignedProjects::class,
         ]);
     }
 
@@ -122,12 +124,13 @@ class EmployeeResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'   => ListEmployees::route('/'),
-            'create'  => CreateEmployee::route('/create'),
-            'edit'    => EditEmployee::route('/{record}/edit'),
-            'view'    => ViewEmployee::route('/{record}'),
-            'skills'  => ManageSkill::route('/{record}/skills'),
-            'resumes' => ManageResume::route('/{record}/resumes'),
+            'index'             => ListEmployees::route('/'),
+            'create'            => CreateEmployee::route('/create'),
+            'edit'              => EditEmployee::route('/{record}/edit'),
+            'view'              => ViewEmployee::route('/{record}'),
+            'skills'            => ManageSkill::route('/{record}/skills'),
+            'resumes'           => ManageResume::route('/{record}/resumes'),
+            'assigned-projects' => ManageAssignedProjects::route('/{record}/assigned-projects'),
         ];
     }
 }

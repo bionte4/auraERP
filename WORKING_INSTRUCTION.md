@@ -161,12 +161,12 @@ Buka menu **Employees → Performance Plans → Evaluations** (`/admin/evaluatio
    - Buka menu **Project → Projects** (`/admin/project/projects`).
    - Pilih **Customer**, **Start Date & End Date**, serta **Project Value (`Nilai Proyek Rp`)**.
    - Daftar seluruh proyek dan total nilai kontrak per Customer dapat dilihat langsung pada tab **Proyek** di halaman detail Customer.
-2. **Penugasan Karyawan ke Proyek (Layar Khusus — Admin & Operation Manager):**
-   - Buka menu **Project → Tugaskan Karyawan (`Assign Employees`)** (`/admin/project/assign-employees`).
-   - Pilih **Proyek**, lalu pilih satu atau beberapa **Karyawan**, kemudian klik **Simpan Penugasan**.
-   - Sistem menyimpan anggota proyek di data penugasan karyawan, dan otomatis menambahkan karyawan yang punya partner/user terkait sebagai **pengikut (followers)** agar mendapat akses proyek.
-   - **Prasyarat akses login:** Pastikan karyawan punya **Pengguna Terkait (`Related User`)** di **Employees → Employees**. Tanpa ini, penugasan tetap tersimpan, tetapi karyawan belum bisa login/mengakses proyek.
-   - Hak akses layar ini: **Admin** dan **Operation Manager** (`page_project_assign_project_employees`). Setelah deploy, jalankan `php artisan security:sync-rbac` bila menu belum muncul.
+2. **Penugasan Karyawan ke Proyek (dua arah — Admin & Operation Manager):**
+   - **Dari Proyek:** menu **Project → Tugaskan Karyawan (`Assign Employees`)** (`/admin/project/assign-employees`) → pilih **Proyek**, lalu pilih satu atau beberapa **Karyawan**, klik **Simpan Penugasan**.
+   - **Dari Karyawan:** buka **Employees → Employees** → pilih karyawan → tab **Proyek Ditugaskan (`Assigned Projects`)** → pilih proyek → **Simpan Penugasan**.
+   - Kedua cara memakai data penugasan yang sama, dan otomatis menambahkan karyawan yang punya partner/user terkait sebagai **pengikut (followers)** agar mendapat akses proyek.
+   - **Prasyarat akses login:** Pastikan karyawan punya **Pengguna Terkait (`Related User`)**. Tanpa ini, penugasan tetap tersimpan, tetapi karyawan belum bisa login/mengakses proyek.
+   - Layar Project Assign: permission `page_project_assign_project_employees`. Tab di Employee mengikuti izin update Employee (plugin Projects harus terpasang).
 3. **Penugasan lewat Manajer Proyek / Task (cara lama, tetap tersedia):**
    - **Manajer Proyek (satu orang):** Pada form proyek, isi **Manajer Proyek (`Project Manager`)**.
    - **Penugasan kerja harian:** **Project → Tasks** → isi **Penerima Tugas (`Assignees`)** (daftar **User**).
