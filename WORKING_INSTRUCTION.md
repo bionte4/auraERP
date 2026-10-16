@@ -12,7 +12,7 @@ Halaman login Admin Panel: **`/admin/login`**
 
 | Role | Hak Akses Utama |
 | :--- | :--- |
-| **Admin** | Akses penuh ke seluruh modul, pengaturan perusahaan, manajemen User, Role & Permission, dan instalasi plugin. |
+| **Admin** | Akses penuh ke seluruh modul, pengaturan perusahaan, manajemen User, Role & Permission, **Audit Trail** (khusus Admin), dan instalasi plugin. |
 | **HRD** | Mengelola Karyawan, Kontrak, Departemen, Lokasi Kerja (Geofence), Rekap Absensi, Cuti/Izin (`Time Off`), Rencana Kinerja (`Performance Plans`), Evaluasi Kinerja (`Evaluations`), Dashboard Evaluasi + Export Excel/PDF, Rekrutmen, dan Aset Karyawan. |
 | **Operation Manager** | Mengelola Proyek (`Projects`), **Tugaskan Karyawan ke Proyek**, Tugas (`Tasks`), `Timesheets`, Gudang & Stok (`Inventory` & `Products`), Perawatan & Aset (`Maintenance` & `Equipment`), Pembelian (`Purchases`), Penjualan (`Sales`), Mitra (`Partners`), serta melakukan **Penilaian Kinerja (L1/L2)** dan **Approval Cuti/Absensi** untuk tim/bawahannya. |
 | **Kasir** | Mengoperasikan **POS Terminal** (`/admin/pos-terminal`), membuka/menutup sesi shift kasir (`POS Sessions`), membuat transaksi penjualan kasir (`POS Orders`), melihat katalog produk & pelanggan, serta melakukan absensi (`/admin/absen`). |
@@ -39,6 +39,12 @@ Saat membuat atau mengedit User di **Settings → Users**, terdapat pengaturan *
    - **Anggota**: Manajer Proyek + karyawan yang di-assign ke proyek (nama Tim = nama Proyek).
    - **Total N anggota** dapat diklik → membuka daftar karyawan terlibat (peran + nama proyek).
    - **Daftar proyek yang dapat diklik** menuju detail masing-masing proyek.
+
+### D. Audit Trail (khusus Admin — Security Access)
+1. Menu **Settings → Audit Trail** (`/admin/audit-trail`) **hanya tampil dan dapat dibuka oleh role Admin**.
+2. Mencatat peristiwa akses keamanan: login berhasil/gagal, logout, perubahan user (email/status/password), perubahan peran user, serta CRUD role.
+3. Setiap entri menampilkan waktu, pelaku, objek, IP, guard, dan detail tambahan. Hanya mode lihat (tidak dapat diubah/dihapus dari UI).
+4. Setelah deploy: pastikan migrasi jalan (`php artisan migrate`) lalu `sudo -u www-data php artisan security:sync-rbac` bila perlu.
 
 *(Akun Demo: `hrd@opsora.my.id` / `Demo-hrd-2026` dan `karyawan@opsora.my.id` / `Demo-karyawan-2026`. Untuk menyinkronkan ulang seluruh Role & Permission kapan saja: `sudo -u www-data php artisan security:sync-rbac`)*
 

@@ -13,6 +13,7 @@ use Knuckles\Scribe\Attributes\Response;
 use Knuckles\Scribe\Attributes\Subgroup;
 use Knuckles\Scribe\Attributes\Unauthenticated;
 use Webkul\Security\Models\User;
+use Webkul\Security\Services\SecurityAuditLogger;
 
 #[Group('Security API Management')]
 #[Subgroup('Authentication', 'Handle user authentication')]
@@ -35,12 +36,16 @@ class AuthController extends Controller
         $user = User::whereRaw(db_dialect()->caseInsensitiveEquals('email'), [$request->email])->first();
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
+            app(SecurityAuditLogger::class)->logLoginFailed($request->email, 'sanctum');
+
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
             ]);
         }
 
         $token = $user->createToken('api-token')->plainTextToken;
+
+        app(SecurityAuditLogger::class)->logLoginSucceeded($user, 'sanctum');
 
         return response()->json([
             'message'    => 'Login successful',
@@ -60,7 +65,13 @@ class AuthController extends Controller
     #[Response(status: 401, description: 'Unauthenticated', content: '{"message": "Unauthenticated."}')]
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        $user = $request->user();
+
+        if ($user instanceof User) {
+            app(SecurityAuditLogger::class)->logLogout($user, 'sanctum');
+        }
+
+        $user->currentAccessToken()->delete();
 
         return response()->json([
             'message' => 'Logout successful',

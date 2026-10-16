@@ -15,11 +15,17 @@ use Illuminate\Validation\ValidationException;
 use Webkul\Security\Enums\PermissionType;
 use Webkul\Security\Filament\Resources\UserResource;
 use Webkul\Security\Models\User;
+use Webkul\Security\Services\SecurityAuditLogger;
 use Webkul\Security\Settings\UserSettings;
 
 class EditUser extends EditRecord
 {
     protected static string $resource = UserResource::class;
+
+    /**
+     * @var array<int, string>
+     */
+    protected array $rolesBeforeSave = [];
 
     protected function getSavedNotification(): Notification
     {
@@ -122,6 +128,15 @@ class EditUser extends EditRecord
 
     protected function beforeSave(): void
     {
+        if ($this->record instanceof User) {
+            $this->rolesBeforeSave = $this->record->roles()
+                ->pluck('name')
+                ->map(fn ($name): string => (string) $name)
+                ->sort()
+                ->values()
+                ->all();
+        }
+
         $rawState = $this->form->getRawState();
 
         if (! array_key_exists('roles', $rawState) && ! array_key_exists('roles', $this->data ?? [])) {
@@ -141,5 +156,27 @@ class EditUser extends EditRecord
 
             $this->halt();
         }
+    }
+
+    protected function afterSave(): void
+    {
+        $record = $this->record;
+
+        if (! $record instanceof User) {
+            return;
+        }
+
+        $rolesAfter = $record->roles()
+            ->pluck('name')
+            ->map(fn ($name): string => (string) $name)
+            ->sort()
+            ->values()
+            ->all();
+
+        if ($rolesAfter === $this->rolesBeforeSave) {
+            return;
+        }
+
+        app(SecurityAuditLogger::class)->logUserRolesChanged($record, $rolesAfter);
     }
 }

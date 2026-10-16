@@ -6,6 +6,8 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Validation\ValidationException;
 use Webkul\Security\Filament\Resources\UserResource;
+use Webkul\Security\Models\User;
+use Webkul\Security\Services\SecurityAuditLogger;
 
 class CreateUser extends CreateRecord
 {
@@ -44,5 +46,22 @@ class CreateUser extends CreateRecord
 
             $this->halt();
         }
+    }
+
+    protected function afterCreate(): void
+    {
+        $record = $this->record;
+
+        if (! $record instanceof User) {
+            return;
+        }
+
+        $roleNames = $record->roles()->pluck('name')->map(fn ($name): string => (string) $name)->all();
+
+        if ($roleNames === []) {
+            return;
+        }
+
+        app(SecurityAuditLogger::class)->logUserRolesChanged($record, $roleNames);
     }
 }

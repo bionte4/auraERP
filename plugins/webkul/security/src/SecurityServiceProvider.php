@@ -3,12 +3,23 @@
 namespace Webkul\Security;
 
 use Filament\Panel;
+use Illuminate\Auth\Events\Failed;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Logout;
 use Illuminate\Foundation\AliasLoader;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Webkul\PluginManager\Package;
 use Webkul\PluginManager\PackageServiceProvider;
 use Webkul\Security\Console\Commands\SyncRbacPermissionsCommand;
 use Webkul\Security\Facades\Bouncer as BouncerFacade;
+use Webkul\Security\Listeners\RecordSecurityAccessAudit;
+use Webkul\Security\Models\AuditTrail;
+use Webkul\Security\Models\Role;
+use Webkul\Security\Models\User;
+use Webkul\Security\Observers\RoleSecurityAuditObserver;
+use Webkul\Security\Observers\UserSecurityAuditObserver;
+use Webkul\Security\Policies\AuditTrailPolicy;
 
 class SecurityServiceProvider extends PackageServiceProvider
 {
@@ -36,6 +47,7 @@ class SecurityServiceProvider extends PackageServiceProvider
                 '2025_08_21_082229_alter_roles_table',
                 '2025_08_21_101646_alter_users_table',
                 '2026_01_23_074142_add_multi_factor_auth_columns_in_users_table',
+                '2026_10_16_160000_create_security_audit_trails_table',
             ])
             ->hasSettings([
                 '2024_11_05_042358_create_user_settings',
@@ -50,6 +62,15 @@ class SecurityServiceProvider extends PackageServiceProvider
     public function packageBooted(): void
     {
         require_once __DIR__.'/Helpers/helpers.php';
+
+        Gate::policy(AuditTrail::class, AuditTrailPolicy::class);
+
+        User::observe(UserSecurityAuditObserver::class);
+        Role::observe(RoleSecurityAuditObserver::class);
+
+        Event::listen(Login::class, [RecordSecurityAccessAudit::class, 'handleLogin']);
+        Event::listen(Failed::class, [RecordSecurityAccessAudit::class, 'handleFailed']);
+        Event::listen(Logout::class, [RecordSecurityAccessAudit::class, 'handleLogout']);
 
         Gate::before(function ($user, string $ability) {
             if ($ability !== 'bypass_ownership_scope') {
