@@ -184,11 +184,19 @@ class Project extends Model implements Sortable
         return $this->belongsToMany(Tag::class, 'projects_project_tag', 'project_id', 'tag_id');
     }
 
+    public function employees(): BelongsToMany
+    {
+        return $this->belongsToMany(Employee::class, 'projects_project_employees', 'project_id', 'employee_id')
+            ->withPivot(['user_id', 'creator_id'])
+            ->withTimestamps();
+    }
+
     public function ownershipSources(): array
     {
         return [
             OwnerSource::column('creator_id'),
             OwnerSource::column('user_id'),
+            OwnerSource::relation('employees', 'employees_employees.user_id'),
             OwnerSource::followers(),
         ];
     }

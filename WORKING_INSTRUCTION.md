@@ -155,15 +155,25 @@ Buka menu **Employees → Performance Plans → Evaluations** (`/admin/evaluatio
 
 ---
 
-## 7. Manajemen Proyek Multi-Customer, Nilai Proyek, Reminder 3-2-1 Bulan & Bulk Import
+## 7. Manajemen Proyek Multi-Customer, Penugasan Karyawan, Nilai Proyek, Reminder 3-2-1 Bulan & Bulk Import
 
 1. **Satu Customer Memiliki Banyak Proyek (`1 Customer → N Projects`):**
    - Buka menu **Project → Projects** (`/admin/project/projects`).
    - Pilih **Customer**, **Start Date & End Date**, serta **Project Value (`Nilai Proyek Rp`)**.
    - Daftar seluruh proyek dan total nilai kontrak per Customer dapat dilihat langsung pada tab **Proyek** di halaman detail Customer.
-2. **Reminder Berjenjang 3, 2, dan 1 Bulan Sebelum `End Date` Proyek:**
+2. **Penugasan Karyawan ke Proyek (Layar Khusus — Admin & Operation Manager):**
+   - Buka menu **Project → Tugaskan Karyawan (`Assign Employees`)** (`/admin/project/assign-employees`).
+   - Pilih **Proyek**, lalu pilih satu atau beberapa **Karyawan**, kemudian klik **Simpan Penugasan**.
+   - Sistem menyimpan anggota proyek di data penugasan karyawan, dan otomatis menambahkan karyawan yang punya partner/user terkait sebagai **pengikut (followers)** agar mendapat akses proyek.
+   - **Prasyarat akses login:** Pastikan karyawan punya **Pengguna Terkait (`Related User`)** di **Employees → Employees**. Tanpa ini, penugasan tetap tersimpan, tetapi karyawan belum bisa login/mengakses proyek.
+   - Hak akses layar ini: **Admin** dan **Operation Manager** (`page_project_assign_project_employees`). Setelah deploy, jalankan `php artisan security:sync-rbac` bila menu belum muncul.
+3. **Penugasan lewat Manajer Proyek / Task (cara lama, tetap tersedia):**
+   - **Manajer Proyek (satu orang):** Pada form proyek, isi **Manajer Proyek (`Project Manager`)**.
+   - **Penugasan kerja harian:** **Project → Tasks** → isi **Penerima Tugas (`Assignees`)** (daftar **User**).
+   - Hak akses juga dipengaruhi **Visibilitas (`Visibility`)** proyek.
+4. **Reminder Berjenjang 3, 2, dan 1 Bulan Sebelum `End Date` Proyek:**
    - Sistem memberi badge peringatan dan notifikasi otomatis pada sisa waktu `61–90 hari` (**3 Bulan**), `31–60 hari` (**2 Bulan**), `0–30 hari` (**1 Bulan**), dan saat **Berakhir** (`php artisan projects:notify-expiring-projects`).
-3. **Bulk Import Proyek:**
+5. **Bulk Import Proyek:**
    - Klik **`Unduh Template`** (`template-import-projects.xlsx`) di halaman **Projects**, lalu unggah melalui tombol **`Impor Excel / CSV`**.
 
 ---

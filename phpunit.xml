@@ -50,6 +50,9 @@
         <testsuite name="PosFeature">
             <directory>plugins/webkul/pos/tests/Feature</directory>
         </testsuite>
+        <testsuite name="IntegrationsFeature">
+            <directory>plugins/webkul/integrations/tests/Feature</directory>
+        </testsuite>
     </testsuites>
     <source>
         <include>

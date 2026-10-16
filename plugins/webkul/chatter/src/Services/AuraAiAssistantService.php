@@ -13,6 +13,8 @@ use Webkul\Chatter\Models\Message;
 use Webkul\Employee\Models\Department;
 use Webkul\Employee\Models\Employee;
 use Webkul\Evaluation\Models\Evaluation;
+use Webkul\Integrations\Settings\IntegrationSettings;
+use Webkul\Integrations\Support\SecretVault;
 use Webkul\Maintenance\Models\Equipment;
 use Webkul\Maintenance\Models\EquipmentMovement;
 use Webkul\Performance\Models\PerformancePlan;
@@ -662,14 +664,11 @@ class AuraAiAssistantService
 
     protected function tryExternalLlm(string $question, string $erpContext, ?Model $record = null): ?string
     {
-        $apiKey = (string) config('services.openai.key', '');
+        [$apiKey, $endpoint, $model] = $this->resolveExternalLlmConfig();
 
         if ($apiKey === '') {
             return null;
         }
-
-        $endpoint = (string) config('services.openai.endpoint', 'https://api.openai.com/v1/chat/completions');
-        $model = (string) config('services.openai.model', 'gpt-4o-mini');
 
         try {
             $response = Http::withToken($apiKey)
@@ -700,6 +699,42 @@ class AuraAiAssistantService
         }
 
         return null;
+    }
+
+    /**
+     * @return array{0: string, 1: string, 2: string}
+     */
+    protected function resolveExternalLlmConfig(): array
+    {
+        $apiKey = (string) config('services.openai.key', '');
+        $endpoint = (string) config('services.openai.endpoint', 'https://api.openai.com/v1/chat/completions');
+        $model = (string) config('services.openai.model', 'gpt-4o-mini');
+
+        try {
+            if (class_exists(IntegrationSettings::class)) {
+                $settings = app(IntegrationSettings::class);
+
+                if ($settings->ai_enabled) {
+                    $settingsKey = SecretVault::decrypt($settings->ai_api_key);
+
+                    if (filled($settingsKey)) {
+                        $apiKey = (string) $settingsKey;
+                    }
+
+                    if (filled($settings->ai_endpoint)) {
+                        $endpoint = (string) $settings->ai_endpoint;
+                    }
+
+                    if (filled($settings->ai_model)) {
+                        $model = (string) $settings->ai_model;
+                    }
+                }
+            }
+        } catch (Throwable) {
+            // Keep env/config fallback when the integrations settings table is unavailable.
+        }
+
+        return [$apiKey, $endpoint, $model];
     }
 
     protected function formatAsHtml(string $text): string

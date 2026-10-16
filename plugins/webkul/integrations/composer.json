@@ -1,0 +1,28 @@
+{
+    "name": "webkul/integrations",
+    "description": "SMTP, auraAI, and Jira connection settings with test buttons",
+    "authors": [
+        {
+            "name": "auraERP",
+            "email": "support@aureuserp.in"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Webkul\\Integrations\\IntegrationServiceProvider"
+            ],
+            "aliases": {}
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Webkul\\Integrations\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Webkul\\Integrations\\Tests\\": "tests/"
+        }
+    }
+}

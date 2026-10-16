@@ -71,6 +71,9 @@ class RolePermissionSynchronizer
             'view_any_evaluation_evaluation', 'view_evaluation_evaluation', 'create_evaluation_evaluation', 'update_evaluation_evaluation', 'delete_evaluation_evaluation', 'delete_any_evaluation_evaluation',
             'page_evaluation_performance_evaluation_dashboard',
             'page_project_dashboard',
+            'page_project_assign_project_employees',
+            'page_integrations_manage_integrations',
+            'page_support_welcome_dashboard',
 
             // Projects & Timesheets
             'view_any_project_project', 'view_project_project', 'create_project_project', 'update_project_project', 'delete_project_project', 'delete_any_project_project',
@@ -160,6 +163,7 @@ class RolePermissionSynchronizer
                 'view_any_employee_department',
                 'view_employee_department',
                 'page_project_dashboard',
+                'page_project_assign_project_employees',
                 'page_evaluation_performance_evaluation_dashboard',
                 'page_attendance_clock_page',
             ], true)

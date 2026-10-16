@@ -6,7 +6,6 @@ use App\Http\Middleware\ApplyBrandSettings;
 use App\Http\Middleware\SetLocale;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Actions\Action;
-use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -47,7 +46,6 @@ class AdminPanelProvider extends PanelProvider
             ->darkModeBrandLogo(asset('images/logo-full-dark.svg'))
             ->brandLogoHeight('2rem')
             ->passwordReset()
-            ->emailVerification()
             ->profile()
             ->colors([
                 'primary' => Color::Indigo,
@@ -129,10 +127,6 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ])
-            ->multiFactorAuthentication([
-                AppAuthentication::make()
-                    ->recoverable(),
             ]);
     }
 }

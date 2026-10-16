@@ -49,9 +49,9 @@
                         {{-- Center Icon Circle + Large Metric Value --}}
                         <div class="my-5 flex items-center justify-center gap-3.5">
                             <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white" style="{{ $colorStyle }}">
-                                @if ($kpi['icon'] === 'shopping-bag')
+                                @if ($kpi['icon'] === 'briefcase')
                                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                                     </svg>
                                 @elseif ($kpi['icon'] === 'banknotes')
                                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -74,15 +74,22 @@
                         </div>
 
                         {{-- Bottom Trend Line --}}
-                        <div class="dhonu-kpi-foot">
-                            <span class="dhonu-kpi-change">{{ $kpi['change'] }} {{ $kpi['period'] }}</span>
-                        </div>
+                        @if (filled($kpi['change'] ?? null) || filled($kpi['period'] ?? null))
+                            <div class="dhonu-kpi-foot">
+                                <span class="dhonu-kpi-change">
+                                    @if (filled($kpi['change'] ?? null))
+                                        {{ $kpi['change'] }}
+                                    @endif
+                                    {{ $kpi['period'] ?? '' }}
+                                </span>
+                            </div>
+                        @endif
                     </a>
                 @endforeach
             </div>
 
             {{-- Business Performance Overview Combo Chart --}}
-            <a href="{{ url('/admin/project') }}" class="dhonu-card dhonu-chart dhonu-link">
+            <a href="{{ $data['links']['project'] ?? url('/admin/project') }}" class="dhonu-card dhonu-chart dhonu-link">
                 <div class="dhonu-card-title">
                     <span class="dhonu-accent-bar"></span>
                     <h3>Business Performance Overview</h3>
@@ -96,11 +103,11 @@
                 <div class="mt-3 flex flex-wrap items-center justify-center gap-5 text-xs font-medium text-slate-600 dark:text-slate-400">
                     <span class="inline-flex items-center gap-1.5">
                         <span class="h-2.5 w-2.5 rounded-full" style="background-color: #93b4eb;"></span>
-                        Operational Volume
+                        Projects Created
                     </span>
                     <span class="inline-flex items-center gap-1.5">
                         <span class="h-2.5 w-2.5 rounded-full" style="background-color: #4c6ef5;"></span>
-                        Active Users
+                        Employees Joined
                     </span>
                     <span class="inline-flex items-center gap-1.5">
                         <span class="h-2.5 w-2.5 rounded-full" style="background-color: #489e69;"></span>
@@ -115,7 +122,7 @@
         </div>
 
         <div class="dhonu-bottom">
-            <a href="{{ url('/admin/project') }}" class="dhonu-card dhonu-panel dhonu-link">
+            <a href="{{ $data['links']['project'] ?? url('/admin/project') }}" class="dhonu-card dhonu-panel dhonu-link">
                 <div class="dhonu-card-title">
                     <span class="dhonu-accent-bar"></span>
                     <h3>Resource & Activity Matrix</h3>
@@ -142,7 +149,7 @@
                 </div>
             </a>
 
-            <a href="{{ url('/admin/performance-evaluation-dashboard') }}" class="dhonu-card dhonu-panel dhonu-link">
+            <a href="{{ $data['links']['goals'] ?? url('/admin/welcome') }}" class="dhonu-card dhonu-panel dhonu-link">
                 <div class="dhonu-card-title">
                     <span class="dhonu-accent-bar"></span>
                     <h3>Goal Achievement Metrics</h3>
@@ -184,7 +191,7 @@
                 </div>
             </a>
 
-            <a href="{{ url('/admin/attendance-sites') }}" class="dhonu-card dhonu-map dhonu-link">
+            <a href="{{ $data['links']['sites'] ?? url('/admin/welcome') }}" class="dhonu-card dhonu-map dhonu-link">
                 <div class="dhonu-card-title">
                     <span class="dhonu-accent-bar"></span>
                     <h3>Karyawan di Lokasi Kerja</h3>

@@ -35,6 +35,18 @@ abstract class PackageServiceProvider extends BasePackageServiceProvider
 
         $this->mergeShieldConfig();
 
+        // Register translation namespaces during register() so early boot consumers
+        // (e.g. Filament Shield label resolution inside RolePermissionSynchronizer)
+        // never cache empty language groups before boot() runs.
+        if ($this->package->hasTranslations) {
+            $this->loadTranslationsFrom(
+                $this->package->basePath('/../resources/lang/'),
+                $this->package->shortName()
+            );
+
+            $this->loadJsonTranslationsFrom($this->package->basePath('/../resources/lang/'));
+        }
+
         $this->packageRegistered();
 
         return $this;
@@ -169,13 +181,7 @@ abstract class PackageServiceProvider extends BasePackageServiceProvider
         }
 
         if ($this->package->hasTranslations) {
-            $this->loadTranslationsFrom(
-                $this->package->basePath('/../resources/lang/'),
-                $this->package->shortName()
-            );
-
-            $this->loadJsonTranslationsFrom($this->package->basePath('/../resources/lang/'));
-
+            // Namespace already registered in register(); only publish/override paths remain here.
             $this->loadJsonTranslationsFrom($langPath);
         }
 

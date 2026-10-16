@@ -5,10 +5,15 @@ namespace Webkul\Support\Filament\Pages;
 use BackedEnum;
 use Filament\Pages\Dashboard as BaseDashboard;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Throwable;
+use Webkul\Employee\Filament\Resources\EmployeeResource;
+use Webkul\Project\Filament\Resources\ProjectResource;
 use Webkul\Support\Enums\NavigationGroup;
+use Webkul\Support\Services\CompanyContext;
 
 class WelcomeDashboard extends BaseDashboard
 {
@@ -26,7 +31,10 @@ class WelcomeDashboard extends BaseDashboard
             return false;
         }
 
-        return $user->hasRole(config('filament-shield.panel_user.name', 'Admin'));
+        $adminRole = config('filament-shield.panel_user.name', 'Admin');
+
+        // Welcome overview is an Admin executive surface only — not HRD / OM / Staff / Kasir.
+        return $user->hasRole($adminRole);
     }
 
     public static function getNavigationLabel(): string
@@ -54,129 +62,139 @@ class WelcomeDashboard extends BaseDashboard
      */
     public function getDashboardData(): array
     {
-        $totalOrders = $this->safeCount('sales_orders') + $this->safeCount('pos_orders');
-        $totalInvoices = $this->safeCount('accounts_account_moves', ['move_type' => 'out_invoice']);
+        $totalProjects = $this->safeCount('projects_projects', ['is_active' => true]);
+        $totalEmployees = $this->safeCount('employees_employees', ['is_active' => true]);
+
         $totalTasks = $this->safeCount('projects_tasks');
-        $completedTasks = $this->safeCountWhere('projects_tasks', fn ($q) => $q->whereIn('state', ['1_done', 'done']));
+        $completedTasks = $this->safeCountWhere('projects_tasks', fn (Builder $q) => $q->whereIn('state', ['1_done', 'done', '04_done']));
 
-        $ordersMetric = $totalOrders > 0 ? $totalOrders : ($totalInvoices > 0 ? $totalInvoices : $totalTasks);
-        $ordersLabel = $totalOrders > 0 ? 'Total Orders' : ($totalInvoices > 0 ? 'Total Invoices' : 'Total Work Orders');
-
-        $salesRevenue = $this->safeSum('sales_orders', 'amount_total');
-        $posRevenue = $this->safeSum('pos_orders', 'total_amount');
-        $invoiceRevenue = $this->safeSum('accounts_account_moves', 'amount_total', ['move_type' => 'out_invoice']);
-        $totalRevenue = max($salesRevenue + $posRevenue, $invoiceRevenue);
-
-        $activePartners = $this->safeCount('partners_partners');
-        $activeEmployees = $this->safeCount('employees_employees', ['is_active' => 1]);
-        $activeUsers = $this->safeCount('users');
-        $customersMetric = $activePartners > 0 ? $activePartners : ($activeEmployees > 0 ? $activeEmployees : $activeUsers);
-        $customersLabel = $activePartners > 0 ? 'Active Customers' : 'Active Personnel';
+        // Welcome "Total Revenue" is the sum of active project values, not sales/POS/invoices.
+        $totalRevenue = $this->safeSum('projects_projects', 'project_value', ['is_active' => true]);
 
         $totalEvaluations = $this->safeCount('evaluations');
-        $approvedEvaluations = $this->safeCountWhere('evaluations', fn ($q) => $q->whereIn('status', ['approved', 'gm_approved', 'hr_approved']));
+        $approvedEvaluations = $this->safeCountWhere(
+            'evaluations',
+            fn (Builder $q) => $q->whereIn('status', ['approved', 'gm_approved', 'hr_approved', 'completed'])
+        );
+
+        $projectUrl = $this->projectIndexUrl();
+        $employeeUrl = $this->employeeIndexUrl();
+        $goalsUrl = $this->firstExistingUrl([
+            '/admin/performance-evaluation-dashboard',
+            '/admin/welcome',
+        ]);
+        $sitesUrl = $this->firstExistingUrl([
+            '/admin/attendance-sites',
+            '/admin/employees/employees',
+            '/admin/welcome',
+        ]);
 
         if ($totalTasks > 0) {
             $completionRate = round(($completedTasks / max($totalTasks, 1)) * 100, 2);
             $rateLabel = 'Completion Rate';
+            $rateHref = $projectUrl;
         } elseif ($totalEvaluations > 0) {
             $completionRate = round(($approvedEvaluations / max($totalEvaluations, 1)) * 100, 2);
             $rateLabel = 'Approval Rate';
+            $rateHref = $goalsUrl;
         } else {
-            $completionRate = 94.80;
-            $rateLabel = 'Conversion Rate';
+            $completionRate = 0.0;
+            $rateLabel = 'Completion Rate';
+            $rateHref = $projectUrl;
         }
 
-        // Monthly series (Jan - Dec)
-        $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        $monthlyBar = [68, 82, 60, 95, 72, 78, 52, 34, 84, 45, 79, 38];
-        $monthlyActive = [24, 26, 37, 23, 21, 25, 30, 12, 25, 36, 21, 18];
-        $monthlyCurve = [34, 65, 46, 68, 49, 61, 42, 45, 78, 52, 63, 68];
-        $monthlyRevenueTrend = [14, 15, 9, 20, 19, 10, 11, 11, 9, 34, 15, 32];
+        $projectDelta = $this->periodDeltaPercent('projects_projects', 'week', ['is_active' => true]);
+        $employeeDelta = $this->periodDeltaPercent('employees_employees', 'month', ['is_active' => true]);
+        $revenueDelta = $this->revenueDeltaPercent();
+        $rateDelta = $this->periodDeltaPercent('projects_tasks', 'week');
 
-        // Department / Regional distribution
+        // Monthly series derived from live project / employee / task activity when available.
+        $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        $monthlyBar = $this->monthlyCounts('projects_projects', ['is_active' => true]);
+        $monthlyActive = $this->monthlyCounts('employees_employees', ['is_active' => true]);
+        $monthlyCurve = $this->monthlyTaskCompletionRates();
+        $monthlyRevenueTrend = $this->monthlyRevenueSeries();
+
         $sites = $this->getIndonesiaSitePresence();
 
-        // Goal Achievement Metrics
         $evalCompleted = $totalEvaluations;
-        $evalTarget = max($activeEmployees, $totalEvaluations, 10);
+        $evalTarget = max($totalEmployees, $totalEvaluations, 1);
         $evalProgress = min(100, (int) round(($evalCompleted / max($evalTarget, 1)) * 100));
 
-        $attendanceCount = $this->safeCount('attendances');
-        $attendanceTarget = max($attendanceCount + 15, 50);
+        $attendanceCount = $this->safeCount('attendances_attendances');
+        $attendanceTarget = max($totalEmployees * 22, $attendanceCount, 1);
         $attendanceProgress = min(100, (int) round(($attendanceCount / max($attendanceTarget, 1)) * 100));
 
-        $projectCount = $this->safeCount('projects_projects');
         $projectProgress = $totalTasks > 0
             ? min(100, (int) round(($completedTasks / max($totalTasks, 1)) * 100))
-            : 74;
+            : 0;
 
         $goals = [
             [
                 'goal'      => 'Evaluasi triwulan',
                 'completed' => number_format($evalCompleted).' / '.number_format($evalTarget),
                 'target'    => number_format($evalTarget).' Employees',
-                'progress'  => ($evalProgress > 0 ? $evalProgress : 82),
+                'progress'  => $evalProgress,
             ],
             [
                 'goal'      => 'Absensi operasional',
                 'completed' => number_format($attendanceCount),
                 'target'    => number_format($attendanceTarget).' Check-ins',
-                'progress'  => ($attendanceProgress > 0 ? $attendanceProgress : 68),
+                'progress'  => $attendanceProgress,
             ],
             [
                 'goal'      => 'Kesiapan proyek',
                 'completed' => $projectProgress.'%',
-                'target'    => ($projectCount > 0 ? $projectCount.' Active Projects' : 'Final QA Pending'),
-                'progress'  => ($projectProgress > 0 ? $projectProgress : 74),
+                'target'    => ($totalProjects > 0 ? $totalProjects.' Active Projects' : 'No active projects'),
+                'progress'  => $projectProgress,
             ],
         ];
 
         return [
             'kpis' => [
                 [
-                    'title'      => $ordersLabel,
-                    'value'      => $this->formatCompactNumber($ordersMetric),
-                    'raw_value'  => $ordersMetric,
-                    'change'     => '4.28%',
-                    'trend'      => 'up',
-                    'period'     => 'Since last week',
-                    'color'      => 'blue',
-                    'icon'       => 'shopping-bag',
-                    'href'       => url('/admin/project'),
+                    'title'     => 'Total Project',
+                    'value'     => $this->formatCompactNumber($totalProjects),
+                    'raw_value' => $totalProjects,
+                    'change'    => $projectDelta['label'],
+                    'trend'     => $projectDelta['trend'],
+                    'period'    => $projectDelta['period'],
+                    'color'     => 'blue',
+                    'icon'      => 'briefcase',
+                    'href'      => $this->projectIndexUrl(),
                 ],
                 [
-                    'title'      => 'Total Revenue',
-                    'value'      => $totalRevenue > 0 ? 'Rp '.$this->formatCompactNumber($totalRevenue) : 'Rp '.$this->formatCompactNumber($activeEmployees * 12500000),
-                    'raw_value'  => $totalRevenue,
-                    'change'     => '8.76%',
-                    'trend'      => 'up',
-                    'period'     => 'Since last month',
-                    'color'      => 'green',
-                    'icon'       => 'banknotes',
-                    'href'       => url('/admin/sale/orders'),
+                    'title'     => 'Total Revenue',
+                    'value'     => 'Rp '.$this->formatCompactNumber($totalRevenue),
+                    'raw_value' => $totalRevenue,
+                    'change'    => $revenueDelta['label'],
+                    'trend'     => $revenueDelta['trend'],
+                    'period'    => $revenueDelta['period'],
+                    'color'     => 'green',
+                    'icon'      => 'banknotes',
+                    'href'      => $this->projectIndexUrl(),
                 ],
                 [
-                    'title'      => $customersLabel,
-                    'value'      => $this->formatCompactNumber($customersMetric),
-                    'raw_value'  => $customersMetric,
-                    'change'     => '2.13%',
-                    'trend'      => 'up',
-                    'period'     => 'Since last month',
-                    'color'      => 'amber',
-                    'icon'       => 'users',
-                    'href'       => url('/admin/employees/employees'),
+                    'title'     => 'Total Employee',
+                    'value'     => $this->formatCompactNumber($totalEmployees),
+                    'raw_value' => $totalEmployees,
+                    'change'    => $employeeDelta['label'],
+                    'trend'     => $employeeDelta['trend'],
+                    'period'    => $employeeDelta['period'],
+                    'color'     => 'amber',
+                    'icon'      => 'users',
+                    'href'      => $employeeUrl,
                 ],
                 [
-                    'title'      => $rateLabel,
-                    'value'      => number_format((float) $completionRate, 2).'%',
-                    'raw_value'  => $completionRate,
-                    'change'     => '1.28%',
-                    'trend'      => 'up',
-                    'period'     => 'Since last week',
-                    'color'      => 'teal',
-                    'icon'       => 'chart-pie',
-                    'href'       => url('/admin/performance-evaluation-dashboard'),
+                    'title'     => $rateLabel,
+                    'value'     => number_format((float) $completionRate, 2).'%',
+                    'raw_value' => $completionRate,
+                    'change'    => $rateDelta['label'],
+                    'trend'     => $rateDelta['trend'],
+                    'period'    => $rateDelta['period'],
+                    'color'     => 'teal',
+                    'icon'      => 'chart-pie',
+                    'href'      => $rateHref,
                 ],
             ],
             'chart' => [
@@ -186,8 +204,14 @@ class WelcomeDashboard extends BaseDashboard
                 'curve'        => $monthlyCurve,
                 'revenueTrend' => $monthlyRevenueTrend,
             ],
-            'goals'       => $goals,
-            'sites'       => $sites,
+            'goals' => $goals,
+            'sites' => $sites,
+            'links' => [
+                'project'  => $projectUrl,
+                'employee' => $employeeUrl,
+                'goals'    => $goalsUrl,
+                'sites'    => $sitesUrl,
+            ],
         ];
     }
 
@@ -218,7 +242,7 @@ class WelcomeDashboard extends BaseDashboard
                 return 0;
             }
 
-            $query = DB::table($table);
+            $query = $this->scopedQuery($table);
 
             foreach ($where as $column => $value) {
                 if (Schema::hasColumn($table, $column)) {
@@ -239,7 +263,7 @@ class WelcomeDashboard extends BaseDashboard
                 return 0;
             }
 
-            $query = DB::table($table);
+            $query = $this->scopedQuery($table);
             $callback($query);
 
             return (int) $query->count();
@@ -258,7 +282,7 @@ class WelcomeDashboard extends BaseDashboard
                 return 0.0;
             }
 
-            $query = DB::table($table);
+            $query = $this->scopedQuery($table);
 
             foreach ($where as $col => $val) {
                 if (Schema::hasColumn($table, $col)) {
@@ -270,6 +294,282 @@ class WelcomeDashboard extends BaseDashboard
         } catch (Throwable) {
             return 0.0;
         }
+    }
+
+    /**
+     * Apply soft-delete and company filters used by Welcome KPI queries.
+     */
+    protected function scopedQuery(string $table): Builder
+    {
+        $query = DB::table($table);
+
+        if (Schema::hasColumn($table, 'deleted_at')) {
+            $query->whereNull('deleted_at');
+        }
+
+        if (Schema::hasColumn($table, 'company_id')) {
+            $companyIds = $this->activeCompanyIds();
+
+            if ($companyIds !== []) {
+                $query->whereIn('company_id', $companyIds);
+            }
+        }
+
+        return $query;
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    protected function activeCompanyIds(): array
+    {
+        try {
+            return array_values(array_filter(
+                array_map('intval', app(CompanyContext::class)->activeIds())
+            ));
+        } catch (Throwable) {
+            return [];
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $where
+     * @return array{label: string, trend: string, period: string}
+     */
+    protected function periodDeltaPercent(string $table, string $period, array $where = []): array
+    {
+        $periodLabel = $period === 'week' ? 'Since last week' : 'Since last month';
+
+        try {
+            if (! Schema::hasTable($table) || ! Schema::hasColumn($table, 'created_at')) {
+                return ['label' => '', 'trend' => 'flat', 'period' => $periodLabel];
+            }
+
+            $currentStart = $period === 'week' ? now()->startOfWeek() : now()->startOfMonth();
+            $previousStart = $period === 'week' ? now()->subWeek()->startOfWeek() : now()->subMonth()->startOfMonth();
+            $previousEnd = $currentStart->copy()->subSecond();
+
+            $currentQuery = $this->scopedQuery($table)->where('created_at', '>=', $currentStart);
+            $previousQuery = $this->scopedQuery($table)
+                ->whereBetween('created_at', [$previousStart, $previousEnd]);
+
+            foreach ($where as $column => $value) {
+                if (Schema::hasColumn($table, $column)) {
+                    $currentQuery->where($column, $value);
+                    $previousQuery->where($column, $value);
+                }
+            }
+
+            $current = (int) $currentQuery->count();
+            $previous = (int) $previousQuery->count();
+
+            if ($previous === 0 && $current === 0) {
+                return ['label' => '0%', 'trend' => 'flat', 'period' => $periodLabel];
+            }
+
+            if ($previous === 0) {
+                return ['label' => '100%', 'trend' => 'up', 'period' => $periodLabel];
+            }
+
+            $delta = round((($current - $previous) / max($previous, 1)) * 100, 2);
+
+            return [
+                'label'  => number_format(abs($delta), 2).'%',
+                'trend'  => $delta >= 0 ? 'up' : 'down',
+                'period' => $periodLabel,
+            ];
+        } catch (Throwable) {
+            return ['label' => '', 'trend' => 'flat', 'period' => $periodLabel];
+        }
+    }
+
+    /**
+     * @return array{label: string, trend: string, period: string}
+     */
+    protected function revenueDeltaPercent(): array
+    {
+        $periodLabel = 'Since last month';
+
+        try {
+            $current = $this->revenueBetween(now()->startOfMonth(), now());
+            $previous = $this->revenueBetween(now()->subMonth()->startOfMonth(), now()->startOfMonth()->subSecond());
+
+            if ($previous <= 0.0 && $current <= 0.0) {
+                return ['label' => '0%', 'trend' => 'flat', 'period' => $periodLabel];
+            }
+
+            if ($previous <= 0.0) {
+                return ['label' => '100%', 'trend' => 'up', 'period' => $periodLabel];
+            }
+
+            $delta = round((($current - $previous) / max($previous, 1)) * 100, 2);
+
+            return [
+                'label'  => number_format(abs($delta), 2).'%',
+                'trend'  => $delta >= 0 ? 'up' : 'down',
+                'period' => $periodLabel,
+            ];
+        } catch (Throwable) {
+            return ['label' => '', 'trend' => 'flat', 'period' => $periodLabel];
+        }
+    }
+
+    protected function revenueBetween($from, $to): float
+    {
+        $table = 'projects_projects';
+        $column = 'project_value';
+
+        if (! Schema::hasTable($table) || ! Schema::hasColumn($table, $column) || ! Schema::hasColumn($table, 'created_at')) {
+            return 0.0;
+        }
+
+        $query = $this->scopedQuery($table)->whereBetween('created_at', [$from, $to]);
+
+        if (Schema::hasColumn($table, 'is_active')) {
+            $query->where('is_active', true);
+        }
+
+        return (float) ($query->sum($column) ?? 0.0);
+    }
+
+    protected function projectIndexUrl(): string
+    {
+        try {
+            if (class_exists(ProjectResource::class)) {
+                return ProjectResource::getUrl('index', panel: 'admin');
+            }
+        } catch (Throwable) {
+            // Fall through when the Projects plugin routes are unavailable.
+        }
+
+        return $this->firstExistingUrl(['/admin/project', '/admin/team-board', '/admin/welcome']);
+    }
+
+    protected function employeeIndexUrl(): string
+    {
+        try {
+            if (class_exists(EmployeeResource::class)) {
+                return EmployeeResource::getUrl('index', panel: 'admin');
+            }
+        } catch (Throwable) {
+            //
+        }
+
+        return $this->firstExistingUrl(['/admin/employees/employees', '/admin/welcome']);
+    }
+
+    /**
+     * @param  array<int, string>  $paths
+     */
+    protected function firstExistingUrl(array $paths): string
+    {
+        foreach ($paths as $path) {
+            $absolute = str_starts_with($path, 'http') ? $path : url($path);
+            $relative = parse_url($absolute, PHP_URL_PATH) ?: $path;
+
+            try {
+                $route = app('router')->getRoutes()->match(
+                    Request::create((string) $relative, 'GET')
+                );
+
+                if ($route !== null) {
+                    return $absolute;
+                }
+            } catch (Throwable) {
+                continue;
+            }
+        }
+
+        return url('/admin/welcome');
+    }
+
+    /**
+     * @param  array<string, mixed>  $where
+     * @return array<int, int>
+     */
+    protected function monthlyCounts(string $table, array $where = []): array
+    {
+        $series = array_fill(0, 12, 0);
+
+        try {
+            if (! Schema::hasTable($table) || ! Schema::hasColumn($table, 'created_at')) {
+                return $series;
+            }
+
+            $year = now()->year;
+
+            foreach (range(1, 12) as $month) {
+                $query = $this->scopedQuery($table)
+                    ->whereYear('created_at', $year)
+                    ->whereMonth('created_at', $month);
+
+                foreach ($where as $column => $value) {
+                    if (Schema::hasColumn($table, $column)) {
+                        $query->where($column, $value);
+                    }
+                }
+
+                $series[$month - 1] = (int) $query->count();
+            }
+        } catch (Throwable) {
+            // Keep zero series when the dialect or table is unavailable.
+        }
+
+        return $series;
+    }
+
+    /**
+     * @return array<int, float>
+     */
+    protected function monthlyTaskCompletionRates(): array
+    {
+        $series = array_fill(0, 12, 0.0);
+
+        try {
+            if (! Schema::hasTable('projects_tasks') || ! Schema::hasColumn('projects_tasks', 'created_at')) {
+                return $series;
+            }
+
+            $year = now()->year;
+
+            foreach (range(1, 12) as $month) {
+                $total = (int) $this->scopedQuery('projects_tasks')
+                    ->whereYear('created_at', $year)
+                    ->whereMonth('created_at', $month)
+                    ->count();
+
+                $completed = (int) $this->scopedQuery('projects_tasks')
+                    ->whereYear('created_at', $year)
+                    ->whereMonth('created_at', $month)
+                    ->whereIn('state', ['1_done', 'done', '04_done'])
+                    ->count();
+
+                $series[$month - 1] = $total > 0 ? round(($completed / $total) * 100, 1) : 0.0;
+            }
+        } catch (Throwable) {
+            //
+        }
+
+        return $series;
+    }
+
+    /**
+     * @return array<int, float>
+     */
+    protected function monthlyRevenueSeries(): array
+    {
+        $series = array_fill(0, 12, 0.0);
+        $year = now()->year;
+
+        foreach (range(1, 12) as $month) {
+            $from = now()->setDate($year, $month, 1)->startOfMonth();
+            $to = $from->copy()->endOfMonth();
+            $series[$month - 1] = $this->revenueBetween($from, $to);
+        }
+
+        $max = max($series) ?: 1.0;
+
+        return array_map(fn (float $value): float => round(($value / $max) * 100, 1), $series);
     }
 
     /**

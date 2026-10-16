@@ -5,6 +5,7 @@ use Spatie\LaravelSettings\SettingsCasts\DataCast;
 use Spatie\LaravelSettings\SettingsCasts\DateTimeInterfaceCast;
 use Spatie\LaravelSettings\SettingsCasts\DateTimeZoneCast;
 use Spatie\LaravelSettings\SettingsRepositories\RedisSettingsRepository;
+use Webkul\Integrations\Settings\IntegrationSettings;
 use Webkul\Security\Settings\UserSettings;
 use Webkul\Support\Settings\CompanyAwareSettingsRepository;
 
@@ -16,6 +17,7 @@ return [
      */
     'settings' => [
         UserSettings::class,
+        IntegrationSettings::class,
     ],
 
     /*

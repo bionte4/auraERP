@@ -29,6 +29,7 @@ class ProjectServiceProvider extends PackageServiceProvider
         $package->name(static::$name)
             ->hasRoute('api')
             ->hasTranslations()
+            ->hasViews()
             ->hasMigrations([
                 '2024_12_12_074920_create_projects_project_stages_table',
                 '2024_12_12_100230_create_projects_tags_table',
@@ -43,6 +44,7 @@ class ProjectServiceProvider extends PackageServiceProvider
                 '2024_12_18_145142_add_columns_to_analytic_records_table',
                 '2025_09_24_062711_remove_tags_column_from_projects_tasks_table',
                 '2026_10_14_200000_add_project_value_to_projects_projects_table',
+                '2026_10_16_140000_create_projects_project_employees_table',
             ])
             ->runsMigrations()
             ->hasCommand(NotifyExpiringProjectsCommand::class)

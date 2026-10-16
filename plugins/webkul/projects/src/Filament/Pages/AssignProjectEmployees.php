@@ -1,0 +1,216 @@
+<?php
+
+namespace Webkul\Project\Filament\Pages;
+
+use BackedEnum;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
+use Filament\Actions\Action;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Contracts\HasForms;
+use Filament\Notifications\Notification;
+use Filament\Pages\Page;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
+use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
+use Webkul\Employee\Models\Employee;
+use Webkul\PluginManager\Package;
+use Webkul\Project\Models\Project;
+use Webkul\Project\Services\ProjectEmployeeAssigner;
+use Webkul\Support\Enums\NavigationGroup;
+
+class AssignProjectEmployees extends Page implements HasForms
+{
+    use HasPageShield;
+    use InteractsWithForms;
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-user-plus';
+
+    protected static ?int $navigationSort = 3;
+
+    protected static ?string $slug = 'project/assign-employees';
+
+    protected string $view = 'projects::filament.pages.assign-project-employees';
+
+    public ?array $data = [];
+
+    protected static function getPagePermission(): ?string
+    {
+        return 'page_project_assign_project_employees';
+    }
+
+    public static function canAccess(): bool
+    {
+        if (! Package::isPluginInstalled('employees')) {
+            return false;
+        }
+
+        return parent::canAccess();
+    }
+
+    public static function getNavigationGroup(): string|\UnitEnum
+    {
+        return NavigationGroup::Project;
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('projects::filament/pages/assign-project-employees.navigation.title');
+    }
+
+    public static function getNavigationIcon(): string|BackedEnum|Htmlable|null
+    {
+        return static::$navigationIcon;
+    }
+
+    public function getTitle(): string|Htmlable
+    {
+        return __('projects::filament/pages/assign-project-employees.title');
+    }
+
+    public function mount(): void
+    {
+        $this->form->fill([
+            'project_id'   => null,
+            'employee_ids' => [],
+        ]);
+    }
+
+    public function form(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                Section::make(__('projects::filament/pages/assign-project-employees.title'))
+                    ->description(__('projects::filament/pages/assign-project-employees.description'))
+                    ->schema([
+                        Select::make('project_id')
+                            ->label(__('projects::filament/pages/assign-project-employees.fields.project'))
+                            ->options(fn (): array => Project::query()->orderBy('name')->pluck('name', 'id')->all())
+                            ->searchable()
+                            ->preload()
+                            ->required()
+                            ->live()
+                            ->afterStateUpdated(function (?int $state, Set $set): void {
+                                if (! $state) {
+                                    $set('employee_ids', []);
+
+                                    return;
+                                }
+
+                                $employeeIds = Project::query()
+                                    ->find($state)
+                                    ?->employees()
+                                    ->pluck('employees_employees.id')
+                                    ->map(fn ($id): int => (int) $id)
+                                    ->all() ?? [];
+
+                                $set('employee_ids', $employeeIds);
+                            }),
+                        Select::make('employee_ids')
+                            ->label(__('projects::filament/pages/assign-project-employees.fields.employees'))
+                            ->helperText(__('projects::filament/pages/assign-project-employees.fields.employees-helper'))
+                            ->multiple()
+                            ->searchable()
+                            ->preload()
+                            ->options(fn (): array => Employee::query()
+                                ->where('is_active', true)
+                                ->orderBy('name')
+                                ->pluck('name', 'id')
+                                ->all())
+                            ->getSearchResultsUsing(function (string $search): array {
+                                $term = '%'.$search.'%';
+
+                                return Employee::query()
+                                    ->where('is_active', true)
+                                    ->where(function (Builder $query) use ($term): void {
+                                        $query->where('name', 'like', $term)
+                                            ->orWhere('work_email', 'like', $term);
+                                    })
+                                    ->orderBy('name')
+                                    ->limit(50)
+                                    ->pluck('name', 'id')
+                                    ->all();
+                            })
+                            ->disabled(fn (Get $get): bool => blank($get('project_id')))
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(1),
+            ])
+            ->statePath('data');
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('save')
+                ->label(__('projects::filament/pages/assign-project-employees.actions.save'))
+                ->icon('heroicon-o-check')
+                ->color('primary')
+                ->action(fn () => $this->save()),
+        ];
+    }
+
+    public function save(): void
+    {
+        $state = $this->form->getState();
+        $projectId = $state['project_id'] ?? null;
+
+        if (! $projectId) {
+            Notification::make()
+                ->danger()
+                ->title(__('projects::filament/pages/assign-project-employees.notifications.missing-project.title'))
+                ->send();
+
+            return;
+        }
+
+        $project = Project::query()->findOrFail($projectId);
+        $result = app(ProjectEmployeeAssigner::class)->sync(
+            $project,
+            $state['employee_ids'] ?? [],
+        );
+
+        $notification = Notification::make()
+            ->success()
+            ->title(__('projects::filament/pages/assign-project-employees.notifications.saved.title'));
+
+        if ($result['without_user'] > 0) {
+            $notification
+                ->warning()
+                ->body(__('projects::filament/pages/assign-project-employees.notifications.saved.body-warn', [
+                    'count'   => $result['assigned'],
+                    'without' => $result['without_user'],
+                ]));
+        } else {
+            $notification->body(__('projects::filament/pages/assign-project-employees.notifications.saved.body', [
+                'count' => $result['assigned'],
+            ]));
+        }
+
+        $notification->send();
+    }
+
+    /**
+     * @return Collection<int, Employee>
+     */
+    public function getAssignedEmployeesProperty(): Collection
+    {
+        $projectId = $this->data['project_id'] ?? null;
+
+        if (! $projectId) {
+            return collect();
+        }
+
+        $project = Project::query()->find($projectId);
+
+        if (! $project) {
+            return collect();
+        }
+
+        return app(ProjectEmployeeAssigner::class)->assignedEmployees($project);
+    }
+}

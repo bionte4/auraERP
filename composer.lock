@@ -3002,12 +3002,12 @@
             "version": "4.0.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/lukas-frey/filament-icon-picker.git",
+                "url": "https://github.com/GuavaCZ/filament-icon-picker.git",
                 "reference": "c1aa7bbf9f2c434a02574a9b0673b4506d0588d2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lukas-frey/filament-icon-picker/zipball/c1aa7bbf9f2c434a02574a9b0673b4506d0588d2",
+                "url": "https://api.github.com/repos/GuavaCZ/filament-icon-picker/zipball/c1aa7bbf9f2c434a02574a9b0673b4506d0588d2",
                 "reference": "c1aa7bbf9f2c434a02574a9b0673b4506d0588d2",
                 "shasum": ""
             },
@@ -12457,12 +12457,12 @@
             "version": "v5.7.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/vlucas/phpdotenv.git",
+                "url": "https://github.com/phpdotenv/phpdotenv.git",
                 "reference": "301c07936b16d88628b126b01d082ba153cf4c40"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/vlucas/phpdotenv/zipball/301c07936b16d88628b126b01d082ba153cf4c40",
+                "url": "https://api.github.com/repos/phpdotenv/phpdotenv/zipball/301c07936b16d88628b126b01d082ba153cf4c40",
                 "reference": "301c07936b16d88628b126b01d082ba153cf4c40",
                 "shasum": ""
             },
