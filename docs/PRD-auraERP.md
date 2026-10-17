@@ -318,6 +318,8 @@ git fetch/merge fork/master → composer install
 ## 14. Lampiran
 
 - Working Instruction: [WORKING_INSTRUCTION.md](../WORKING_INSTRUCTION.md)
+- ERD: [ERD-auraERP.md](./ERD-auraERP.md)
+- Database schema: [DATABASE-SCHEMA.md](./DATABASE-SCHEMA.md)
 - Perintah kunci: `security:sync-rbac`, `projects:sync-team-memberships`, `integrations:install`
 - Kelas inti: `Webkul\Security\Services\RolePermissionSynchronizer`
 - Halaman kunci:
