@@ -24,11 +24,15 @@ class CustomerProjectWeeklyExport implements WithMultipleSheets
         Project $project,
         ?User $user = null,
         string $customerNotes = '',
+        mixed $startDate = null,
+        mixed $endDate = null,
     ): self {
         $report = app(CustomerProjectWeeklyReportData::class)->build(
             $project,
             $user ?? auth()->user(),
             $customerNotes,
+            $startDate,
+            $endDate,
         );
 
         return new self($report);
@@ -100,7 +104,7 @@ class CustomerProjectWeeklyExport implements WithMultipleSheets
 
                 public function title(): string
                 {
-                    return 'Completed this week';
+                    return 'Completed in period';
                 }
 
                 public function headings(): array

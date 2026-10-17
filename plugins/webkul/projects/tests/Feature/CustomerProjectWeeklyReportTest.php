@@ -109,6 +109,49 @@ it('masks task titles and omits hours from customer report payload', function ()
     expect($export->sheets())->toHaveCount(5);
 });
 
+it('filters completed deliverables by custom start and end dates', function (): void {
+    $om = makeCustomerReportUser('Operation Manager');
+    $this->actingAs($om);
+
+    $project = Project::factory()->create([
+        'is_active' => true,
+        'user_id'   => $om->id,
+        'name'      => 'Dated Project',
+    ]);
+
+    $inRange = Task::query()->create([
+        'project_id' => $project->id,
+        'title'      => 'IN_RANGE_TASK',
+        'state'      => TaskState::DONE->value,
+        'is_active'  => true,
+        'creator_id' => $om->id,
+    ]);
+    $inRange->forceFill(['updated_at' => '2026-03-10 10:00:00'])->saveQuietly();
+
+    $outOfRange = Task::query()->create([
+        'project_id' => $project->id,
+        'title'      => 'OUT_OF_RANGE_TASK',
+        'state'      => TaskState::DONE->value,
+        'is_active'  => true,
+        'creator_id' => $om->id,
+    ]);
+    $outOfRange->forceFill(['updated_at' => '2026-02-01 10:00:00'])->saveQuietly();
+
+    $report = app(CustomerProjectWeeklyReportData::class)->build(
+        $project->fresh(['partner', 'user']),
+        $om,
+        '',
+        '2026-03-01',
+        '2026-03-15',
+    );
+
+    $completed = collect($report['metrics'])->firstWhere('key', 'completed_week');
+
+    expect($completed['value'] ?? null)->toBe(1)
+        ->and($report['week_label'])->toContain('2026')
+        ->and(json_encode($report))->not->toContain('IN_RANGE_TASK');
+});
+
 it('registers customer project weekly report permission for admin and om only', function (): void {
     app(RolePermissionSynchronizer::class)->syncAll(false);
 

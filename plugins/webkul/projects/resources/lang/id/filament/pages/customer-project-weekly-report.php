@@ -11,6 +11,8 @@ return [
     ],
     'fields' => [
         'project'       => 'Proyek',
+        'start_date'    => 'Tanggal mulai',
+        'end_date'      => 'Tanggal akhir',
         'notes'         => 'Catatan untuk pelanggan',
         'notes-helper'  => 'Opsional; ikut di sheet Cover pada file Excel.',
     ],
@@ -20,6 +22,7 @@ return [
     ],
     'notifications' => [
         'missing-project'  => 'Pilih proyek terlebih dahulu',
+        'missing-dates'    => 'Isi tanggal mulai dan tanggal akhir',
         'forbidden'        => 'Anda tidak dapat membuat laporan untuk proyek ini',
         'preview-ready'    => 'Pratinjau siap — periksa di bawah, lalu unduh Excel',
         'preview-required' => 'Pratinjau laporan dulu, baru unduh Excel',
@@ -35,10 +38,10 @@ return [
     'preview' => [
         'cover'          => 'Pratinjau laporan',
         'notes'          => 'Catatan untuk pelanggan',
-        'completed'      => 'Selesai minggu ini (disamarkan)',
+        'completed'      => 'Selesai pada periode (disamarkan)',
         'open'           => 'Sedang berjalan (disamarkan)',
         'empty'          => 'Tidak ada item pada bagian ini.',
         'masked-hint'    => 'Nama tugas asli dan kata “terlambat” disembunyikan agar aman dikirim ke pelanggan.',
-        'select-project' => 'Pilih proyek, klik Pratinjau laporan, periksa isinya, lalu Unduh Excel.',
+        'select-project' => 'Pilih proyek dan rentang tanggal, klik Pratinjau laporan, periksa isinya, lalu Unduh Excel.',
     ],
 ];

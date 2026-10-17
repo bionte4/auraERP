@@ -78,6 +78,27 @@ class CustomerProjectWeeklyReportData
     }
 
     /**
+     * @return array{0: Carbon, 1: Carbon}
+     */
+    public function resolvePeriod(mixed $startDate = null, mixed $endDate = null): array
+    {
+        $start = filled($startDate)
+            ? Carbon::parse($startDate)->startOfDay()
+            : now()->startOfWeek()->startOfDay();
+        $end = filled($endDate)
+            ? Carbon::parse($endDate)->endOfDay()
+            : ($startDate
+                ? $start->copy()->endOfDay()
+                : now()->endOfWeek()->endOfDay());
+
+        if ($start->gt($end)) {
+            [$start, $end] = [$end->copy()->startOfDay(), $start->copy()->endOfDay()];
+        }
+
+        return [$start, $end];
+    }
+
+    /**
      * @return array{
      *     cover: array<string, string>,
      *     week_label: string,
@@ -92,14 +113,14 @@ class CustomerProjectWeeklyReportData
         Project $project,
         ?User $user = null,
         string $customerNotes = '',
-        ?Carbon $weekStart = null,
+        mixed $startDate = null,
+        mixed $endDate = null,
     ): array {
         $user ??= auth()->user();
         abort_unless($this->canViewProject($project, $user), 403);
 
         $indonesian = str_starts_with((string) app()->getLocale(), 'id');
-        $start = ($weekStart ?? now()->startOfWeek())->copy()->startOfDay();
-        $end = $start->copy()->endOfWeek()->endOfDay();
+        [$start, $end] = $this->resolvePeriod($startDate, $endDate);
 
         $tasks = Task::query()
             ->where('project_id', $project->id)
@@ -116,7 +137,7 @@ class CustomerProjectWeeklyReportData
 
         $progress = $total > 0 ? (int) round(($done / $total) * 100) : 0;
 
-        $completedThisWeek = $tasks
+        $completedInPeriod = $tasks
             ->filter(function (Task $task) use ($doneStates, $start, $end): bool {
                 $state = $task->state instanceof TaskState ? $task->state->value : (string) $task->state;
 
@@ -141,10 +162,14 @@ class CustomerProjectWeeklyReportData
             ->values();
 
         $needsAttention = $openTasks
-            ->filter(fn (Task $task): bool => $task->deadline !== null && $task->deadline->lt(now()))
+            ->filter(fn (Task $task): bool => $task->deadline !== null && $task->deadline->lt($end))
             ->count();
 
-        $checkpoints = $this->upcomingCheckpoints($project);
+        $checkpoints = $this->upcomingCheckpoints($project, $start, $end);
+
+        $periodLabel = $indonesian
+            ? $start->translatedFormat('d M Y').' – '.$end->translatedFormat('d M Y')
+            : $start->format('M j, Y').' – '.$end->format('M j, Y');
 
         return [
             'cover' => [
@@ -153,15 +178,11 @@ class CustomerProjectWeeklyReportData
                 'project'  => $project->name,
                 'manager'  => $project->user?->name
                     ?? ($indonesian ? '—' : '—'),
-                'period'   => $indonesian
-                    ? $start->translatedFormat('d M').' – '.$end->translatedFormat('d M Y')
-                    : $start->format('M j').' – '.$end->format('M j, Y'),
+                'period'       => $periodLabel,
                 'generated_at' => now()->timezone(config('app.timezone'))->format('Y-m-d H:i'),
             ],
-            'week_label' => $indonesian
-                ? 'Minggu '.$start->translatedFormat('d M').' – '.$end->translatedFormat('d M Y')
-                : 'Week of '.$start->format('M j').' – '.$end->format('M j, Y'),
-            'metrics' => [
+            'week_label' => ($indonesian ? 'Periode ' : 'Period ').$periodLabel,
+            'metrics'    => [
                 [
                     'key'    => 'progress',
                     'metric' => $indonesian ? 'Progres keseluruhan' : 'Overall progress',
@@ -172,9 +193,9 @@ class CustomerProjectWeeklyReportData
                 ],
                 [
                     'key'    => 'completed_week',
-                    'metric' => $indonesian ? 'Selesai minggu ini' : 'Completed this week',
-                    'value'  => $completedThisWeek->count(),
-                    'notes'  => $indonesian ? 'Deliverable yang diselesaikan pada periode laporan' : 'Deliverables finished in the report period',
+                    'metric' => $indonesian ? 'Selesai pada periode' : 'Completed in period',
+                    'value'  => $completedInPeriod->count(),
+                    'notes'  => $indonesian ? 'Deliverable yang diselesaikan pada rentang tanggal laporan' : 'Deliverables finished within the selected dates',
                 ],
                 [
                     'key'    => 'in_progress',
@@ -192,26 +213,28 @@ class CustomerProjectWeeklyReportData
                 ],
                 [
                     'key'    => 'checkpoints',
-                    'metric' => $indonesian ? 'Checkpoint ≤ 14 hari' : 'Checkpoints due ≤ 14 days',
+                    'metric' => $indonesian ? 'Checkpoint pada / setelah periode' : 'Checkpoints in / after period',
                     'value'  => $checkpoints->count(),
-                    'notes'  => $indonesian ? 'Tonggak jadwal mendatang (nama disamarkan)' : 'Upcoming schedule checkpoints (names masked)',
+                    'notes'  => $indonesian
+                        ? 'Tonggak jadwal dalam periode hingga +14 hari (nama disamarkan)'
+                        : 'Schedule checkpoints in the period through +14 days (names masked)',
                 ],
             ],
-            'completed_rows' => $completedThisWeek
+            'completed_rows' => $completedInPeriod
                 ->values()
                 ->map(fn (Task $task, int $index): array => [
-                    'item'   => ($indonesian ? 'Deliverable #' : 'Deliverable #').($index + 1),
+                    'item'   => 'Deliverable #'.($index + 1),
                     'status' => $indonesian ? 'Selesai' : 'Completed',
                     'date'   => $task->updated_at?->toDateString() ?? '—',
                 ])
                 ->all(),
             'open_rows' => $openTasks
                 ->values()
-                ->map(function (Task $task, int $index) use ($indonesian): array {
-                    $isLate = $task->deadline !== null && $task->deadline->lt(now());
+                ->map(function (Task $task, int $index) use ($indonesian, $end): array {
+                    $isLate = $task->deadline !== null && $task->deadline->lt($end);
 
                     return [
-                        'item'   => ($indonesian ? 'Work item #' : 'Work item #').($index + 1),
+                        'item'   => 'Work item #'.($index + 1),
                         'status' => $isLate
                             ? ($indonesian ? 'Perlu perhatian' : 'Needs attention')
                             : ($indonesian ? 'Berjalan' : 'In progress'),
@@ -222,7 +245,7 @@ class CustomerProjectWeeklyReportData
             'checkpoint_rows' => $checkpoints
                 ->values()
                 ->map(fn (Milestone $milestone, int $index): array => [
-                    'item'   => ($indonesian ? 'Checkpoint #' : 'Checkpoint #').($index + 1),
+                    'item'   => 'Checkpoint #'.($index + 1),
                     'status' => $indonesian ? 'Terjadwal' : 'Scheduled',
                     'date'   => $milestone->deadline?->toDateString() ?? '—',
                 ])
@@ -234,7 +257,7 @@ class CustomerProjectWeeklyReportData
     /**
      * @return Collection<int, Milestone>
      */
-    protected function upcomingCheckpoints(Project $project): Collection
+    protected function upcomingCheckpoints(Project $project, Carbon $start, Carbon $end): Collection
     {
         if (! Schema::hasTable('projects_milestones') || ! $project->allow_milestones) {
             return collect();
@@ -244,8 +267,8 @@ class CustomerProjectWeeklyReportData
             ->where('project_id', $project->id)
             ->where('is_completed', false)
             ->whereNotNull('deadline')
-            ->whereDate('deadline', '>=', now()->toDateString())
-            ->whereDate('deadline', '<=', now()->addDays(14)->toDateString())
+            ->whereDate('deadline', '>=', $start->toDateString())
+            ->whereDate('deadline', '<=', $end->copy()->addDays(14)->toDateString())
             ->orderBy('deadline')
             ->get(['id', 'deadline', 'is_completed']);
     }

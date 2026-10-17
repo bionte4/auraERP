@@ -5,6 +5,7 @@ namespace Webkul\Project\Filament\Pages;
 use BackedEnum;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Actions\Action;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -73,8 +74,10 @@ class CustomerProjectWeeklyReport extends Page implements HasForms
     public function mount(): void
     {
         $this->form->fill([
-            'project_id'      => null,
-            'customer_notes'  => '',
+            'project_id'     => null,
+            'start_date'     => now()->startOfWeek()->toDateString(),
+            'end_date'       => now()->endOfWeek()->toDateString(),
+            'customer_notes' => '',
         ]);
     }
 
@@ -91,20 +94,43 @@ class CustomerProjectWeeklyReport extends Page implements HasForms
                             ->native()
                             ->required()
                             ->live(),
+                        DatePicker::make('start_date')
+                            ->label(__('projects::filament/pages/customer-project-weekly-report.fields.start_date'))
+                            ->native()
+                            ->required()
+                            ->live(),
+                        DatePicker::make('end_date')
+                            ->label(__('projects::filament/pages/customer-project-weekly-report.fields.end_date'))
+                            ->native()
+                            ->required()
+                            ->live()
+                            ->afterOrEqual('start_date'),
                         Textarea::make('customer_notes')
                             ->label(__('projects::filament/pages/customer-project-weekly-report.fields.notes'))
                             ->helperText(__('projects::filament/pages/customer-project-weekly-report.fields.notes-helper'))
                             ->rows(3)
                             ->columnSpanFull(),
                     ])
-                    ->columns(1),
+                    ->columns([
+                        'default' => 1,
+                        'md'      => 3,
+                    ]),
             ])
             ->statePath('data');
     }
 
     public function updatedDataProjectId(): void
     {
-        // Clear previous preview so Download stays locked until Preview is clicked again.
+        $this->preview = null;
+    }
+
+    public function updatedDataStartDate(): void
+    {
+        $this->preview = null;
+    }
+
+    public function updatedDataEndDate(): void
+    {
         $this->preview = null;
     }
 
@@ -120,6 +146,17 @@ class CustomerProjectWeeklyReport extends Page implements HasForms
         $projectId = $this->data['project_id'] ?? null;
 
         if (blank($projectId)) {
+            $this->preview = null;
+
+            return;
+        }
+
+        if (blank($this->data['start_date'] ?? null) || blank($this->data['end_date'] ?? null)) {
+            Notification::make()
+                ->warning()
+                ->title(__('projects::filament/pages/customer-project-weekly-report.notifications.missing-dates'))
+                ->send();
+
             $this->preview = null;
 
             return;
@@ -152,6 +189,8 @@ class CustomerProjectWeeklyReport extends Page implements HasForms
             $project,
             auth()->user(),
             (string) ($this->data['customer_notes'] ?? ''),
+            $this->data['start_date'] ?? null,
+            $this->data['end_date'] ?? null,
         );
     }
 
@@ -162,13 +201,11 @@ class CustomerProjectWeeklyReport extends Page implements HasForms
                 ->label(__('projects::filament/pages/customer-project-weekly-report.actions.preview'))
                 ->icon('heroicon-o-eye')
                 ->color('gray')
-                ->disabled(fn (): bool => blank($this->data['project_id'] ?? null))
+                ->disabled(fn (): bool => blank($this->data['project_id'] ?? null)
+                    || blank($this->data['start_date'] ?? null)
+                    || blank($this->data['end_date'] ?? null))
                 ->action(function (): void {
                     $this->refreshPreview();
-
-                    if ($this->preview === null && filled($this->data['project_id'] ?? null)) {
-                        return;
-                    }
 
                     if ($this->preview !== null) {
                         Notification::make()
@@ -198,7 +235,6 @@ class CustomerProjectWeeklyReport extends Page implements HasForms
             return null;
         }
 
-        // Require an on-screen preview before Excel download.
         if ($this->preview === null) {
             $this->refreshPreview();
         }
@@ -218,10 +254,18 @@ class CustomerProjectWeeklyReport extends Page implements HasForms
 
         $notes = (string) ($this->data['customer_notes'] ?? '');
         $slug = str($project->name)->slug('_')->limit(40, '')->toString();
-        $filename = 'customer-project-weekly-'.$slug.'-'.now()->format('Y-m-d').'.xlsx';
+        $start = (string) ($this->data['start_date'] ?? now()->toDateString());
+        $end = (string) ($this->data['end_date'] ?? now()->toDateString());
+        $filename = 'customer-project-'.$slug.'-'.$start.'_'.$end.'.xlsx';
 
         return Excel::download(
-            CustomerProjectWeeklyExport::make($project, auth()->user(), $notes),
+            CustomerProjectWeeklyExport::make(
+                $project,
+                auth()->user(),
+                $notes,
+                $this->data['start_date'] ?? null,
+                $this->data['end_date'] ?? null,
+            ),
             $filename,
         );
     }

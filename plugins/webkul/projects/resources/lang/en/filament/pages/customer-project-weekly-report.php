@@ -11,6 +11,8 @@ return [
     ],
     'fields' => [
         'project'       => 'Project',
+        'start_date'    => 'Start date',
+        'end_date'      => 'End date',
         'notes'         => 'Notes for customer',
         'notes-helper'  => 'Optional message included on the Excel cover sheet.',
     ],
@@ -20,6 +22,7 @@ return [
     ],
     'notifications' => [
         'missing-project'  => 'Please select a project first',
+        'missing-dates'    => 'Please set both start and end dates',
         'forbidden'        => 'You cannot report on this project',
         'preview-ready'    => 'Preview is ready — review below, then download Excel',
         'preview-required' => 'Preview the report first, then download Excel',
@@ -35,10 +38,10 @@ return [
     'preview' => [
         'cover'          => 'Report preview',
         'notes'          => 'Notes for customer',
-        'completed'      => 'Completed this week (masked)',
+        'completed'      => 'Completed in period (masked)',
         'open'           => 'In progress (masked)',
         'empty'          => 'No items in this section.',
         'masked-hint'    => 'Real task names and “overdue” wording are hidden for client sharing.',
-        'select-project' => 'Select a project, click Preview report, review the data, then Download Excel.',
+        'select-project' => 'Select a project and date range, click Preview report, review the data, then Download Excel.',
     ],
 ];
