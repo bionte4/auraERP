@@ -8,16 +8,18 @@ Dokumen ini berisi panduan operasional lengkap untuk seluruh modul kustom, siste
 
 Halaman login Admin Panel: **`/admin/login`**
 
-### A. 5 Role Standar Sistem (`php artisan security:sync-rbac`)
+### A. 6 Role Standar Sistem (`php artisan security:sync-rbac`)
+
+Perintah `security:sync-rbac` **menyetel ulang** permission role non-Admin dengan `syncPermissions` (bukan hanya menambah). Grant manual di luar baseline **akan hilang** setelah sync. Role **Admin** tetap mendapat seluruh permission.
 
 | Role | Hak Akses Utama |
 | :--- | :--- |
 | **Admin** | Akses penuh ke seluruh modul, pengaturan perusahaan, manajemen User, Role & Permission, **Audit Trail**, **Backup Database**, **IP Diblokir** (khusus Admin), dan instalasi plugin. |
-| **HRD** | Mengelola Karyawan, Kontrak, Departemen, Lokasi Kerja (Geofence), Rekap Absensi, Cuti/Izin (`Time Off`), Rencana Kinerja (`Performance Plans`), Evaluasi Kinerja (`Evaluations`), Dashboard Evaluasi + Export Excel/PDF, Rekrutmen, dan Aset Karyawan. |
-| **Operation Manager** | Mengelola Proyek (`Projects`), **Tugaskan Karyawan ke Proyek**, Tugas (`Tasks`), `Timesheets`, Gudang & Stok (`Inventory` & `Products`), Perawatan & Aset (`Maintenance` & `Equipment`), Pembelian (`Purchases`), Penjualan (`Sales`), Mitra (`Partners`), serta melakukan **Penilaian Kinerja (L1/L2)** dan **Approval Cuti/Absensi** untuk tim/bawahannya. |
+| **HRD** | Karyawan, Kontrak, Departemen, Lokasi Kerja (Geofence), Absensi, Cuti/Izin (`Time Off`), Rencana Kinerja, Evaluasi, **Dashboard Evaluasi**, Rekrutmen, **Laporan Ops Mingguan** (internal), widget kehadiran. **Tidak** mendapat: Customer Project Weekly Report, widget aksi OM, Sales/Purchase/Inventory, Maintenance/Aset. |
+| **Operation Manager** | Proyek (`Projects`), **Tugaskan Karyawan**, Tasks, Timesheets, Mitra (`Partners`), **Laporan Ops Mingguan**, **Laporan Mingguan Proyek untuk Klien** (Excel), Dashboard Proyek + widget OM, Absensi/Cuti untuk approval tim, **Penilaian Kinerja (L1/L2)** + **Dashboard Evaluasi**. **Tidak** mendapat modul penuh Sales, Purchase, atau Inventory (itu domain Admin/Accounting sesuai kebutuhan). |
 | **Accounting** | Invoice pelanggan, bill vendor, payment, partners/products terkait, serta **Dashboard → Hari Saya** dengan kontrol anggaran tim (invoice terbuka, overdue AR/AP, payment pending, budget proyek tim). |
 | **Kasir** | Mengoperasikan **POS Terminal** (`/admin/pos-terminal`), membuka/menutup sesi shift kasir (`POS Sessions`), membuat transaksi penjualan kasir (`POS Orders`), melihat katalog produk & pelanggan, serta melakukan absensi (`/admin/absen`). |
-| **Staff (Karyawan)** | Self-service karyawan: melakukan Absensi (`/admin/absen`), mengajukan & memantau Cuti/Izin pribadi (`My Time Off` & `My Allocations`), mengisi `Timesheet` & tugas proyek, melihat `Performance Plan` & mengonfirmasi hasil `Evaluation` miliknya sendiri, serta menggunakan `auraAI` untuk data pribadinya. |
+| **Staff (Karyawan)** | Self-service: Absensi, Cuti/Izin pribadi, Timesheet & update tugas proyek, melihat Performance Plan & Evaluation miliknya sendiri, Hari Saya / Team Board. **Tidak** akses **Dashboard Evaluasi** agregat maupun `view_any_evaluation`. |
 
 ### B. 3 Tingkatan Scope Data (`Resource Permission` pada Menu Settings → Users)
 Saat membuat atau mengedit User di **Settings → Users**, terdapat pengaturan **Resource Permission**:
@@ -78,15 +80,16 @@ Saat membuat atau mengedit User di **Settings → Users**, terdapat pengaturan *
 5. Setelah deploy: `php artisan migrate` (tabel `security_blocked_ips`) lalu `security:sync-rbac`.
 
 ### G. Deploy dari Fork (jika `origin` 403)
-VPS sering menarik dari fork `bionte4/auraERP` karena akses write ke `aureuserp/aureuserp` terbatas:
+VPS menarik dari fork `bionte4/auraERP` (branch `master`) karena akses write ke `aureuserp/aureuserp` terbatas. Lihat juga **§12** untuk blok lengkap.
 ```bash
 cd /var/www/auraerp
-sudo -u www-data git remote add fork https://github.com/bionte4/auraERP.git 2>/dev/null || true
-sudo -u www-data git fetch fork && sudo -u www-data git merge fork/master
+git remote add fork https://github.com/bionte4/auraERP.git 2>/dev/null || true
+git fetch fork && git merge fork/master
 sudo -u www-data php artisan migrate --force
 sudo -u www-data php artisan security:sync-rbac
 sudo -u www-data php artisan optimize:clear
 ```
+**Penting:** jalankan Artisan sebagai `www-data`. Jika muncul `Permission denied` pada `storage/logs` atau `bootstrap/cache`, perbaiki ownership lalu ulangi (lihat §12).
 
 ### H. Akun Demo
 - Demo:
@@ -209,7 +212,8 @@ Buka menu **Employees → Performance Plans → Evaluations** (`/admin/evaluatio
 
 ### C. Dashboard Evaluasi Kinerja & Download Excel (`.xlsx`)
 1. Buka menu **Dashboard → Dashboard Evaluasi Kinerja** (`/admin/performance-evaluation-dashboard`) atau klik tombol **`Buka Dashboard Evaluasi`** dari halaman daftar **Evaluations**.
-2. Fitur pada Dashboard Evaluasi:
+2. **Akses terbatas:** hanya **Admin**, **HRD**, dan **Operation Manager** (hard-check role + permission `page_evaluation_performance_evaluation_dashboard`). Staff/Kasir/Accounting ditolak meskipun punya grant evaluasi perorangan.
+3. Fitur pada Dashboard Evaluasi:
    - **Filter Real-Time:** Filter berdasarkan *Jenis / Periode Evaluasi*, *Status Evaluasi*, *Departemen*, dan *Karyawan*.
    - **4 Kartu KPI:** *Total Evaluasi (PKWT vs Outsource)*, *Status Evaluasi Berjalan (`In Progress` vs `Completed`)*, *Rata-rata Poin D (Manajemen Kerja)*, dan *Kelayakan Pengangkatan Tetap*.
    - **2 Grafik Visual:** Grafik Batang *Distribusi Jenis & Periode Evaluasi* dan Grafik Doughnut *Komposisi Rekomendasi Keputusan (Poin I)*.
@@ -262,16 +266,17 @@ Buka menu **Employees → Performance Plans → Evaluations** (`/admin/evaluatio
    - Widget **Kehadiran hari ini**: hadir / terlambat / belum absen (scope).
    - Widget **Operation Manager — Proyek sebagai Manajer Proyek** menampilkan OM + jumlah proyek aktif sebagai **Manajer Proyek**.
    - **Dashboard → Hari Saya** (`/admin/my-day`) — kartu fokus harian per peran (Admin/HRD/OM/Staff/Kasir).
-   - **Laporan Ops Mingguan** (`/admin/weekly-operations-report`) — tabel metrik + beban jam/proyek per karyawan + unduh Excel.
+   - **Laporan Ops Mingguan** (`/admin/weekly-operations-report`) — metrik internal + beban jam/proyek per karyawan + unduh Excel. Permission: `page_project_weekly_operations_report` (**Admin / HRD / OM**; data mengikuti `OperationalScope`).
+   - **Laporan Mingguan Proyek untuk Klien** (`/admin/customer-project-weekly-report`) — Excel siap klien: pilih **1 proyek**, rentang tanggal kustom, **preview di layar**, lalu unduh. Judul task overdue/masking diterapkan; jam kerja disembunyikan. Permission: `page_project_customer_project_weekly_report` (**Admin / OM**; **bukan** HRD).
    - Daftar **Projects**: kolom **Kesehatan** (progress task, anggota, overdue, sisa hari).
-   - **Tugaskan Karyawan**: opsi karyawan menampilkan kapasitas (`N proyek · X jam/minggu`); tombol **Buat Related User yang hilang**.
+   - **Tugaskan Karyawan**: opsi karyawan menampilkan kapasitas (`N proyek · X jam/minggu`); tombol **Buat Related User yang hilang**. Checkbox penugasan disinkronkan Livewire saat ganti proyek.
    - **Employee → Ringkasan 360** (`…/overview`) — proyek, kapasitas, cuti, aset, evaluasi, buat Related User 1-klik.
    - **Team Board**: mode **Kanban Proyek** (seret karyawan antar proyek) untuk Admin/OM.
-   - Permission baru: `page_support_my_day_dashboard`, `widget_project_attendance_presence_widget` (setelah `security:sync-rbac`).
+   - Permission terkait (setelah `security:sync-rbac`): `page_support_my_day_dashboard`, `page_project_weekly_operations_report`, `page_project_customer_project_weekly_report`, `widget_project_attendance_presence_widget`, widget OM.
 5. **Link Tim ↔ Proyek eksplisit:** di **Settings → Teams** pilih **Proyek terkait**. Sinkron anggota & Team Board mengutamakan link ini; jika kosong, fallback cocok nama. Melepas karyawan dari proyek juga melepaskan mereka dari task terbuka proyek tersebut.
-5. **Reminder Berjenjang 3, 2, dan 1 Bulan Sebelum `End Date` Proyek:**
+6. **Reminder Berjenjang 3, 2, dan 1 Bulan Sebelum `End Date` Proyek:**
    - Sistem memberi badge peringatan dan notifikasi otomatis pada sisa waktu `61–90 hari` (**3 Bulan**), `31–60 hari` (**2 Bulan**), `0–30 hari` (**1 Bulan**), dan saat **Berakhir** (`php artisan projects:notify-expiring-projects`).
-6. **Bulk Import Proyek:**
+7. **Bulk Import Proyek:**
    - Klik **`Unduh Template`** (`template-import-projects.xlsx`) di halaman **Projects**, lalu unggah melalui tombol **`Impor Excel / CSV`**.
 
 ---
@@ -313,7 +318,9 @@ Buka menu **Employees → Performance Plans → Evaluations** (`/admin/evaluatio
 
 | Modul | Halaman / URL | Fitur Excel (`.xlsx`) |
 | :--- | :--- | :--- |
-| **Evaluasi Kinerja (Monitoring & Dashboard)** | `/admin/performance-evaluation-dashboard` & `/admin/evaluations/evaluations` | **Export Excel (`Download Excel .xlsx`)** — 22 kolom nilai & status approval berjenjang |
+| **Evaluasi Kinerja (Monitoring & Dashboard)** | `/admin/performance-evaluation-dashboard` & `/admin/evaluations/evaluations` | **Export Excel (`Download Excel .xlsx`)** — 22 kolom nilai & status approval berjenjang (Admin/HRD/OM) |
+| **Laporan Ops Mingguan (internal)** | `/admin/weekly-operations-report` | Unduh Excel metrik operasional (Admin/HRD/OM) |
+| **Laporan Mingguan Proyek (klien)** | `/admin/customer-project-weekly-report` | Preview + Excel siap klien, 1 proyek, rentang tanggal kustom (Admin/OM) |
 | **Employees (Karyawan)** | `/admin/employees/employees` | **Template & Bulk Import** (`template-import-employees.xlsx`) |
 | **Customers & Vendors** | `/admin/contact/contacts` | **Template & Bulk Import** (`template-import-customers-vendors.xlsx`) |
 | **Projects (Proyek)** | `/admin/project/projects` | **Template & Bulk Import** (`template-import-projects.xlsx`) |
@@ -323,28 +330,47 @@ Buka menu **Employees → Performance Plans → Evaluations** (`/admin/evaluatio
 
 ## 12. Panduan Update / Deploy di Server VPS
 
-Setiap kali ada pembaruan kode dari GitHub (`bionte4/auraERP` branch `main`), jalankan perintah berikut di VPS (`ubuntu@VM-18-102-ubuntu`).
+Setiap kali ada pembaruan kode dari GitHub fork (`bionte4/auraERP` branch **`master`**), jalankan perintah berikut di VPS (`/var/www/auraerp`, `ubuntu@VM-18-102-ubuntu`).
 
-**Langkah standar (setelah ada plugin/composer baru, gunakan blok lengkap di bawah):**
+**Langkah standar:**
 
 ```bash
 cd /var/www/auraerp && \
 sudo chown -R ubuntu:www-data /var/www/auraerp && \
-git fetch origin main && \
-git reset --hard origin/main && \
-composer dump-autoload -o && \
+sudo chmod -R ug+rwX storage bootstrap/cache && \
+git remote add fork https://github.com/bionte4/auraERP.git 2>/dev/null || true && \
+git fetch fork && \
+git merge fork/master && \
+composer install --no-dev --optimize-autoloader && \
+sudo chown -R www-data:www-data storage bootstrap/cache public && \
+sudo chmod -R ug+rwx storage bootstrap/cache && \
 sudo -u www-data php artisan migrate --force --no-interaction && \
 sudo -u www-data php artisan integrations:install --no-interaction && \
 sudo -u www-data php artisan projects:sync-team-memberships && \
 sudo -u www-data php artisan security:sync-rbac && \
-sudo chown -R www-data:www-data storage bootstrap/cache public && \
-sudo chmod -R ug+rwx storage bootstrap/cache && \
+sudo -u www-data php artisan optimize:clear && \
+sudo -u www-data php artisan optimize
+```
+
+**Jika `filament:upgrade` / Artisan gagal dengan Permission denied:**
+```bash
+sudo chown -R www-data:www-data storage bootstrap/cache
+sudo find storage bootstrap/cache -type d -exec chmod 775 {} \;
+sudo find storage bootstrap/cache -type f -exec chmod 664 {} \;
+sudo rm -f storage/logs/laravel.log
+sudo -u www-data touch storage/logs/laravel.log
+sudo -u www-data php artisan filament:upgrade
 sudo -u www-data php artisan optimize:clear
+sudo -u www-data php artisan optimize
 ```
 
 **Catatan deploy:**
-1. `sudo chown ... ubuntu:www-data` diperlukan sebelum `composer dump-autoload` agar `filament:upgrade` (post-autoload-dump) bisa menulis ke `public/js` & `public/css`.
-2. `composer dump-autoload -o` wajib jika ada **plugin baru** (mis. `integrations`) agar namespace Artisan & autoload PSR-4 terdaftar.
-3. `integrations:install` aman dijalankan ulang (idempotent) bila plugin sudah terpasang.
-4. `security:sync-rbac` menyinkronkan permission baru (termasuk **Tugaskan Karyawan** & **Integrations**).
-5. Setelah deploy, uji: login Admin → **Project → Tugaskan Karyawan**, **Employees → tab Proyek Ditugaskan**, **Settings → Integrations**.
+1. Selalu pakai **`sudo -u www-data php artisan …`** agar log & cache tidak jadi milik `ubuntu`/`root` lalu memblokir web/CLI berikutnya.
+2. `composer install` memicu `filament:upgrade` (post-autoload-dump). Ownership `storage` + `bootstrap/cache` + `public` harus writable oleh user yang menjalankan Composer/Artisan.
+3. `security:sync-rbac` **wajib** setelah perubahan RBAC: menyetel ulang baseline Admin/HRD/OM/Accounting/Kasir/Staff dan **mencabut** grant non-baseline (termasuk audit/backup dari non-Admin).
+4. `integrations:install` dan `projects:sync-team-memberships` aman dijalankan ulang (idempotent).
+5. Setelah deploy RBAC: logout/login ulang di browser, lalu uji singkat:
+   - Staff/Kasir **tidak** bisa buka Dashboard Evaluasi
+   - HRD **tidak** punya Customer Project Weekly Report / widget aksi OM
+   - OM **tidak** punya menu penuh Sales/Purchase/Inventory
+   - Admin tetap penuh akses; OM bisa preview+unduh laporan klien
