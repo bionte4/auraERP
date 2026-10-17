@@ -18,7 +18,8 @@
     "autoload": {
         "psr-4": {
             "Webkul\\Evaluation\\": "src/",
-            "Webkul\\Evaluation\\Database\\Factories\\": "database/factories/"
+            "Webkul\\Evaluation\\Database\\Factories\\": "database/factories/",
+            "Webkul\\Evaluation\\Database\\Seeders\\": "database/seeders/"
         }
     }
 }
