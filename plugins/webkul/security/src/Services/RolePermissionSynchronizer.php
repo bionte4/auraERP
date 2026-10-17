@@ -84,6 +84,7 @@ class RolePermissionSynchronizer
             'page_support_my_day_dashboard',
             'page_support_team_board',
             'page_project_weekly_operations_report',
+            'page_project_customer_project_weekly_report',
 
             // Projects & Timesheets
             'view_any_project_project', 'view_project_project', 'create_project_project', 'update_project_project', 'delete_project_project', 'delete_any_project_project',
@@ -184,6 +185,7 @@ class RolePermissionSynchronizer
                 'widget_project_operation_manager_actions_widget',
                 'widget_project_attendance_presence_widget',
                 'page_project_weekly_operations_report',
+                'page_project_customer_project_weekly_report',
                 'page_support_my_day_dashboard',
                 'page_support_team_board',
                 'page_evaluation_performance_evaluation_dashboard',
