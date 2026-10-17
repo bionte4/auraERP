@@ -3,10 +3,12 @@
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Webkul\Attendance\Models\Attendance;
 use Webkul\Attendance\Models\AttendanceSite;
 use Webkul\Employee\Models\Employee;
+use Webkul\Evaluation\Filament\Pages\PerformanceEvaluationDashboard;
 use Webkul\Evaluation\Models\Evaluation;
 use Webkul\Performance\Models\PerformancePlan;
 use Webkul\Pos\Models\PosOrder;
@@ -70,14 +72,66 @@ it('synchronizes standard RBAC roles (Admin, HRD, Kasir, Staff) and assigns appr
         ->and($adminRole->hasPermissionTo('view_any_pos_pos::order'))->toBeTrue()
         ->and($hrdRole->hasPermissionTo('view_any_employee_employee'))->toBeTrue()
         ->and($hrdRole->hasPermissionTo('view_any_attendance_attendance::site'))->toBeTrue()
+        ->and($hrdRole->hasPermissionTo('page_project_weekly_operations_report'))->toBeTrue()
+        ->and($hrdRole->hasPermissionTo('page_project_customer_project_weekly_report'))->toBeFalse()
+        ->and($hrdRole->hasPermissionTo('widget_project_operation_manager_actions_widget'))->toBeFalse()
         ->and($opMgrRole->hasPermissionTo('view_any_project_project'))->toBeTrue()
         ->and($opMgrRole->hasPermissionTo('create_evaluation_evaluation'))->toBeTrue()
+        ->and($opMgrRole->hasPermissionTo('page_project_customer_project_weekly_report'))->toBeTrue()
         ->and($opMgrRole->hasPermissionTo('delete_security_user'))->toBeFalse()
+        ->and(
+            $opMgrRole->permissions->pluck('name')->contains(
+                fn (string $name): bool => str_contains($name, 'sale_order')
+                    || str_contains($name, 'purchase_order')
+                    || str_contains($name, 'inventory_')
+            )
+        )->toBeFalse()
         ->and($kasirRole->hasPermissionTo('page_pos_pos_terminal_page'))->toBeTrue()
         ->and($kasirRole->hasPermissionTo('create_pos_pos::order'))->toBeTrue()
         ->and($kasirRole->hasPermissionTo('delete_security_user'))->toBeFalse()
         ->and($staffRole->hasPermissionTo('page_attendance_clock_page'))->toBeTrue()
+        ->and($staffRole->hasPermissionTo('page_evaluation_performance_evaluation_dashboard'))->toBeFalse()
+        ->and($staffRole->hasPermissionTo('view_any_evaluation_evaluation'))->toBeFalse()
         ->and($staffRole->hasPermissionTo('delete_any_pos_pos::order'))->toBeFalse();
+});
+
+it('locks performance evaluation dashboard to Admin, HRD, and Operation Manager', function (): void {
+    foreach (['Admin', 'HRD', 'Operation Manager'] as $roleName) {
+        $user = User::withoutEvents(fn () => User::factory()->create());
+        $user->syncRoles([$roleName]);
+        $this->actingAs($user);
+
+        expect(PerformanceEvaluationDashboard::canAccess())->toBeTrue(
+            "Role {$roleName} should access the evaluation dashboard"
+        );
+    }
+
+    foreach (['Staff', 'Kasir', 'Accounting'] as $roleName) {
+        $user = User::withoutEvents(fn () => User::factory()->create());
+        $user->syncRoles([$roleName]);
+        $this->actingAs($user);
+
+        expect(PerformanceEvaluationDashboard::canAccess())->toBeFalse(
+            "Role {$roleName} must not access the evaluation dashboard"
+        );
+    }
+});
+
+it('resets non-admin roles with syncPermissions so stale grants are removed', function (): void {
+    $om = Role::query()->where('name', 'Operation Manager')->firstOrFail();
+
+    Permission::query()->firstOrCreate([
+        'name'       => 'view_any_security_user',
+        'guard_name' => 'web',
+    ]);
+
+    $om->givePermissionTo('view_any_security_user');
+    expect($om->fresh()->hasPermissionTo('view_any_security_user'))->toBeTrue();
+
+    app(RolePermissionSynchronizer::class)->syncAll(false);
+
+    expect($om->fresh()->hasPermissionTo('view_any_security_user'))->toBeFalse()
+        ->and($om->fresh()->hasPermissionTo('view_any_project_project'))->toBeTrue();
 });
 
 it('enforces User CRUD protection against self-deletion, default user deletion, and removing the last Admin', function (): void {
@@ -237,6 +291,10 @@ it('enforces RBAC policies on POS and AttendanceSite resources for Kasir, HRD, a
 });
 
 it('resolves Employee, Leave, Bank, and Sequence policies accurately across Individual and Group org-hierarchy scopes', function (): void {
+    if (! Schema::hasTable('employees_employees')) {
+        $this->markTestSkipped('employees_employees table is not available in this database.');
+    }
+
     $company = Company::query()->first() ?? Company::query()->create([
         'name' => 'PT Aura Audit',
     ]);

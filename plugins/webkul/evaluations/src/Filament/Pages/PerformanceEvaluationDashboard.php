@@ -22,6 +22,7 @@ use Webkul\Evaluation\Filament\Widgets\EvaluationByTypeChart;
 use Webkul\Evaluation\Filament\Widgets\EvaluationRecommendationChart;
 use Webkul\Evaluation\Filament\Widgets\EvaluationStatsOverviewWidget;
 use Webkul\Evaluation\Models\Evaluation;
+use Webkul\Security\Support\AdminAccess;
 use Webkul\Support\Enums\NavigationGroup;
 use Webkul\Support\Filament\Support\SelectedFilterIds;
 
@@ -78,17 +79,18 @@ class PerformanceEvaluationDashboard extends BaseDashboard
     {
         $user = auth()->user();
 
-        if (! $user) {
+        if (! $user || ! method_exists($user, 'hasRole')) {
             return false;
         }
 
-        if (method_exists($user, 'hasRole') && $user->hasRole(config('filament-shield.super_admin.name', 'Admin'))) {
-            return true;
+        // Aggregated evaluation dashboard is for Admin / HRD / Operation Manager only.
+        if (AdminAccess::check($user)
+            || $user->hasRole('HRD')
+            || $user->hasRole('Operation Manager')) {
+            return parent::canAccess() || $user->can(static::getPagePermission());
         }
 
-        return $user->can('view_any_evaluation_evaluation')
-            || $user->can('view_any_performance_performance::plan')
-            || $user->can(static::getPagePermission());
+        return false;
     }
 
     public static function getNavigationLabel(): string
