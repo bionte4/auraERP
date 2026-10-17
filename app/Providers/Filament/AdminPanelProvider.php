@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Http\Middleware\ApplyBrandSettings;
 use App\Http\Middleware\SetLocale;
+use App\Http\Responses\FilamentLoginResponse;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Actions\Action;
 use Filament\Http\Middleware\Authenticate;
@@ -42,6 +43,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login(Login::class)
+            ->homeUrl(fn (): string => FilamentLoginResponse::homeUrl())
             ->favicon(asset('images/favicon.ico'))
             ->brandLogo(asset('images/logo-full-light.svg'))
             ->darkModeBrandLogo(asset('images/logo-full-dark.svg'))

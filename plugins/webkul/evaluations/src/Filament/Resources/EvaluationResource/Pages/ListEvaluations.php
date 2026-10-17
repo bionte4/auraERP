@@ -4,7 +4,10 @@ namespace Webkul\Evaluation\Filament\Resources\EvaluationResource\Pages;
 
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
+use Filament\Forms\Components\FileUpload;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Webkul\Evaluation\Exports\EvaluationsMonitoringExport;
@@ -14,6 +17,7 @@ use Webkul\Evaluation\Filament\Widgets\EvaluationByTypeChart;
 use Webkul\Evaluation\Filament\Widgets\EvaluationRecommendationChart;
 use Webkul\Evaluation\Filament\Widgets\EvaluationStatsOverviewWidget;
 use Webkul\Evaluation\Models\Evaluation;
+use Webkul\Evaluation\Services\EvaluationBulkImportService;
 
 class ListEvaluations extends ListRecords
 {
@@ -31,6 +35,44 @@ class ListEvaluations extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('downloadTemplate')
+                ->label(__('evaluations::filament/resources/evaluation/pages/list.header-actions.template.label'))
+                ->icon('heroicon-o-document-arrow-down')
+                ->color('gray')
+                ->action(fn () => app(EvaluationBulkImportService::class)->downloadTemplate()),
+            Action::make('bulkImport')
+                ->label(__('evaluations::filament/resources/evaluation/pages/list.header-actions.import.label'))
+                ->icon('heroicon-o-arrow-up-tray')
+                ->color('gray')
+                ->modalHeading(__('evaluations::filament/resources/evaluation/pages/list.header-actions.import.modal-heading'))
+                ->modalDescription(__('evaluations::filament/resources/evaluation/pages/list.header-actions.import.modal-description'))
+                ->schema([
+                    FileUpload::make('file')
+                        ->label(__('evaluations::filament/resources/evaluation/pages/list.header-actions.import.file-label'))
+                        ->disk('local')
+                        ->directory('imports/evaluations')
+                        ->acceptedFileTypes([
+                            'text/csv',
+                            'text/plain',
+                            'application/vnd.ms-excel',
+                            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                        ])
+                        ->required(),
+                ])
+                ->action(function (array $data): void {
+                    $relativePath = (string) ($data['file'] ?? '');
+                    $fullPath = Storage::disk('local')->path($relativePath);
+
+                    $result = app(EvaluationBulkImportService::class)->importFromPath($fullPath);
+
+                    Storage::disk('local')->delete($relativePath);
+
+                    Notification::make()
+                        ->success()
+                        ->title(__('evaluations::filament/resources/evaluation/pages/list.header-actions.import.notification.title'))
+                        ->body(__('evaluations::filament/resources/evaluation/pages/list.header-actions.import.notification.body', $result))
+                        ->send();
+                }),
             Action::make('download_excel')
                 ->label('Download Excel (.xlsx)')
                 ->icon('heroicon-o-arrow-down-tray')

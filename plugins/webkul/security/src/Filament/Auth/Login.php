@@ -2,6 +2,7 @@
 
 namespace Webkul\Security\Filament\Auth;
 
+use App\Http\Responses\FilamentLoginResponse;
 use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
 use Filament\Auth\Http\Responses\Contracts\LoginResponse;
 use Filament\Auth\Pages\Login as BaseLogin;
@@ -16,6 +17,19 @@ use Webkul\Security\Services\LoginProtection;
 
 class Login extends BaseLogin
 {
+    public function mount(): void
+    {
+        if (Filament::auth()->check()) {
+            FilamentLoginResponse::forgetUnsafeIntendedUrl();
+
+            $this->redirect(FilamentLoginResponse::homeUrl());
+
+            return;
+        }
+
+        $this->form->fill();
+    }
+
     public function getHeading(): string|Htmlable|null
     {
         if (filled($this->userUndertakingMultiFactorAuthentication)) {

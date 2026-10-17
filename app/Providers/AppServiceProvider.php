@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Http\Responses\FilamentLoginResponse;
+use Filament\Auth\Http\Responses\Contracts\LoginResponse as LoginResponseContract;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
@@ -17,6 +19,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(Authenticatable::class, User::class);
+        $this->app->bind(LoginResponseContract::class, FilamentLoginResponse::class);
     }
 
     public function boot(): void
