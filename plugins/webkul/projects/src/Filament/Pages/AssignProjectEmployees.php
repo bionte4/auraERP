@@ -22,7 +22,6 @@ use Webkul\Employee\Models\Employee;
 use Webkul\Employee\Services\EmployeeUserProvisioner;
 use Webkul\PluginManager\Package;
 use Webkul\Project\Models\Project;
-use Webkul\Project\Services\EmployeeCapacity;
 use Webkul\Project\Services\ProjectEmployeeAssigner;
 use Webkul\Support\Enums\NavigationGroup;
 
@@ -119,11 +118,17 @@ class AssignProjectEmployees extends Page implements HasForms
                         CheckboxList::make('employee_ids')
                             ->label(__('projects::filament/pages/assign-project-employees.fields.employees'))
                             ->helperText(__('projects::filament/pages/assign-project-employees.fields.employees-helper'))
-                            ->options(fn (): array => $this->employeeOptions())
+                            ->options(function (Get $get): array {
+                                if (blank($get('project_id'))) {
+                                    return [];
+                                }
+
+                                return $this->employeeOptions();
+                            })
                             ->searchable()
                             ->bulkToggleable()
                             ->columns(2)
-                            ->disabled(fn (Get $get): bool => blank($get('project_id')))
+                            ->visible(fn (Get $get): bool => filled($get('project_id')))
                             ->columnSpanFull(),
                     ])
                     ->columns(1),
@@ -162,31 +167,23 @@ class AssignProjectEmployees extends Page implements HasForms
     }
 
     /**
+     * Lightweight labels only — capacity lookups on every active employee caused
+     * 500s on production when the workforce list is large.
+     *
      * @return array<int, string>
      */
     protected function employeeOptions(): array
     {
-        $employees = Employee::query()
+        return Employee::query()
             ->where('is_active', true)
             ->orderBy('name')
-            ->get(['id', 'name']);
+            ->get(['id', 'name', 'user_id'])
+            ->mapWithKeys(function (Employee $employee): array {
+                $suffix = $employee->user_id ? '' : ' (no login)';
 
-        return $this->optionsWithCapacity($employees);
-    }
-
-    /**
-     * @param  Collection<int, Employee>  $employees
-     * @return array<int, string>
-     */
-    protected function optionsWithCapacity(Collection $employees): array
-    {
-        $capacity = app(EmployeeCapacity::class)->forEmployees($employees);
-
-        return $employees->mapWithKeys(function (Employee $employee) use ($capacity): array {
-            $extra = $capacity[$employee->id]['label'] ?? '';
-
-            return [$employee->id => trim($employee->name.' — '.$extra)];
-        })->all();
+                return [$employee->id => $employee->name.$suffix];
+            })
+            ->all();
     }
 
     public function save(): void
