@@ -73,12 +73,12 @@ class ManageTaxes extends SettingsPage
                             ->label(__('accounting::filament/clusters/settings/pages/manage-taxes.form.sales-tax.label'))
                             ->options(Tax::where('type_tax_use', TypeTaxUse::SALE)->get()->pluck('name', 'id'))
                             ->inlineLabel()
-                            ->searchable(),
+                            ->native(),
                         Select::make('account_purchase_tax_id')
                             ->label(__('accounting::filament/clusters/settings/pages/manage-taxes.form.purchase-tax.label'))
                             ->options(Tax::where('type_tax_use', TypeTaxUse::PURCHASE)->get()->pluck('name', 'id'))
                             ->inlineLabel()
-                            ->searchable(),
+                            ->native(),
                     ]),
 
                 Radio::make('tax_calculation_rounding_method')
@@ -97,7 +97,7 @@ class ManageTaxes extends SettingsPage
                 Select::make('account_fiscal_country_id')
                     ->label(__('accounting::filament/clusters/settings/pages/manage-taxes.form.fiscal-country.label'))
                     ->options(Country::all()->pluck('name', 'id'))
-                    ->searchable(),
+                    ->native(),
             ]);
     }
 }

@@ -23,6 +23,7 @@ use Webkul\Evaluation\Filament\Widgets\EvaluationRecommendationChart;
 use Webkul\Evaluation\Filament\Widgets\EvaluationStatsOverviewWidget;
 use Webkul\Evaluation\Models\Evaluation;
 use Webkul\Support\Enums\NavigationGroup;
+use Webkul\Support\Filament\Support\SelectedFilterIds;
 
 class PerformanceEvaluationDashboard extends BaseDashboard
 {
@@ -45,20 +46,20 @@ class PerformanceEvaluationDashboard extends BaseDashboard
                         ->with(['employee.department', 'employee.employmentType', 'reviewer', 'gmApprover', 'ratings'])
                         ->latest('updated_at');
 
-                    if (! empty($this->filters['evaluation_type'])) {
-                        $query->whereIn('evaluation_type', (array) $this->filters['evaluation_type']);
+                    if ($ids = SelectedFilterIds::make($this->filters['evaluation_type'] ?? null)) {
+                        $query->whereIn('evaluation_type', $ids);
                     }
 
-                    if (! empty($this->filters['status'])) {
-                        $query->whereIn('status', (array) $this->filters['status']);
+                    if ($ids = SelectedFilterIds::make($this->filters['status'] ?? null)) {
+                        $query->whereIn('status', $ids);
                     }
 
-                    if (! empty($this->filters['department_name'])) {
-                        $query->whereIn('department_name', (array) $this->filters['department_name']);
+                    if ($ids = SelectedFilterIds::make($this->filters['department_name'] ?? null)) {
+                        $query->whereIn('department_name', $ids);
                     }
 
-                    if (! empty($this->filters['employee_id'])) {
-                        $query->whereIn('employee_id', (array) $this->filters['employee_id']);
+                    if ($ids = SelectedFilterIds::make($this->filters['employee_id'] ?? null)) {
+                        $query->whereIn('employee_id', $ids);
                     }
 
                     $filename = 'Monitoring-Evaluasi-Karyawan-'.now()->format('Y-m-d_His').'.xlsx';
@@ -110,8 +111,41 @@ class PerformanceEvaluationDashboard extends BaseDashboard
         return 'heroicon-o-presentation-chart-line';
     }
 
+    public function bootedHasFiltersForm(): void
+    {
+        $this->normalizeNativeFilterValues();
+        $this->cacheSchema('filtersForm', $this->getFiltersForm());
+    }
+
+    public function getFiltersForm(): Schema
+    {
+        if ((! $this->isCachingSchemas) && $this->hasCachedSchema('filtersForm')) {
+            return $this->getSchema('filtersForm');
+        }
+
+        $schema = $this->makeSchema()
+            ->live(debounce: 500)
+            ->statePath('filters');
+
+        return $this->filtersForm($schema);
+    }
+
+    public function updatedFilters(): void
+    {
+        $this->normalizeNativeFilterValues();
+
+        if ($this->persistsFiltersInSession()) {
+            session()->put(
+                $this->getFiltersSessionKey(),
+                $this->filters,
+            );
+        }
+    }
+
     public function filtersForm(Schema $schema): Schema
     {
+        $allLabel = str_starts_with((string) app()->getLocale(), 'id') ? 'Semua' : 'All';
+
         return $schema
             ->components([
                 Section::make()
@@ -123,31 +157,48 @@ class PerformanceEvaluationDashboard extends BaseDashboard
                     ->schema([
                         Select::make('evaluation_type')
                             ->label('Jenis / Periode Evaluasi')
-                            ->multiple()
+                            ->native()
                             ->options(EvaluationType::options())
-                            ->live(),
+                            ->placeholder($allLabel),
                         Select::make('status')
                             ->label('Status Evaluasi')
-                            ->multiple()
+                            ->native()
                             ->options(EvaluationStatus::options())
-                            ->live(),
+                            ->placeholder($allLabel),
                         Select::make('department_name')
                             ->label('Departemen')
-                            ->multiple()
-                            ->searchable()
-                            ->preload()
+                            ->native()
                             ->options(fn (): array => Department::query()->pluck('name', 'name')->all())
-                            ->live(),
+                            ->placeholder($allLabel),
                         Select::make('employee_id')
                             ->label('Karyawan')
-                            ->multiple()
-                            ->searchable()
-                            ->preload()
-                            ->options(fn (): array => Employee::query()->pluck('name', 'id')->all())
-                            ->live(),
+                            ->native()
+                            ->options(fn (): array => Employee::query()->orderBy('name')->pluck('name', 'id')->all())
+                            ->placeholder($allLabel),
                     ])
                     ->columnSpanFull(),
             ]);
+    }
+
+    protected function normalizeNativeFilterValues(): void
+    {
+        if (! is_array($this->filters)) {
+            return;
+        }
+
+        foreach (['evaluation_type', 'status', 'department_name', 'employee_id'] as $key) {
+            if (! array_key_exists($key, $this->filters)) {
+                continue;
+            }
+
+            if (is_array($this->filters[$key])) {
+                $this->filters[$key] = $this->filters[$key][0] ?? null;
+            }
+
+            if ($this->filters[$key] === '' || $this->filters[$key] === false) {
+                $this->filters[$key] = null;
+            }
+        }
     }
 
     public function getWidgets(): array

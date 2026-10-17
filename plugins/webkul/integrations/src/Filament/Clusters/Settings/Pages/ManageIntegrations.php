@@ -90,7 +90,7 @@ class ManageIntegrations extends SettingsPage
                                 'ssl'  => 'SSL',
                                 'null' => __('integrations::filament/pages/manage-integrations.fields.smtp_encryption_none'),
                             ])
-                            ->native(false),
+                            ->native(),
                         TextInput::make('smtp_username')
                             ->label(__('integrations::filament/pages/manage-integrations.fields.smtp_username'))
                             ->autocomplete('off'),

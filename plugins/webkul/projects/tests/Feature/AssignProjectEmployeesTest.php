@@ -1,9 +1,11 @@
 <?php
 
+use Livewire\Livewire;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Webkul\Employee\Models\Employee;
 use Webkul\Partner\Models\Partner;
+use Webkul\Project\Filament\Pages\AssignProjectEmployees;
 use Webkul\Project\Models\Project;
 use Webkul\Project\Services\ProjectEmployeeAssigner;
 use Webkul\Security\Models\User;
@@ -11,6 +13,7 @@ use Webkul\Security\Services\RolePermissionSynchronizer;
 
 require_once __DIR__.'/../../../support/tests/Helpers/SecurityHelper.php';
 require_once __DIR__.'/../../../support/tests/Helpers/TestBootstrapHelper.php';
+require_once __DIR__.'/../../../support/tests/Helpers/FilamentHelper.php';
 
 beforeEach(function (): void {
     TestBootstrapHelper::ensurePluginInstalled('employees');
@@ -68,6 +71,32 @@ it('assigns projects to an employee from the employee side', function (): void {
         ->toContain($projectA->id, $projectB->id)
         ->and($projectA->fresh()->isFollowedBy($partner))->toBeTrue()
         ->and($projectB->fresh()->isFollowedBy($partner))->toBeTrue();
+});
+
+it('saves assignment from the assign employees page form', function (): void {
+    FilamentHelper::actingAs([
+        'page_project_assign_project_employees',
+    ]);
+
+    $employee = Employee::create([
+        'name'      => 'Form Assigned Employee',
+        'is_active' => true,
+    ]);
+
+    $project = Project::factory()->create(['name' => 'Form Project']);
+
+    Livewire::test(AssignProjectEmployees::class)
+        ->assertOk()
+        ->assertFormFieldExists('project_id')
+        ->assertFormFieldExists('employee_ids')
+        ->fillForm([
+            'project_id'   => $project->id,
+            'employee_ids' => [$employee->id],
+        ])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    expect($project->employees()->pluck('employees_employees.id')->all())->toContain($employee->id);
 });
 
 it('grants assign employees page permission to admin and operation manager only', function (): void {

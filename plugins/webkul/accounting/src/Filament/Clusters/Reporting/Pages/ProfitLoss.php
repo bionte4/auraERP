@@ -24,6 +24,7 @@ use Webkul\Accounting\Filament\Clusters\Reporting\Pages\Concerns\NormalizeDateFi
 use Webkul\Accounting\Filament\Clusters\Reporting\Pages\Concerns\ShowsCurrencyNotice;
 use Webkul\Accounting\Filament\Clusters\Reporting\Pages\Exports\ProfitAndLossExport;
 use Webkul\Accounting\Support\CompanyRateMap;
+use Webkul\Support\Filament\Support\SelectedFilterIds;
 
 class ProfitLoss extends Page implements HasForms
 {
@@ -127,9 +128,8 @@ class ProfitLoss extends Page implements HasForms
                         ->afterStateUpdated(fn () => null),
                     Select::make('journals')
                         ->label(__('accounting::filament/clusters/reporting.pages.profit-loss.filters.journals'))
-                        ->multiple()
+                        ->native()
                         ->options(fn () => Journal::pluck('name', 'id'))
-                        ->searchable()
                         ->preload()
                         ->live()
                         ->afterStateUpdated(fn () => null),
@@ -151,7 +151,7 @@ class ProfitLoss extends Page implements HasForms
         $dateTo = $dateRange ? Carbon::parse($dateRange[1]) : now()->endOfMonth();
 
         $rateMap = CompanyRateMap::make(date: $dateTo->toDateString());
-        $journalIds = $this->data['journals'] ?? [];
+        $journalIds = SelectedFilterIds::make($this->data['journals'] ?? null);
 
         $query = MoveLine::query()
             ->select([

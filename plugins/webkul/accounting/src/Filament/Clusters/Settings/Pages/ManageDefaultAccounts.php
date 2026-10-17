@@ -67,17 +67,17 @@ class ManageDefaultAccounts extends SettingsPage
                             ->label(__('accounting::filament/clusters/settings/pages/manage-default-accounts.form.exchange-difference-entries.fields.journal.label'))
                             ->options(Journal::all()->pluck('name', 'id'))
                             ->inlineLabel()
-                            ->searchable(),
+                            ->native(),
                         Select::make('income_currency_exchange_account_id')
                             ->label(__('accounting::filament/clusters/settings/pages/manage-default-accounts.form.exchange-difference-entries.fields.gain.label'))
                             ->options(Account::whereIn('account_type', [AccountType::INCOME, AccountType::INCOME_OTHER])->where('deprecated', false)->get()->pluck('name', 'id'))
                             ->inlineLabel()
-                            ->searchable(),
+                            ->native(),
                         Select::make('expense_currency_exchange_account_id')
                             ->label(__('accounting::filament/clusters/settings/pages/manage-default-accounts.form.exchange-difference-entries.fields.loss.label'))
                             ->options(Account::whereIn('account_type', [AccountType::EXPENSE, AccountType::EXPENSE_DEPRECIATION, AccountType::EXPENSE_DIRECT_COST])->where('deprecated', false)->get()->pluck('name', 'id'))
                             ->inlineLabel()
-                            ->searchable(),
+                            ->native(),
                     ])
                     ->columns(1),
 
@@ -87,12 +87,12 @@ class ManageDefaultAccounts extends SettingsPage
                             ->label(__('accounting::filament/clusters/settings/pages/manage-default-accounts.form.bank-transfer-and-payments.fields.bank-suspense-account.label'))
                             ->options(Account::whereIn('account_type', [AccountType::ASSET_CURRENT, AccountType::LIABILITY_CURRENT])->where('deprecated', false)->get()->pluck('name', 'id'))
                             ->inlineLabel()
-                            ->searchable(),
+                            ->native(),
                         Select::make('transfer_account_id')
                             ->label(__('accounting::filament/clusters/settings/pages/manage-default-accounts.form.bank-transfer-and-payments.fields.transfer-account.label'))
                             ->options(Account::where('account_type', AccountType::ASSET_CURRENT)->where('deprecated', false)->where('reconcile', true)->get()->pluck('name', 'id'))
                             ->inlineLabel()
-                            ->searchable(),
+                            ->native(),
                     ])
                     ->columns(1),
 
@@ -102,12 +102,12 @@ class ManageDefaultAccounts extends SettingsPage
                             ->label(__('accounting::filament/clusters/settings/pages/manage-default-accounts.form.product-accounts.fields.income-account.label'))
                             ->options(Account::whereNotIn('account_type', [AccountType::ASSET_RECEIVABLE, AccountType::LIABILITY_PAYABLE, AccountType::ASSET_CASH, AccountType::LIABILITY_CREDIT_CARD, AccountType::OFF_BALANCE])->where('deprecated', false)->get()->pluck('name', 'id'))
                             ->inlineLabel()
-                            ->searchable(),
+                            ->native(),
                         Select::make('expense_account_id')
                             ->label(__('accounting::filament/clusters/settings/pages/manage-default-accounts.form.product-accounts.fields.expense-account.label'))
                             ->options(Account::whereNotIn('account_type', [AccountType::ASSET_RECEIVABLE, AccountType::LIABILITY_PAYABLE, AccountType::ASSET_CASH, AccountType::LIABILITY_CREDIT_CARD, AccountType::OFF_BALANCE])->where('deprecated', false)->get()->pluck('name', 'id'))
                             ->inlineLabel()
-                            ->searchable(),
+                            ->native(),
                     ])
                     ->columns(1),
             ]);

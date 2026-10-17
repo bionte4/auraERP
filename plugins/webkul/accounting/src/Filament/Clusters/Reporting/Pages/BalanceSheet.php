@@ -24,6 +24,7 @@ use Webkul\Accounting\Filament\Clusters\Reporting\Pages\Concerns\NormalizeDateFi
 use Webkul\Accounting\Filament\Clusters\Reporting\Pages\Concerns\ShowsCurrencyNotice;
 use Webkul\Accounting\Filament\Clusters\Reporting\Pages\Exports\BalanceSheetExport;
 use Webkul\Accounting\Support\CompanyRateMap;
+use Webkul\Support\Filament\Support\SelectedFilterIds;
 
 class BalanceSheet extends Page implements HasForms
 {
@@ -126,9 +127,8 @@ class BalanceSheet extends Page implements HasForms
                         ->afterStateUpdated(fn () => null),
                     Select::make('journals')
                         ->label(__('accounting::filament/clusters/reporting.pages.balance-sheet.filters.journals'))
-                        ->multiple()
+                        ->native()
                         ->options(fn () => Journal::pluck('name', 'id'))
-                        ->searchable()
                         ->preload()
                         ->live()
                         ->afterStateUpdated(fn () => null),
@@ -149,7 +149,7 @@ class BalanceSheet extends Page implements HasForms
         $date = $dateRange ? Carbon::parse($dateRange[1]) : now();
 
         $rateMap = CompanyRateMap::make(date: $date->toDateString());
-        $journalIds = $this->data['journals'] ?? [];
+        $journalIds = SelectedFilterIds::make($this->data['journals'] ?? null);
 
         $query = MoveLine::query()
             ->select([

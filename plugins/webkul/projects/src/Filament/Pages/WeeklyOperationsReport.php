@@ -7,12 +7,10 @@ use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Actions\Action;
 use Filament\Pages\Page;
 use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Support\Facades\Schema;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Webkul\Employee\Models\Employee;
 use Webkul\Project\Exports\WeeklyOperationsExport;
-use Webkul\Project\Services\EmployeeCapacity;
+use Webkul\Project\Services\WeeklyOperationsReportData;
 use Webkul\Support\Enums\NavigationGroup;
 
 class WeeklyOperationsReport extends Page
@@ -30,6 +28,15 @@ class WeeklyOperationsReport extends Page
     protected static function getPagePermission(): ?string
     {
         return 'page_project_weekly_operations_report';
+    }
+
+    public static function canAccess(): bool
+    {
+        if (! parent::canAccess()) {
+            return false;
+        }
+
+        return app(WeeklyOperationsReportData::class)->viewerMayAccess();
     }
 
     public static function getNavigationLabel(): string
@@ -61,7 +68,7 @@ class WeeklyOperationsReport extends Page
     {
         $filename = 'weekly-operations-'.now()->format('Y-m-d').'.xlsx';
 
-        return Excel::download(new WeeklyOperationsExport, $filename);
+        return Excel::download(new WeeklyOperationsExport(auth()->user()), $filename);
     }
 
     /**
@@ -69,41 +76,13 @@ class WeeklyOperationsReport extends Page
      */
     public function getViewData(): array
     {
-        $export = new WeeklyOperationsExport;
-        $rows = $export->collection();
+        $report = app(WeeklyOperationsReportData::class)->build(auth()->user());
 
         return [
-            'rows'     => $rows->map(fn ($row): array => [
-                'metric' => $row[0],
-                'value'  => $row[1],
-                'notes'  => $row[2],
-            ])->all(),
-            'loadRows' => $this->capacityLoadRows(),
+            'scopeLabel' => $report['scope_label'],
+            'weekLabel'  => $report['week_label'],
+            'rows'       => $report['metrics'],
+            'loadRows'   => $report['load_rows'],
         ];
-    }
-
-    /**
-     * @return array<int, array{name: string, projects: int, hours: float}>
-     */
-    protected function capacityLoadRows(): array
-    {
-        if (! class_exists(Employee::class) || ! Schema::hasTable('projects_project_employees')) {
-            return [];
-        }
-
-        $employees = Employee::query()
-            ->where('is_active', true)
-            ->whereHas('projects')
-            ->orderBy('name')
-            ->limit(40)
-            ->get(['id', 'name']);
-
-        $capacity = app(EmployeeCapacity::class)->forEmployees($employees);
-
-        return $employees->map(fn (Employee $employee): array => [
-            'name'     => $employee->name,
-            'projects' => $capacity[$employee->id]['projects'] ?? 0,
-            'hours'    => $capacity[$employee->id]['hours'] ?? 0.0,
-        ])->all();
     }
 }

@@ -9,6 +9,7 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Carbon;
 use Webkul\Employee\Models\EmployeeJobPosition;
 use Webkul\Recruitment\Models\Applicant;
+use Webkul\Support\Filament\Support\SelectedFilterIds;
 
 class JobPositionStatsWidget extends BaseWidget
 {
@@ -31,14 +32,14 @@ class JobPositionStatsWidget extends BaseWidget
         $query = EmployeeJobPosition::query();
         $applicantQuery = Applicant::query();
 
-        if (! empty($this->pageFilters['selectedDepartments'])) {
-            $query->whereIn('department_id', $this->pageFilters['selectedDepartments']);
-            $applicantQuery->whereIn('department_id', $this->pageFilters['selectedDepartments']);
+        if ($ids = SelectedFilterIds::make($this->pageFilters['selectedDepartments'] ?? null)) {
+            $query->whereIn('department_id', $ids);
+            $applicantQuery->whereIn('department_id', $ids);
         }
 
-        if (! empty($this->pageFilters['selectedCompanies'])) {
-            $query->whereIn('company_id', $this->pageFilters['selectedCompanies']);
-            $applicantQuery->whereIn('company_id', $this->pageFilters['selectedCompanies']);
+        if ($ids = SelectedFilterIds::make($this->pageFilters['selectedCompanies'] ?? null)) {
+            $query->whereIn('company_id', $ids);
+            $applicantQuery->whereIn('company_id', $ids);
         }
 
         $currentPeriodStart = ! is_null($this->pageFilters['startDate'] ?? null) ?

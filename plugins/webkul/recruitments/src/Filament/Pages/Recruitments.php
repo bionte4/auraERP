@@ -17,6 +17,7 @@ use Webkul\Recruitment\Filament\Widgets\JobPositionStatsWidget;
 use Webkul\Recruitment\Models\Stage;
 use Webkul\Support\Enums\NavigationGroup;
 use Webkul\Support\Filament\Forms\Components\DashboardDateRange;
+use Webkul\Support\Filament\Support\SelectedFilterIds;
 use Webkul\Support\Models\Company;
 
 class Recruitments extends BaseDashboard
@@ -46,42 +47,68 @@ class Recruitments extends BaseDashboard
         return 'heroicon-o-user-plus';
     }
 
+    public function bootedHasFiltersForm(): void
+    {
+        $this->normalizeNativeFilterValues();
+        $this->cacheSchema('filtersForm', $this->getFiltersForm());
+    }
+
+    public function getFiltersForm(): Schema
+    {
+        if ((! $this->isCachingSchemas) && $this->hasCachedSchema('filtersForm')) {
+            return $this->getSchema('filtersForm');
+        }
+
+        $schema = $this->makeSchema()
+            ->live(debounce: 500)
+            ->statePath('filters');
+
+        return $this->filtersForm($schema);
+    }
+
+    public function updatedFilters(): void
+    {
+        $this->normalizeNativeFilterValues();
+
+        if ($this->persistsFiltersInSession()) {
+            session()->put(
+                $this->getFiltersSessionKey(),
+                $this->filters,
+            );
+        }
+    }
+
     public function filtersForm(Schema $schema): Schema
     {
+        $allLabel = __('recruitments::filament/pages/recruitment.filters-form.status.options.all');
+
         return $schema
             ->components([
                 Section::make()
                     ->schema([
                         Select::make('selectedJobs')
                             ->label(__('recruitments::filament/pages/recruitment.filters-form.job-position'))
-                            ->multiple()
-                            ->searchable()
-                            ->preload()
+                            ->native()
                             ->options(fn () => EmployeeJobPosition::where('is_active', true)->pluck('name', 'id'))
-                            ->reactive(),
+                            ->placeholder($allLabel),
                         Select::make('selectedDepartments')
                             ->label(__('recruitments::filament/pages/recruitment.filters-form.departments'))
-                            ->multiple()
-                            ->searchable()
-                            ->preload()
+                            ->native()
                             ->options(fn () => Department::pluck('name', 'id'))
-                            ->reactive(),
+                            ->placeholder($allLabel),
                         Select::make('selectedCompanies')
                             ->label(__('recruitments::filament/pages/recruitment.filters-form.companies'))
-                            ->multiple()
-                            ->searchable()
-                            ->preload()
+                            ->native()
                             ->options(fn () => Company::pluck('name', 'id'))
-                            ->reactive(),
+                            ->placeholder($allLabel),
                         Select::make('selectedStages')
                             ->label(__('recruitments::filament/pages/recruitment.filters-form.stages'))
-                            ->multiple()
-                            ->searchable()
-                            ->preload()
+                            ->native()
                             ->options(fn () => Stage::pluck('name', 'id'))
-                            ->reactive(),
+                            ->placeholder($allLabel),
                         Select::make('status')
                             ->label(__('recruitments::filament/pages/recruitment.filters-form.status.title'))
+                            ->native()
                             ->options([
                                 'all'      => __('recruitments::filament/pages/recruitment.filters-form.status.options.all'),
                                 'ongoing'  => __('recruitments::filament/pages/recruitment.filters-form.status.options.ongoing'),
@@ -89,8 +116,7 @@ class Recruitments extends BaseDashboard
                                 'refused'  => __('recruitments::filament/pages/recruitment.filters-form.status.options.refused'),
                                 'archived' => __('recruitments::filament/pages/recruitment.filters-form.status.options.archived'),
                             ])
-                            ->default('all')
-                            ->reactive(),
+                            ->default('all'),
                         ...DashboardDateRange::make(
                             __('recruitments::filament/pages/recruitment.filters-form.date-range'),
                         ),
@@ -103,6 +129,35 @@ class Recruitments extends BaseDashboard
                         'xl'      => 7,
                     ]),
             ]);
+    }
+
+    /**
+     * @return array<int, int|string>
+     */
+    public static function selectedFilterIds(mixed $value): array
+    {
+        return SelectedFilterIds::make($value);
+    }
+
+    protected function normalizeNativeFilterValues(): void
+    {
+        if (! is_array($this->filters)) {
+            return;
+        }
+
+        foreach (['selectedJobs', 'selectedDepartments', 'selectedCompanies', 'selectedStages'] as $key) {
+            if (! array_key_exists($key, $this->filters)) {
+                continue;
+            }
+
+            if (is_array($this->filters[$key])) {
+                $this->filters[$key] = $this->filters[$key][0] ?? null;
+            }
+
+            if ($this->filters[$key] === '' || $this->filters[$key] === false) {
+                $this->filters[$key] = null;
+            }
+        }
     }
 
     /**

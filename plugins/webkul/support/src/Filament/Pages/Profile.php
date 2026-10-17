@@ -128,8 +128,7 @@ class Profile extends Page implements HasForms
                                         ])
                                         ->all())
                                     ->default(config('app.locale'))
-                                    ->native(false)
-                                    ->searchable()
+                                    ->native()
                                     ->selectablePlaceholder(false)
                                     ->helperText(__('support::filament/pages/profile.fields.language_helper'))
                                     ->columnSpanFull(),

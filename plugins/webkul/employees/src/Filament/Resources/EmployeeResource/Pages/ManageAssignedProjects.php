@@ -3,7 +3,7 @@
 namespace Webkul\Employee\Filament\Resources\EmployeeResource\Pages;
 
 use Filament\Actions\Action;
-use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
@@ -12,7 +12,6 @@ use Filament\Resources\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema as SchemaFacade;
 use Webkul\Employee\Filament\Resources\EmployeeResource;
@@ -81,25 +80,14 @@ class ManageAssignedProjects extends Page implements HasForms
                 Section::make(__('employees::filament/resources/employee/pages/manage-assigned-projects.section.title'))
                     ->description(__('employees::filament/resources/employee/pages/manage-assigned-projects.section.description'))
                     ->schema([
-                        Select::make('project_ids')
+                        // CheckboxList — Select multiple/searchable forces Alpine and can render empty.
+                        CheckboxList::make('project_ids')
                             ->label(__('employees::filament/resources/employee/pages/manage-assigned-projects.fields.projects'))
                             ->helperText(__('employees::filament/resources/employee/pages/manage-assigned-projects.fields.projects-helper'))
-                            ->multiple()
-                            ->searchable()
-                            ->preload()
                             ->options(fn (): array => Project::query()->orderBy('name')->pluck('name', 'id')->all())
-                            ->getSearchResultsUsing(function (string $search): array {
-                                $term = '%'.$search.'%';
-
-                                return Project::query()
-                                    ->where(function (Builder $query) use ($term): void {
-                                        $query->where('name', 'like', $term);
-                                    })
-                                    ->orderBy('name')
-                                    ->limit(50)
-                                    ->pluck('name', 'id')
-                                    ->all();
-                            })
+                            ->searchable()
+                            ->bulkToggleable()
+                            ->columns(2)
                             ->columnSpanFull(),
                     ]),
             ])

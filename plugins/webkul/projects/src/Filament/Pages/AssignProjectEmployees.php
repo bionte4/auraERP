@@ -5,6 +5,7 @@ namespace Webkul\Project\Filament\Pages;
 use BackedEnum;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Actions\Action;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -15,7 +16,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Webkul\Employee\Models\Employee;
 use Webkul\Employee\Services\EmployeeUserProvisioner;
@@ -89,22 +90,25 @@ class AssignProjectEmployees extends Page implements HasForms
                 Section::make(__('projects::filament/pages/assign-project-employees.title'))
                     ->description(__('projects::filament/pages/assign-project-employees.description'))
                     ->schema([
+                        // Native <select> — searchable()/multiple() force Alpine selects that
+                        // fail to initialize on this custom page (empty non-clickable boxes).
                         Select::make('project_id')
                             ->label(__('projects::filament/pages/assign-project-employees.fields.project'))
                             ->options(fn (): array => Project::query()->orderBy('name')->pluck('name', 'id')->all())
-                            ->searchable()
-                            ->preload()
+                            ->native()
                             ->required()
                             ->live()
-                            ->afterStateUpdated(function (?int $state, Set $set): void {
-                                if (! $state) {
+                            ->afterStateUpdated(function (mixed $state, Set $set): void {
+                                $projectId = filled($state) ? (int) $state : null;
+
+                                if (! $projectId) {
                                     $set('employee_ids', []);
 
                                     return;
                                 }
 
                                 $employeeIds = Project::query()
-                                    ->find($state)
+                                    ->find($projectId)
                                     ?->employees()
                                     ->pluck('employees_employees.id')
                                     ->map(fn ($id): int => (int) $id)
@@ -112,28 +116,13 @@ class AssignProjectEmployees extends Page implements HasForms
 
                                 $set('employee_ids', $employeeIds);
                             }),
-                        Select::make('employee_ids')
+                        CheckboxList::make('employee_ids')
                             ->label(__('projects::filament/pages/assign-project-employees.fields.employees'))
                             ->helperText(__('projects::filament/pages/assign-project-employees.fields.employees-helper'))
-                            ->multiple()
-                            ->searchable()
-                            ->preload()
                             ->options(fn (): array => $this->employeeOptions())
-                            ->getSearchResultsUsing(function (string $search): array {
-                                $term = '%'.$search.'%';
-
-                                $employees = Employee::query()
-                                    ->where('is_active', true)
-                                    ->where(function (Builder $query) use ($term): void {
-                                        $query->where('name', 'like', $term)
-                                            ->orWhere('work_email', 'like', $term);
-                                    })
-                                    ->orderBy('name')
-                                    ->limit(50)
-                                    ->get(['id', 'name']);
-
-                                return $this->optionsWithCapacity($employees);
-                            })
+                            ->searchable()
+                            ->bulkToggleable()
+                            ->columns(2)
                             ->disabled(fn (Get $get): bool => blank($get('project_id')))
                             ->columnSpanFull(),
                     ])
@@ -215,9 +204,14 @@ class AssignProjectEmployees extends Page implements HasForms
         }
 
         $project = Project::query()->findOrFail($projectId);
+        $employeeIds = array_values(array_filter(
+            Arr::wrap($state['employee_ids'] ?? []),
+            fn (mixed $id): bool => filled($id),
+        ));
+
         $result = app(ProjectEmployeeAssigner::class)->sync(
             $project,
-            $state['employee_ids'] ?? [],
+            $employeeIds,
         );
 
         $notification = Notification::make()

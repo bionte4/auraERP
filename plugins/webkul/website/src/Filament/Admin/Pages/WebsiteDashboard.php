@@ -56,8 +56,8 @@ class WebsiteDashboard extends BaseDashboard
 
                 Select::make('author_id')
                     ->label(__('website::filament/admin/pages/dashboard.author'))
-                    ->options(User::query()->pluck('name', 'id'))
-                    ->searchable()
+                    ->options(User::query()->orderBy('name')->pluck('name', 'id'))
+                    ->native()
                     ->placeholder(__('website::filament/admin/pages/dashboard.all-author')),
             ])
             ->columns(1);

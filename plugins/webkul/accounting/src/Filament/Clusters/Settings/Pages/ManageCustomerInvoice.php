@@ -60,7 +60,7 @@ class ManageCustomerInvoice extends SettingsPage
                     ->label(__('accounting::filament/clusters/settings/pages/manage-customer-invoice.form.incoterm.label'))
                     ->options(Incoterm::all()->pluck('name', 'id'))
                     ->inlineLabel()
-                    ->searchable(),
+                    ->native(),
             ]);
     }
 }

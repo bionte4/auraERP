@@ -55,7 +55,7 @@ class ManageCurrency extends SettingsPage
                     ->label(__('security::filament/clusters/manage-currency.form.default-currency.label'))
                     ->helperText(__('security::filament/clusters/manage-currency.form.default-currency.helper-text'))
                     ->options(Currency::active()->pluck('name', 'id'))
-                    ->searchable(),
+                    ->native(),
             ]);
     }
 }

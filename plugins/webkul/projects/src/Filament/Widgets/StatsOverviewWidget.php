@@ -9,10 +9,12 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 use Flowframe\Trend\Trend;
 use Flowframe\Trend\TrendValue;
 use Illuminate\Support\Carbon;
+use Webkul\Project\Filament\Widgets\Concerns\AppliesDashboardFilters;
 use Webkul\Project\Models\Task;
 
 class StatsOverviewWidget extends BaseWidget
 {
+    use AppliesDashboardFilters;
     use HasWidgetShield, InteractsWithPageFilters;
 
     protected ?string $pollingInterval = '15s';
@@ -31,24 +33,29 @@ class StatsOverviewWidget extends BaseWidget
     {
         $query = Task::query();
 
-        if (! empty($this->pageFilters['selectedProjects'])) {
-            $query->whereIn('project_id', $this->pageFilters['selectedProjects']);
+        $selectedProjects = $this->selectedFilterIds('selectedProjects');
+        $selectedAssignees = $this->selectedFilterIds('selectedAssignees');
+        $selectedTags = $this->selectedFilterIds('selectedTags');
+        $selectedPartners = $this->selectedFilterIds('selectedPartners');
+
+        if ($selectedProjects !== []) {
+            $query->whereIn('project_id', $selectedProjects);
         }
 
-        if (! empty($this->pageFilters['selectedAssignees'])) {
-            $query->whereHas('users', function ($q) {
-                $q->whereIn('users.id', $this->pageFilters['selectedAssignees']);
+        if ($selectedAssignees !== []) {
+            $query->whereHas('users', function ($q) use ($selectedAssignees) {
+                $q->whereIn('users.id', $selectedAssignees);
             });
         }
 
-        if (! empty($this->pageFilters['selectedTags'])) {
-            $query->whereHas('tags', function ($q) {
-                $q->whereIn('projects_task_tag.tag_id', $this->pageFilters['selectedTags']);
+        if ($selectedTags !== []) {
+            $query->whereHas('tags', function ($q) use ($selectedTags) {
+                $q->whereIn('projects_task_tag.tag_id', $selectedTags);
             });
         }
 
-        if (! empty($this->pageFilters['selectedPartners'])) {
-            $query->whereIn('parent_id', $this->pageFilters['selectedPartners']);
+        if ($selectedPartners !== []) {
+            $query->whereIn('parent_id', $selectedPartners);
         }
 
         $currentPeriodStart = ! is_null($this->pageFilters['startDate'] ?? null) ?

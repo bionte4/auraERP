@@ -7,11 +7,13 @@ use Filament\Widgets\ChartWidget;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Carbon;
+use Webkul\Project\Filament\Widgets\Concerns\AppliesDashboardFilters;
 use Webkul\Project\Models\Task;
 use Webkul\Project\Models\TaskStage;
 
 class TaskByStageChart extends ChartWidget
 {
+    use AppliesDashboardFilters;
     use HasWidgetShield, InteractsWithPageFilters;
 
     protected ?string $heading = 'Tasks By Stage';
@@ -46,24 +48,29 @@ class TaskByStageChart extends ChartWidget
 
             $query = Task::query();
 
-            if (! empty($this->pageFilters['selectedProjects'])) {
-                $query->whereIn('project_id', $this->pageFilters['selectedProjects']);
+            $selectedProjects = $this->selectedFilterIds('selectedProjects');
+            $selectedAssignees = $this->selectedFilterIds('selectedAssignees');
+            $selectedTags = $this->selectedFilterIds('selectedTags');
+            $selectedPartners = $this->selectedFilterIds('selectedPartners');
+
+            if ($selectedProjects !== []) {
+                $query->whereIn('project_id', $selectedProjects);
             }
 
-            if (! empty($this->pageFilters['selectedAssignees'])) {
-                $query->whereHas('users', function ($q) {
-                    $q->whereIn('users.id', $this->pageFilters['selectedAssignees']);
+            if ($selectedAssignees !== []) {
+                $query->whereHas('users', function ($q) use ($selectedAssignees) {
+                    $q->whereIn('users.id', $selectedAssignees);
                 });
             }
 
-            if (! empty($this->pageFilters['selectedTags'])) {
-                $query->whereHas('tags', function ($q) {
-                    $q->whereIn('projects_task_tag.tag_id', $this->pageFilters['selectedTags']);
+            if ($selectedTags !== []) {
+                $query->whereHas('tags', function ($q) use ($selectedTags) {
+                    $q->whereIn('projects_task_tag.tag_id', $selectedTags);
                 });
             }
 
-            if (! empty($this->pageFilters['selectedPartners'])) {
-                $query->whereIn('parent_id', $this->pageFilters['selectedPartners']);
+            if ($selectedPartners !== []) {
+                $query->whereIn('parent_id', $selectedPartners);
             }
 
             $startDate = ! is_null($this->pageFilters['startDate'] ?? null) ?

@@ -25,6 +25,7 @@ use Webkul\Accounting\Filament\Clusters\Reporting\Pages\Concerns\ShowsCurrencyNo
 use Webkul\Accounting\Filament\Clusters\Reporting\Pages\Exports\PartnerLedgerExport;
 use Webkul\Accounting\Support\CompanyRateMap;
 use Webkul\Partner\Models\Partner;
+use Webkul\Support\Filament\Support\SelectedFilterIds;
 
 class PartnerLedger extends Page implements HasForms
 {
@@ -145,17 +146,15 @@ class PartnerLedger extends Page implements HasForms
 
                     Select::make('partners')
                         ->label(__('accounting::filament/clusters/reporting.pages.partner-ledger.filters.partners'))
-                        ->multiple()
+                        ->native()
                         ->options(Partner::pluck('name', 'id'))
-                        ->searchable()
                         ->live()
                         ->afterStateUpdated(fn () => $this->resetExpandedState()),
 
                     Select::make('journals')
                         ->label(__('accounting::filament/clusters/reporting.pages.partner-ledger.filters.journals'))
-                        ->multiple()
+                        ->native()
                         ->options(Journal::pluck('name', 'id'))
-                        ->searchable()
                         ->live()
                         ->afterStateUpdated(fn () => $this->resetExpandedState()),
                 ])
@@ -175,8 +174,8 @@ class PartnerLedger extends Page implements HasForms
         $dateFrom = $dateRange ? Carbon::parse($dateRange[0]) : now()->startOfYear();
         $dateTo = $dateRange ? Carbon::parse($dateRange[1]) : now();
 
-        $partnerIds = $this->form->getState()['partners'] ?? [];
-        $journalIds = $this->form->getState()['journals'] ?? [];
+        $partnerIds = SelectedFilterIds::make($this->form->getState()['partners'] ?? null);
+        $journalIds = SelectedFilterIds::make($this->form->getState()['journals'] ?? null);
         $rateMap = CompanyRateMap::make(date: $dateTo->toDateString());
 
         $balance = $rateMap->weight('accounts_account_move_lines.balance');
@@ -278,7 +277,7 @@ class PartnerLedger extends Page implements HasForms
         $dateRange = $this->parseDateRange();
         $dateFrom = $dateRange ? Carbon::parse($dateRange[0]) : now()->startOfYear();
         $dateTo = $dateRange ? Carbon::parse($dateRange[1]) : now();
-        $journalIds = $this->form->getState()['journals'] ?? [];
+        $journalIds = SelectedFilterIds::make($this->form->getState()['journals'] ?? null);
         $rateMap = CompanyRateMap::make(date: $dateTo->toDateString());
 
         $query = MoveLine::select(

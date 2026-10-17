@@ -23,6 +23,7 @@ use Webkul\Accounting\Filament\Clusters\Reporting\Pages\Concerns\ShowsCurrencyNo
 use Webkul\Accounting\Filament\Clusters\Reporting\Pages\Exports\AgedPayableExport;
 use Webkul\Accounting\Support\CompanyRateMap;
 use Webkul\Partner\Models\Partner;
+use Webkul\Support\Filament\Support\SelectedFilterIds;
 
 class AgedPayable extends Page implements HasForms
 {
@@ -153,6 +154,7 @@ class AgedPayable extends Page implements HasForms
 
                     Select::make('basis')
                         ->label(__('accounting::filament/clusters/reporting.pages.aged-payable.filters.based-on'))
+                        ->native()
                         ->options([
                             'due_date'     => __('accounting::filament/clusters/reporting.pages.aged-payable.filters.options.due-date'),
                             'invoice_date' => __('accounting::filament/clusters/reporting.pages.aged-payable.filters.options.invoice-date'),
@@ -163,6 +165,7 @@ class AgedPayable extends Page implements HasForms
 
                     Select::make('period')
                         ->label(__('accounting::filament/clusters/reporting.pages.aged-payable.filters.period-length'))
+                        ->native()
                         ->options([
                             30 => __('accounting::filament/clusters/reporting.pages.aged-payable.filters.options.days-30'),
                             60 => __('accounting::filament/clusters/reporting.pages.aged-payable.filters.options.days-60'),
@@ -174,17 +177,15 @@ class AgedPayable extends Page implements HasForms
 
                     Select::make('journals')
                         ->label(__('accounting::filament/clusters/reporting.pages.aged-payable.filters.journals'))
-                        ->multiple()
+                        ->native()
                         ->options(Journal::pluck('name', 'id'))
-                        ->searchable()
                         ->live()
                         ->afterStateUpdated(fn () => $this->resetExpandedState()),
 
                     Select::make('partners')
                         ->label(__('accounting::filament/clusters/reporting.pages.aged-payable.filters.partners'))
-                        ->multiple()
+                        ->native()
                         ->options(Partner::pluck('name', 'id'))
-                        ->searchable()
                         ->live()
                         ->afterStateUpdated(fn () => $this->resetExpandedState()),
 
@@ -341,8 +342,8 @@ class AgedPayable extends Page implements HasForms
         $asOfDate = Carbon::parse($state['as_of_date'] ?? now());
         $basis = $state['basis'] ?? 'due_date';
         $period = $state['period'] ?? 30;
-        $journalIds = $state['journals'] ?? [];
-        $partnerIds = $state['partners'] ?? [];
+        $journalIds = SelectedFilterIds::make($state['journals'] ?? null);
+        $partnerIds = SelectedFilterIds::make($state['partners'] ?? null);
         $postedOnly = ($state['posted_entries'] ?? 'posted') === 'posted';
         $rateMap = CompanyRateMap::make(date: $asOfDate->toDateString());
 

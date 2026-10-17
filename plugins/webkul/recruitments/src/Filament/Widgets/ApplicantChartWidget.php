@@ -6,6 +6,7 @@ use Filament\Widgets\ChartWidget;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Carbon;
 use Webkul\Recruitment\Models\Applicant;
+use Webkul\Support\Filament\Support\SelectedFilterIds;
 
 class ApplicantChartWidget extends ChartWidget
 {
@@ -29,24 +30,24 @@ class ApplicantChartWidget extends ChartWidget
     {
         $query = Applicant::query();
 
-        if ($this->pageFilters['selectedJobs'] ?? null) {
-            $query->whereIn('job_id', $this->pageFilters['selectedJobs']);
+        if ($ids = SelectedFilterIds::make($this->pageFilters['selectedJobs'] ?? null)) {
+            $query->whereIn('job_id', $ids);
         }
 
-        if ($this->pageFilters['selectedDepartments'] ?? null) {
-            $query->whereIn('department_id', $this->pageFilters['selectedDepartments']);
+        if ($ids = SelectedFilterIds::make($this->pageFilters['selectedDepartments'] ?? null)) {
+            $query->whereIn('department_id', $ids);
         }
 
-        if ($this->pageFilters['selectedCompanies'] ?? null) {
-            $query->whereIn('company_id', $this->pageFilters['selectedCompanies']);
+        if ($ids = SelectedFilterIds::make($this->pageFilters['selectedCompanies'] ?? null)) {
+            $query->whereIn('company_id', $ids);
         }
 
-        if ($this->pageFilters['selectedStages'] ?? null) {
-            $query->whereIn('stage_id', $this->pageFilters['selectedStages']);
+        if ($ids = SelectedFilterIds::make($this->pageFilters['selectedStages'] ?? null)) {
+            $query->whereIn('stage_id', $ids);
         }
 
-        if ($this->pageFilters['selectedRecruiters'] ?? null) {
-            $query->whereIn('recruiter_id', $this->pageFilters['selectedRecruiters']);
+        if ($ids = SelectedFilterIds::make($this->pageFilters['selectedRecruiters'] ?? null)) {
+            $query->whereIn('recruiter_id', $ids);
         }
 
         if ($this->pageFilters['startDate'] ?? null) {

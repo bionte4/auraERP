@@ -303,9 +303,7 @@ class BillOfMaterialOverview extends Page implements HasForms
             Select::make('variant_id')
                 ->label(__('manufacturing::filament/clusters/products/resources/bill-of-material/pages/bill-of-material-overview.filters.variant'))
                 ->options(fn (): array => $this->getVariantOptions())
-                ->searchable()
-                ->native(false)
-                ->wrapOptionLabels(false)
+                ->native()
                 ->visible(fn (): bool => $this->hasVariantSelector())
                 ->live(),
         ];

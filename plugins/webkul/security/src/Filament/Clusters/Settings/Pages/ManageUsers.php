@@ -65,12 +65,12 @@ class ManageUsers extends SettingsPage
                     ->label(__('security::filament/clusters/manage-users.form.default-role.label'))
                     ->helperText(__('security::filament/clusters/manage-users.form.default-role.helper-text'))
                     ->options(Role::all()->pluck('name', 'id')->map(fn ($name) => ucfirst($name)))
-                    ->searchable(),
+                    ->native(),
                 Select::make('default_company_id')
                     ->label(__('security::filament/clusters/manage-users.form.default-company.label'))
                     ->helperText(__('security::filament/clusters/manage-users.form.default-company.helper-text'))
                     ->options(Company::all()->pluck('name', 'id'))
-                    ->searchable(),
+                    ->native(),
             ]);
     }
 }

@@ -25,6 +25,7 @@ use Webkul\Accounting\Filament\Clusters\Reporting\Pages\Concerns\NormalizeDateFi
 use Webkul\Accounting\Filament\Clusters\Reporting\Pages\Concerns\ShowsCurrencyNotice;
 use Webkul\Accounting\Filament\Clusters\Reporting\Pages\Exports\GeneralLedgerExport;
 use Webkul\Accounting\Support\CompanyRateMap;
+use Webkul\Support\Filament\Support\SelectedFilterIds;
 
 class GeneralLedger extends Page implements HasForms
 {
@@ -143,9 +144,8 @@ class GeneralLedger extends Page implements HasForms
 
                     Select::make('journals')
                         ->label(__('accounting::filament/clusters/reporting.pages.general-ledger.filters.journals'))
-                        ->multiple()
+                        ->native()
                         ->options(Journal::pluck('name', 'id'))
-                        ->searchable()
                         ->live()
                         ->afterStateUpdated(fn () => $this->resetExpandedState()),
                 ])
@@ -165,7 +165,7 @@ class GeneralLedger extends Page implements HasForms
         $dateFrom = $dateRange ? Carbon::parse($dateRange[0]) : now()->startOfYear();
         $dateTo = $dateRange ? Carbon::parse($dateRange[1]) : now();
 
-        $journalIds = $this->form->getState()['journals'] ?? [];
+        $journalIds = SelectedFilterIds::make($this->form->getState()['journals'] ?? null);
         $rateMap = CompanyRateMap::make(date: $dateTo->toDateString());
 
         $balance = $rateMap->weight('accounts_account_move_lines.balance');
@@ -260,7 +260,7 @@ class GeneralLedger extends Page implements HasForms
         $dateRange = $this->parseDateRange();
         $dateFrom = $dateRange ? Carbon::parse($dateRange[0]) : now()->startOfYear();
         $dateTo = $dateRange ? Carbon::parse($dateRange[1]) : now();
-        $journalIds = $this->form->getState()['journals'] ?? [];
+        $journalIds = SelectedFilterIds::make($this->form->getState()['journals'] ?? null);
         $rateMap = CompanyRateMap::make(date: $dateTo->toDateString());
 
         $query = MoveLine::select(

@@ -67,8 +67,7 @@ class ManageTimesheets extends ManageRelatedRecords
                     ->label(__('projects::filament/resources/task/pages/manage-timesheets.form.employee'))
                     ->required()
                     ->relationship('user', 'name')
-                    ->searchable()
-                    ->preload(),
+                    ->native(),
                 TextInput::make('name')
                     ->label(__('projects::filament/resources/task/pages/manage-timesheets.form.description')),
                 TextInput::make('unit_amount')

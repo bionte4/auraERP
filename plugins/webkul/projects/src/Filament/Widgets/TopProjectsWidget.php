@@ -10,10 +10,12 @@ use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Webkul\Project\Filament\Widgets\Concerns\AppliesDashboardFilters;
 use Webkul\Project\Models\Timesheet;
 
 class TopProjectsWidget extends BaseWidget
 {
+    use AppliesDashboardFilters;
     use HasWidgetShield, InteractsWithPageFilters;
 
     protected static bool $isLazy = false;
@@ -39,22 +41,27 @@ class TopProjectsWidget extends BaseWidget
     {
         $query = Timesheet::query();
 
-        if (! empty($this->pageFilters['selectedProjects'])) {
-            $query->whereIn('project_id', $this->pageFilters['selectedProjects']);
+        $selectedProjects = $this->selectedFilterIds('selectedProjects');
+        $selectedAssignees = $this->selectedFilterIds('selectedAssignees');
+        $selectedTags = $this->selectedFilterIds('selectedTags');
+        $selectedPartners = $this->selectedFilterIds('selectedPartners');
+
+        if ($selectedProjects !== []) {
+            $query->whereIn('project_id', $selectedProjects);
         }
 
-        if (! empty($this->pageFilters['selectedAssignees'])) {
-            $query->whereIn('analytic_records.user_id', $this->pageFilters['selectedAssignees']);
+        if ($selectedAssignees !== []) {
+            $query->whereIn('analytic_records.user_id', $selectedAssignees);
         }
 
-        if (! empty($this->pageFilters['selectedTags'])) {
-            $query->whereHas('project.tags', function ($q) {
-                $q->whereIn('projects_project_tag.tag_id', $this->pageFilters['selectedTags']);
+        if ($selectedTags !== []) {
+            $query->whereHas('project.tags', function ($q) use ($selectedTags) {
+                $q->whereIn('projects_project_tag.tag_id', $selectedTags);
             });
         }
 
-        if (! empty($this->pageFilters['selectedPartners'])) {
-            $query->whereIn('analytic_records.partner_id', $this->pageFilters['selectedPartners']);
+        if ($selectedPartners !== []) {
+            $query->whereIn('analytic_records.partner_id', $selectedPartners);
         }
 
         $startDate = ! is_null($this->pageFilters['startDate'] ?? null) ?

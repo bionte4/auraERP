@@ -23,6 +23,7 @@ use Webkul\Project\Models\Tag;
 use Webkul\Security\Models\User;
 use Webkul\Support\Enums\NavigationGroup;
 use Webkul\Support\Filament\Forms\Components\DashboardDateRange;
+use Webkul\Support\Filament\Support\SelectedFilterIds;
 
 class Dashboard extends BaseDashboard
 {
@@ -51,31 +52,48 @@ class Dashboard extends BaseDashboard
         return 'heroicon-o-briefcase';
     }
 
+    public function bootedHasFiltersForm(): void
+    {
+        $this->normalizeNativeFilterValues();
+        $this->cacheSchema('filtersForm', $this->getFiltersForm());
+    }
+
     public function getFiltersForm(): Schema
     {
         if ((! $this->isCachingSchemas) && $this->hasCachedSchema('filtersForm')) {
             return $this->getSchema('filtersForm');
         }
 
-        // Debounce live updates so choosing a filter option does not re-render
-        // every widget on each click (which made the Select feel "dead").
+        // Do not use wire:partial here — it remorphs the filter row and leaves
+        // Filament's Alpine multi-selects as empty, non-clickable boxes.
         $schema = $this->makeSchema()
-            ->extraAttributes(['wire:partial' => 'table-filters-form'])
             ->live(debounce: 500)
             ->statePath('filters');
 
         return $this->filtersForm($schema);
     }
 
+    public function updatedFilters(): void
+    {
+        $this->normalizeNativeFilterValues();
+
+        if ($this->persistsFiltersInSession()) {
+            session()->put(
+                $this->getFiltersSessionKey(),
+                $this->filters,
+            );
+        }
+    }
+
     public function filtersForm(Schema $schema): Schema
     {
-        // Bake options as plain arrays (no Closure / preload).
-        // Closure + preload marks the Select as "dynamic", so opening it fires Livewire
-        // and re-renders every dashboard widget — the dropdown never becomes usable.
+        // Native <select> only — Filament disables native mode when multiple/searchable
+        // is enabled, and those Alpine selects are failing to initialize on this page.
         $projectOptions = Project::query()->orderBy('name')->pluck('name', 'id')->all();
         $assigneeOptions = User::query()->orderBy('name')->pluck('name', 'id')->all();
         $tagOptions = Tag::query()->orderBy('name')->pluck('name', 'id')->all();
         $partnerOptions = Partner::query()->orderBy('name')->pluck('name', 'id')->all();
+        $allLabel = __('projects::filament/pages/dashboard.filters-form.all');
 
         return $schema
             ->components([
@@ -89,28 +107,24 @@ class Dashboard extends BaseDashboard
                     ->schema([
                         Select::make('selectedProjects')
                             ->label(__('projects::filament/pages/dashboard.filters-form.project'))
-                            ->multiple()
-                            ->searchable()
+                            ->native()
                             ->options($projectOptions)
-                            ->dynamicOptions(false),
+                            ->placeholder($allLabel),
                         Select::make('selectedAssignees')
                             ->label(__('projects::filament/pages/dashboard.filters-form.assignees'))
-                            ->multiple()
-                            ->searchable()
+                            ->native()
                             ->options($assigneeOptions)
-                            ->dynamicOptions(false),
+                            ->placeholder($allLabel),
                         Select::make('selectedTags')
                             ->label(__('projects::filament/pages/dashboard.filters-form.tags'))
-                            ->multiple()
-                            ->searchable()
+                            ->native()
                             ->options($tagOptions)
-                            ->dynamicOptions(false),
+                            ->placeholder($allLabel),
                         Select::make('selectedPartners')
                             ->label(__('projects::filament/pages/dashboard.filters-form.customer'))
-                            ->multiple()
-                            ->searchable()
+                            ->native()
                             ->options($partnerOptions)
-                            ->dynamicOptions(false),
+                            ->placeholder($allLabel),
                         ...DashboardDateRange::make(
                             __('projects::filament/pages/dashboard.filters-form.date-range'),
                         ),
@@ -131,5 +145,37 @@ class Dashboard extends BaseDashboard
             TopAssigneesWidget::class,
             TopProjectsWidget::class,
         ];
+    }
+
+    /**
+     * Widgets still call whereIn(), so expose selected values as list-shaped filters.
+     * Native selects store a scalar (or null); older sessions may still have arrays.
+     *
+     * @return array<int, int|string>
+     */
+    public static function selectedFilterIds(mixed $value): array
+    {
+        return SelectedFilterIds::make($value);
+    }
+
+    protected function normalizeNativeFilterValues(): void
+    {
+        if (! is_array($this->filters)) {
+            return;
+        }
+
+        foreach (['selectedProjects', 'selectedAssignees', 'selectedTags', 'selectedPartners'] as $key) {
+            if (! array_key_exists($key, $this->filters)) {
+                continue;
+            }
+
+            if (is_array($this->filters[$key])) {
+                $this->filters[$key] = $this->filters[$key][0] ?? null;
+            }
+
+            if ($this->filters[$key] === '' || $this->filters[$key] === false) {
+                $this->filters[$key] = null;
+            }
+        }
     }
 }

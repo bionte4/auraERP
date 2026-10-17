@@ -23,6 +23,7 @@ use Webkul\Accounting\Filament\Clusters\Reporting\Pages\Concerns\NormalizeDateFi
 use Webkul\Accounting\Filament\Clusters\Reporting\Pages\Concerns\ShowsCurrencyNotice;
 use Webkul\Accounting\Filament\Clusters\Reporting\Pages\Exports\TrialBalanceExport;
 use Webkul\Accounting\Support\CompanyRateMap;
+use Webkul\Support\Filament\Support\SelectedFilterIds;
 
 class TrialBalance extends Page implements HasForms
 {
@@ -130,9 +131,8 @@ class TrialBalance extends Page implements HasForms
                         ->afterStateUpdated(fn () => null),
                     Select::make('journals')
                         ->label(__('accounting::filament/clusters/reporting.pages.trial-balance.filters.journals'))
-                        ->multiple()
+                        ->native()
                         ->options(fn () => Journal::pluck('name', 'id'))
-                        ->searchable()
                         ->preload()
                         ->live()
                         ->afterStateUpdated(fn () => null),
@@ -154,7 +154,7 @@ class TrialBalance extends Page implements HasForms
         $dateTo = $dateRange ? Carbon::parse($dateRange[1]) : now()->endOfMonth();
 
         $rateMap = CompanyRateMap::make(date: $dateTo instanceof Carbon ? $dateTo->toDateString() : (string) $dateTo);
-        $journalIds = $this->data['journals'] ?? [];
+        $journalIds = SelectedFilterIds::make($this->data['journals'] ?? null);
 
         $debit = $rateMap->weight('accounts_account_move_lines.debit');
         $credit = $rateMap->weight('accounts_account_move_lines.credit');
