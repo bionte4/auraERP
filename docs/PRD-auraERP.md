@@ -1,0 +1,328 @@
+# PRD — auraERP (Opsora)
+
+| Field | Nilai |
+| :--- | :--- |
+| **Produk** | auraERP — customisasi operasional Opsora |
+| **Versi dokumen** | 1.0 |
+| **Tanggal** | 2026-10-18 |
+| **Status** | Baseline produk (fitur utama sudah live / di-deploy) |
+| **Pemilik produk** | Opsora / auraERP ops |
+| **Referensi operasional** | [WORKING_INSTRUCTION.md](../WORKING_INSTRUCTION.md) |
+| **Stack** | Laravel 11+, Filament 4/5, Livewire 3, PostgreSQL, PHP 8.3+ (VPS: PHP 8.4) |
+| **URL produksi** | `https://auraerp.my.id`, `https://opsora.my.id` |
+
+---
+
+## 1. Ringkasan eksekutif
+
+auraERP Opsora adalah ERP modular berbasis AureusERP/Filament yang dikustomisasi untuk operasi harian perusahaan jasa/proyek: **HR & absensi**, **evaluasi kinerja PKWT/outtask**, **manajemen proyek multi-customer**, **laporan mingguan internal & klien**, **POS retail**, **akuntansi ringan**, serta **keamanan akses berjenjang (RBAC + scope organisasi)**.
+
+Dokumen ini menetapkan *apa yang harus benar* di produk. Cara menjalankan menu dan deploy ada di Working Instruction (WI).
+
+---
+
+## 2. Masalah yang diselesaikan
+
+| Masalah bisnis | Solusi produk |
+| :--- | :--- |
+| Hak akses menyebar / role “bengkak” setelah grant manual | Baseline RBAC ketat; `security:sync-rbac` **menyetel ulang** permission non-Admin |
+| OM terpapar modul ERP yang bukan domainnya (Sales/Inventory penuh) | Role Operation Manager fokus delivery proyek + approval tim |
+| HRD melihat laporan klien / widget operasional yang bukan miliknya | Laporan klien & widget OM hanya Admin/OM |
+| Staff melihat dashboard evaluasi agregat perusahaan | Dashboard evaluasi hanya Admin / HRD / OM |
+| Klien butuh status proyek tanpa jam kerja & detail task mentah | Laporan Mingguan Proyek untuk Klien (preview + Excel, masking) |
+| Penugasan karyawan ke proyek tidak konsisten / sulit | Assign dua arah (Proyek ↔ Karyawan) + sinkron Tim |
+| Absensi tanpa konteks lokasi | Geofence multi-lokasi + kamera di perangkat mobile |
+| Evaluasi PKWT/outtask tidak terstandar | Form evaluasi berjenjang + dashboard monitoring + export Excel |
+
+---
+
+## 3. Tujuan & non-tujuan
+
+### 3.1 Tujuan (Goals)
+
+1. Satu panel Admin untuk operasional harian (HR, proyek, POS, akuntansi ringkas).
+2. Isolasi data lewat **role** + **Resource Permission** (`Global` / `Group` / `Individual`) + hirarki organisasi.
+3. Baseline permission yang **dapat diulang** di setiap deploy (`syncPermissions`).
+4. Laporan operasional internal terpisah dari laporan siap klien.
+5. Alur evaluasi kinerja PKWT/outtask yang dapat diaudit (tanda tangan L1 → karyawan → L2).
+
+### 3.2 Non-tujuan (Non-goals)
+
+- Mengganti ERP akuntansi penuh (modul Accounting tetap ringkas; bukan pengganti sistem pajak eksternal).
+- Mobile native app terpisah (absensi via browser + geofence).
+- Custom grant permission per-user sebagai sumber kebenaran (baseline role menang setelah sync).
+- Publikasi laporan klien otomatis ke email/portal eksternal (unduh manual oleh OM/Admin).
+
+---
+
+## 4. Persona & role
+
+| Persona | Role sistem | Kebutuhan utama |
+| :--- | :--- | :--- |
+| Direksi / IT Admin | **Admin** | Akses penuh, audit, backup, IP block, integrasi, instalasi plugin |
+| HRD | **HRD** | Karyawan, absensi sites, cuti, performance/evaluation, dashboard evaluasi, laporan ops mingguan |
+| Manajer Operasional | **Operation Manager** | Proyek, assign karyawan, timesheet/task, laporan ops + **laporan klien**, evaluasi L1/L2, approval cuti/absensi tim |
+| Finance | **Accounting** | Invoice/bill/payment, partners/products terkait, My Day anggaran |
+| Kasir toko | **Kasir** | POS terminal, sesi, order; absensi; tanpa user management |
+| Karyawan lapangan / staf | **Staff** | Absensi, cuti sendiri, task/timesheet, lihat evaluasi sendiri — tanpa dashboard agregat |
+
+**Scope data (orthogonal ke role):**
+
+| Scope | Perilaku |
+| :--- | :--- |
+| `Global` | Seluruh data perusahaan sesuai permission modul |
+| `Group` | Diri + tim + bawahan hirarki (L1/L2…) |
+| `Individual` | Hanya data milik sendiri |
+
+---
+
+## 5. Requirement fungsional
+
+ID memakai prefiks modul. Prioritas: **P0** harus ada / sudah ada; **P1** penting; **P2** nice-to-have.
+
+### 5.1 Keamanan & RBAC — `SEC`
+
+| ID | Requirement | Prioritas | Status |
+| :--- | :--- | :--- | :--- |
+| SEC-01 | Sistem menyediakan 6 role standar: Admin, HRD, Operation Manager, Accounting, Kasir, Staff | P0 | Done |
+| SEC-02 | `php artisan security:sync-rbac` menyinkronkan baseline; non-Admin memakai **sync** (stale grant hilang); Admin mendapat semua permission | P0 | Done |
+| SEC-03 | Fitur admin-only (Audit Trail, Backup DB, IP Diblokir) tidak dapat diakses non-Admin (role + policy) | P0 | Done |
+| SEC-04 | Rate limit login + auto-blokir IP setelah ambang kegagalan; Admin dapat unblock | P0 | Done |
+| SEC-05 | Resource Permission Global/Group/Individual diterapkan pada resource ber-policy | P0 | Done |
+| SEC-06 | Setelah sync RBAC, user harus logout/login agar cache Spatie segar | P0 | Operasional |
+
+### 5.2 Karyawan & organisasi — `EMP`
+
+| ID | Requirement | Prioritas | Status |
+| :--- | :--- | :--- | :--- |
+| EMP-01 | CRUD karyawan, departemen, hirarki Manager / Approver L1–L2 | P0 | Done |
+| EMP-02 | Tipe karyawan & masa kontrak; filter kontrak ≤ 30 hari | P0 | Done |
+| EMP-03 | Bulk import karyawan via Excel template | P0 | Done |
+| EMP-04 | Penugasan proyek dari profil karyawan sinkron dengan Assign Employees | P0 | Done |
+| EMP-05 | Related User wajib agar karyawan bisa login & akses proyek | P0 | Done |
+
+### 5.3 Absensi — `ATT`
+
+| ID | Requirement | Prioritas | Status |
+| :--- | :--- | :--- | :--- |
+| ATT-01 | Master Work sites (lat/lng + radius) terpisah dari Work Location peta Welcome | P0 | Done |
+| ATT-02 | Clock in/out dalam radius GPS | P0 | Done |
+| ATT-03 | Perangkat mobile: kamera/face verification; laptop: GPS saja | P0 | Done |
+
+### 5.4 Time Off — `TO`
+
+| ID | Requirement | Prioritas | Status |
+| :--- | :--- | :--- | :--- |
+| TO-01 | Pengajuan cuti/izin dengan Approver L1 & L2 otomatis dari hirarki | P0 | Done |
+| TO-02 | Eskalasi otomatis jika L1 tidak merespons dalam 24 jam | P0 | Done |
+
+### 5.5 Performance & evaluasi — `EVAL`
+
+| ID | Requirement | Prioritas | Status |
+| :--- | :--- | :--- | :--- |
+| EVAL-01 | Performance Plans (goals, bobot, progress, skor tertimbang) | P0 | Done |
+| EVAL-02 | Form evaluasi PKWT/outtask/reguler dengan bagian A–J & rekomendasi 6 opsi | P0 | Done |
+| EVAL-03 | Approval tanda tangan berjenjang L1 → karyawan → L2; status In Progress → Completed otomatis | P0 | Done |
+| EVAL-04 | Bagian Goal (C) disembunyikan untuk Outsource/Outtask | P0 | Done |
+| EVAL-05 | Cetak PDF form evaluasi | P0 | Done |
+| EVAL-06 | Dashboard evaluasi (KPI + chart + tabel + export Excel 22 kolom) hanya **Admin / HRD / OM** | P0 | Done |
+| EVAL-07 | Staff tidak punya `page_evaluation_performance_evaluation_dashboard` maupun `view_any_evaluation` | P0 | Done |
+
+### 5.6 Proyek & penugasan — `PRJ`
+
+| ID | Requirement | Prioritas | Status |
+| :--- | :--- | :--- | :--- |
+| PRJ-01 | 1 Customer → N Projects; nilai proyek, start/end date | P0 | Done |
+| PRJ-02 | Assign Employees (checkbox multi-karyawan) + sinkron Livewire saat ganti proyek | P0 | Done |
+| PRJ-03 | Assign dua arah Proyek ↔ Karyawan; followers otomatis bila Related User ada | P0 | Done |
+| PRJ-04 | Sinkron Tim ↔ Proyek (nama/link); backfill `projects:sync-team-memberships` | P0 | Done |
+| PRJ-05 | Reminder proyek 3/2/1 bulan sebelum end date | P0 | Done |
+| PRJ-06 | Dashboard OM: widget beban, aksi, kehadiran (scope) | P0 | Done |
+| PRJ-07 | Bulk import proyek Excel | P1 | Done |
+
+### 5.7 Laporan proyek — `RPT`
+
+| ID | Requirement | Prioritas | Status |
+| :--- | :--- | :--- | :--- |
+| RPT-01 | **Laporan Ops Mingguan** (internal): metrik + beban jam; Admin/HRD/OM; data mengikuti OperationalScope | P0 | Done |
+| RPT-02 | **Laporan Mingguan Proyek untuk Klien**: 1 proyek per unduhan, rentang tanggal kustom | P0 | Done |
+| RPT-03 | Wajib preview on-screen sebelum download Excel | P0 | Done |
+| RPT-04 | Masking judul task / overdue; **jam kerja disembunyikan** di output klien | P0 | Done |
+| RPT-05 | Permission klien-report hanya Admin/OM; **bukan** HRD | P0 | Done |
+
+### 5.8 POS — `POS`
+
+| ID | Requirement | Prioritas | Status |
+| :--- | :--- | :--- | :--- |
+| POS-01 | Terminal kasir: buka/tutup sesi, order, metode bayar, struk thermal | P0 | Done |
+| POS-02 | Role Kasir dapat POS + absensi; tidak dapat manajemen user keamanan | P0 | Done |
+
+### 5.9 Integrasi & AI — `INT`
+
+| ID | Requirement | Prioritas | Status |
+| :--- | :--- | :--- | :--- |
+| INT-01 | Settings → Integrations: SMTP, auraAI, Jira (test connection); rahasia terenkripsi | P0 | Done |
+| INT-02 | auraAI assistant menghormati hak akses & scope user login | P0 | Done |
+| INT-03 | Akses halaman Integrations khusus Admin | P0 | Done |
+
+### 5.10 Aset — `AST`
+
+| ID | Requirement | Prioritas | Status |
+| :--- | :--- | :--- | :--- |
+| AST-01 | Equipment + pergerakan aset (assign/relocate/replace/…) + bulk import | P1 | Done |
+| AST-02 | Baseline HRD **tidak** otomatis mendapat modul Maintenance penuh | P0 | Done |
+
+---
+
+## 6. Matriks akses (ringkas)
+
+| Fitur / permission kunci | Admin | HRD | OM | Accounting | Kasir | Staff |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| Audit / Backup / Blocked IP | ✓ | — | — | — | — | — |
+| Dashboard Evaluasi | ✓ | ✓ | ✓ | — | — | — |
+| Laporan Ops Mingguan | ✓ | ✓ | ✓ | — | — | — |
+| Laporan Proyek Klien | ✓ | — | ✓ | — | — | — |
+| Assign Project Employees | ✓ | — | ✓ | — | — | — |
+| Widget aksi OM | ✓ | — | ✓ | — | — | — |
+| POS Terminal | ✓ | — | — | — | ✓ | — |
+| Sales / Purchase / Inventory penuh | ✓ | — | — | sebagian* | — | — |
+| Absensi clock | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+
+\*Accounting: invoice/bill/payment/partner/product terkait — bukan OM domain.
+
+---
+
+## 7. Requirement non-fungsional
+
+| ID | Area | Requirement |
+| :--- | :--- | :--- |
+| NFR-01 | Keamanan | Artisan & web process menulis ke `storage` / `bootstrap/cache` sebagai `www-data`; tidak meninggalkan file log milik root/ubuntu |
+| NFR-02 | Deploy | Kode produksi dari fork `bionte4/auraERP` `master`; setelah pull wajib `security:sync-rbac` bila ada perubahan RBAC |
+| NFR-03 | Idempotensi | `security:sync-rbac`, `integrations:install`, `projects:sync-team-memberships` aman dijalankan ulang |
+| NFR-04 | Observabilitas | Audit trail untuk peristiwa keamanan penting (login, perubahan user/role) |
+| NFR-05 | Backup | Backup DB terjadwal; restore production default off |
+| NFR-06 | UX bahasa | UI operasional memakai bahasa Indonesia formal (**Anda**) |
+| NFR-07 | Uji | Fitur kritis dilindungi Pest feature tests (RBAC sync, assign employees, customer weekly report, admin-only) |
+
+---
+
+## 8. Alur utama (ringkas)
+
+### 8.1 Penugasan proyek
+
+```
+OM/Admin → pilih Proyek → pilih Karyawan (checkbox)
+       → simpan → pivot assign + followers (jika Related User)
+       → Tim proyek tersinkron (nama/link)
+```
+
+### 8.2 Laporan klien mingguan
+
+```
+OM/Admin → pilih 1 proyek + start/end date
+        → Preview di layar
+        → Download Excel (masked, tanpa jam)
+```
+
+### 8.3 Evaluasi PKWT
+
+```
+Buat Evaluation → status In Progress
+→ L1 tanda tangan → Karyawan konfirmasi → L2 tanda tangan
+→ Completed → muncul di Dashboard Evaluasi / Excel
+```
+
+### 8.4 Deploy + RBAC
+
+```
+git fetch/merge fork/master → composer install
+→ migrate → security:sync-rbac → optimize
+→ user logout/login
+```
+
+---
+
+## 9. Kriteria penerimaan (Acceptance)
+
+### 9.1 RBAC (wajib setelah setiap sync)
+
+- [ ] Staff/Kasir/Accounting **tidak** dapat membuka `/admin/performance-evaluation-dashboard`
+- [ ] HRD **tidak** punya Customer Project Weekly Report / widget aksi OM
+- [ ] OM **tidak** punya menu penuh Sales / Purchase / Inventory
+- [ ] Grant manual di luar baseline hilang setelah `security:sync-rbac`
+- [ ] Admin tetap akses penuh termasuk audit & backup
+
+### 9.2 Laporan klien
+
+- [ ] Hanya satu proyek per unduhan
+- [ ] Preview wajib sebelum download
+- [ ] Rentang tanggal kustom diterapkan ke deliverable yang ditampilkan
+- [ ] Output tidak menampilkan jam kerja; task sensitif ter-mask
+
+### 9.3 Assign karyawan
+
+- [ ] Checkbox mencerminkan anggota proyek saat ganti proyek
+- [ ] Simpan memperbarui anggota & tidak error 500 pada daftar besar
+
+### 9.4 Deploy VPS
+
+- [ ] Tidak ada `Permission denied` pada `storage/logs` / `bootstrap/cache` saat Artisan sebagai `www-data`
+- [ ] `security:sync-rbac` melaporkan roles: Admin, HRD, Operation Manager, Accounting, Kasir, Staff
+
+---
+
+## 10. Asumsi & dependensi
+
+1. Plugin inti (employees, attendances, projects, evaluations, performance, pos, security, integrations, …) terpasang di lingkungan produksi.
+2. Karyawan yang perlu login punya **Related User**.
+3. Scheduler cron aktif untuk backup, eskalasi cuti, reminder proyek.
+4. Write ke upstream `aureuserp/aureuserp` mungkin 403; distribusi lewat fork `bionte4/auraERP`.
+
+---
+
+## 11. Risiko & mitigasi
+
+| Risiko | Dampak | Mitigasi |
+| :--- | :--- | :--- |
+| Admin menambah permission manual lalu sync menghapusnya | Bingung “permission hilang” | Dokumentasikan di WI; ubah baseline di `RolePermissionSynchronizer` bila grant sah |
+| Ownership file storage salah user | Artisan/Composer gagal | Selalu `sudo -u www-data`; chown storage/cache |
+| Cache permission Spatie basi | Menu lama masih tampil | Logout/login; flush cache di sync |
+| Laporan klien bocor jam/detail task | Risiko kontraktual | Masking + hide hours; preview sebelum unduh |
+
+---
+
+## 12. Roadmap / backlog (usulan)
+
+| Item | Prioritas | Catatan |
+| :--- | :--- | :--- |
+| Portal unduh laporan klien ber-token (tanpa login panel) | P2 | Di luar non-goal saat ini |
+| Notifikasi email otomatis laporan mingguan ke PIC klien | P2 | Butuh SMTP Integrations stabil |
+| Soft-lock: warning UI sebelum sync mencabut grant custom | P1 | Kurangi surprise operasional |
+| Perluas Accounting ke laporan AR aging di My Day | P1 | Sudah ada kartu; bisa diperdalam |
+| Hardening Select native di seluruh filter app (audit lanjutan) | P1 | Sebagian sudah diperbaiki |
+
+---
+
+## 13. Jejak keputusan produk (terkait)
+
+| Keputusan | Pilihan |
+| :--- | :--- |
+| Sync RBAC | `syncPermissions` untuk non-Admin (reset baseline) |
+| Dashboard evaluasi | Hard-lock Admin / HRD / OM |
+| Laporan klien | 1 proyek / unduhan; preview wajib; mask overdue/titles; hide hours; Excel |
+| Domain OM | Proyek + HR approval tim; **bukan** Sales/Purchase/Inventory penuh |
+| Domain HRD | People ops + eval + weekly ops internal; **bukan** customer weekly report |
+
+---
+
+## 14. Lampiran
+
+- Working Instruction: [WORKING_INSTRUCTION.md](../WORKING_INSTRUCTION.md)
+- Perintah kunci: `security:sync-rbac`, `projects:sync-team-memberships`, `integrations:install`
+- Kelas inti: `Webkul\Security\Services\RolePermissionSynchronizer`
+- Halaman kunci:
+  - `/admin/performance-evaluation-dashboard`
+  - `/admin/weekly-operations-report`
+  - `/admin/customer-project-weekly-report`
+  - `/admin/project/assign-employees`
+  - `/admin/pos-terminal`

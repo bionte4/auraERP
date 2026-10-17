@@ -2,6 +2,8 @@
 
 Dokumen ini berisi panduan operasional lengkap untuk seluruh modul kustom, sistem hak akses berjenjang (**RBAC & Struktur Organisasi**), **Evaluasi Kinerja PKWT & Outtask/Outsource**, **Dashboard Evaluasi**, **Point of Sale (POS)**, **Manajemen Proyek & Penugasan Karyawan**, **Integrasi (SMTP / auraAI / Jira)**, **Manajemen Aset**, serta **auraAI** di **auraERP** (`https://opsora.my.id` / `https://auraerp.my.id`).
 
+**PRD (requirement produk):** [docs/PRD-auraERP.md](docs/PRD-auraERP.md) · indeks dokumen: [docs/README.md](docs/README.md)
+
 ---
 
 ## 1. Akun Login, Peran Standar (RBAC) & Level Akses Struktur Organisasi
