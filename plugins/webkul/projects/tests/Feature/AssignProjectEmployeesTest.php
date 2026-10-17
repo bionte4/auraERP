@@ -91,12 +91,31 @@ it('saves assignment from the assign employees page form', function (): void {
         ->assertFormFieldExists('employee_ids')
         ->fillForm([
             'project_id'   => $project->id,
-            'employee_ids' => [$employee->id],
+            'employee_ids' => [(string) $employee->id],
         ])
         ->call('save')
         ->assertHasNoFormErrors();
 
     expect($project->employees()->pluck('employees_employees.id')->all())->toContain($employee->id);
+});
+
+it('preselects employees already assigned when a project is chosen', function (): void {
+    FilamentHelper::actingAs([
+        'page_project_assign_project_employees',
+    ]);
+
+    $employee = Employee::create([
+        'name'      => 'Already On Project',
+        'is_active' => true,
+    ]);
+
+    $project = Project::factory()->create(['name' => 'Existing Project']);
+    app(ProjectEmployeeAssigner::class)->sync($project, [$employee->id]);
+
+    Livewire::test(AssignProjectEmployees::class)
+        ->assertOk()
+        ->set('data.project_id', $project->id)
+        ->assertSet('data.employee_ids', [(string) $employee->id]);
 });
 
 it('grants assign employees page permission to admin and operation manager only', function (): void {

@@ -13,7 +13,6 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Arr;
@@ -82,6 +81,15 @@ class AssignProjectEmployees extends Page implements HasForms
         ]);
     }
 
+    /**
+     * Keep CheckboxList selection in sync when the native project select changes.
+     * (Avoid relying on afterStateUpdated + visible() — selection was lost on VPS.)
+     */
+    public function updatedDataProjectId(mixed $value): void
+    {
+        $this->data['employee_ids'] = $this->assignedEmployeeIdsForProject($value);
+    }
+
     public function form(Schema $schema): Schema
     {
         return $schema
@@ -96,39 +104,15 @@ class AssignProjectEmployees extends Page implements HasForms
                             ->options(fn (): array => Project::query()->orderBy('name')->pluck('name', 'id')->all())
                             ->native()
                             ->required()
-                            ->live()
-                            ->afterStateUpdated(function (mixed $state, Set $set): void {
-                                $projectId = filled($state) ? (int) $state : null;
-
-                                if (! $projectId) {
-                                    $set('employee_ids', []);
-
-                                    return;
-                                }
-
-                                $employeeIds = Project::query()
-                                    ->find($projectId)
-                                    ?->employees()
-                                    ->pluck('employees_employees.id')
-                                    ->map(fn ($id): int => (int) $id)
-                                    ->all() ?? [];
-
-                                $set('employee_ids', $employeeIds);
-                            }),
+                            ->live(),
                         CheckboxList::make('employee_ids')
                             ->label(__('projects::filament/pages/assign-project-employees.fields.employees'))
                             ->helperText(__('projects::filament/pages/assign-project-employees.fields.employees-helper'))
-                            ->options(function (Get $get): array {
-                                if (blank($get('project_id'))) {
-                                    return [];
-                                }
-
-                                return $this->employeeOptions();
-                            })
+                            ->options(fn (): array => $this->employeeOptions())
                             ->searchable()
                             ->bulkToggleable()
                             ->columns(2)
-                            ->visible(fn (Get $get): bool => filled($get('project_id')))
+                            ->disabled(fn (Get $get): bool => blank($get('project_id')))
                             ->columnSpanFull(),
                     ])
                     ->columns(1),
@@ -167,10 +151,7 @@ class AssignProjectEmployees extends Page implements HasForms
     }
 
     /**
-     * Lightweight labels only — capacity lookups on every active employee caused
-     * 500s on production when the workforce list is large.
-     *
-     * @return array<int, string>
+     * @return array<string, string>
      */
     protected function employeeOptions(): array
     {
@@ -181,15 +162,38 @@ class AssignProjectEmployees extends Page implements HasForms
             ->mapWithKeys(function (Employee $employee): array {
                 $suffix = $employee->user_id ? '' : ' (no login)';
 
-                return [$employee->id => $employee->name.$suffix];
+                // String keys — CheckboxList + Livewire compare selections as strings.
+                return [(string) $employee->id => $employee->name.$suffix];
             })
+            ->all();
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    protected function assignedEmployeeIdsForProject(mixed $projectId): array
+    {
+        if (blank($projectId)) {
+            return [];
+        }
+
+        $project = Project::query()->find((int) $projectId);
+
+        if (! $project) {
+            return [];
+        }
+
+        return $project->employees()
+            ->pluck('employees_employees.id')
+            ->map(fn ($id): string => (string) (int) $id)
+            ->values()
             ->all();
     }
 
     public function save(): void
     {
         $state = $this->form->getState();
-        $projectId = $state['project_id'] ?? null;
+        $projectId = $state['project_id'] ?? ($this->data['project_id'] ?? null);
 
         if (! $projectId) {
             Notification::make()
@@ -202,7 +206,7 @@ class AssignProjectEmployees extends Page implements HasForms
 
         $project = Project::query()->findOrFail($projectId);
         $employeeIds = array_values(array_filter(
-            Arr::wrap($state['employee_ids'] ?? []),
+            Arr::wrap($state['employee_ids'] ?? ($this->data['employee_ids'] ?? [])),
             fn (mixed $id): bool => filled($id),
         ));
 
@@ -210,6 +214,9 @@ class AssignProjectEmployees extends Page implements HasForms
             $project,
             $employeeIds,
         );
+
+        // Refresh checkbox state from DB after save.
+        $this->data['employee_ids'] = $this->assignedEmployeeIdsForProject($project->id);
 
         $notification = Notification::make()
             ->success()
