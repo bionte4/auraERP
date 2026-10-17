@@ -15,11 +15,14 @@ return [
         'notes-helper'  => 'Optional message included on the Excel cover sheet.',
     ],
     'actions' => [
+        'preview'  => 'Preview report',
         'download' => 'Download Excel',
     ],
     'notifications' => [
-        'missing-project' => 'Please select a project first',
-        'forbidden'       => 'You cannot report on this project',
+        'missing-project'  => 'Please select a project first',
+        'forbidden'        => 'You cannot report on this project',
+        'preview-ready'    => 'Preview is ready — review below, then download Excel',
+        'preview-required' => 'Preview the report first, then download Excel',
     ],
     'table' => [
         'metric' => 'Metric',
@@ -36,6 +39,6 @@ return [
         'open'           => 'In progress (masked)',
         'empty'          => 'No items in this section.',
         'masked-hint'    => 'Real task names and “overdue” wording are hidden for client sharing.',
-        'select-project' => 'Select a project to preview the customer report.',
+        'select-project' => 'Select a project, click Preview report, review the data, then Download Excel.',
     ],
 ];

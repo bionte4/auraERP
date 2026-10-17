@@ -2,6 +2,8 @@
     <div class="space-y-6">
         {{ $this->form }}
 
+        @php($preview = $this->preview)
+
         @if ($preview)
             <div class="mb-2 flex flex-wrap items-center gap-2 text-sm">
                 <span class="inline-flex items-center rounded-md bg-primary-50 px-2.5 py-1 font-medium text-primary-700 ring-1 ring-inset ring-primary-600/20 dark:bg-primary-400/10 dark:text-primary-300 dark:ring-primary-400/30">

@@ -90,14 +90,11 @@ class CustomerProjectWeeklyReport extends Page implements HasForms
                             ->options(fn (): array => app(CustomerProjectWeeklyReportData::class)->projectOptions())
                             ->native()
                             ->required()
-                            ->live()
-                            ->afterStateUpdated(fn () => $this->refreshPreview()),
+                            ->live(),
                         Textarea::make('customer_notes')
                             ->label(__('projects::filament/pages/customer-project-weekly-report.fields.notes'))
                             ->helperText(__('projects::filament/pages/customer-project-weekly-report.fields.notes-helper'))
                             ->rows(3)
-                            ->live(debounce: 500)
-                            ->afterStateUpdated(fn () => $this->refreshPreview())
                             ->columnSpanFull(),
                     ])
                     ->columns(1),
@@ -107,7 +104,15 @@ class CustomerProjectWeeklyReport extends Page implements HasForms
 
     public function updatedDataProjectId(): void
     {
-        $this->refreshPreview();
+        // Clear previous preview so Download stays locked until Preview is clicked again.
+        $this->preview = null;
+    }
+
+    public function updatedDataCustomerNotes(): void
+    {
+        if ($this->preview !== null) {
+            $this->refreshPreview();
+        }
     }
 
     public function refreshPreview(): void
@@ -153,10 +158,29 @@ class CustomerProjectWeeklyReport extends Page implements HasForms
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('preview')
+                ->label(__('projects::filament/pages/customer-project-weekly-report.actions.preview'))
+                ->icon('heroicon-o-eye')
+                ->color('gray')
+                ->disabled(fn (): bool => blank($this->data['project_id'] ?? null))
+                ->action(function (): void {
+                    $this->refreshPreview();
+
+                    if ($this->preview === null && filled($this->data['project_id'] ?? null)) {
+                        return;
+                    }
+
+                    if ($this->preview !== null) {
+                        Notification::make()
+                            ->success()
+                            ->title(__('projects::filament/pages/customer-project-weekly-report.notifications.preview-ready'))
+                            ->send();
+                    }
+                }),
             Action::make('download')
                 ->label(__('projects::filament/pages/customer-project-weekly-report.actions.download'))
                 ->icon('heroicon-o-arrow-down-tray')
-                ->disabled(fn (): bool => blank($this->data['project_id'] ?? null))
+                ->disabled(fn (): bool => $this->preview === null)
                 ->action(fn () => $this->downloadReport()),
         ];
     }
@@ -174,6 +198,20 @@ class CustomerProjectWeeklyReport extends Page implements HasForms
             return null;
         }
 
+        // Require an on-screen preview before Excel download.
+        if ($this->preview === null) {
+            $this->refreshPreview();
+        }
+
+        if ($this->preview === null) {
+            Notification::make()
+                ->warning()
+                ->title(__('projects::filament/pages/customer-project-weekly-report.notifications.preview-required'))
+                ->send();
+
+            return null;
+        }
+
         $project = Project::query()
             ->with(['partner', 'user'])
             ->findOrFail((int) $projectId);
@@ -186,15 +224,5 @@ class CustomerProjectWeeklyReport extends Page implements HasForms
             CustomerProjectWeeklyExport::make($project, auth()->user(), $notes),
             $filename,
         );
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    public function getViewData(): array
-    {
-        return [
-            'preview' => $this->preview,
-        ];
     }
 }
