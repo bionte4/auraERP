@@ -51,53 +51,71 @@ class Dashboard extends BaseDashboard
         return 'heroicon-o-briefcase';
     }
 
+    public function getFiltersForm(): Schema
+    {
+        if ((! $this->isCachingSchemas) && $this->hasCachedSchema('filtersForm')) {
+            return $this->getSchema('filtersForm');
+        }
+
+        // Debounce live updates so choosing a filter option does not re-render
+        // every widget on each click (which made the Select feel "dead").
+        $schema = $this->makeSchema()
+            ->extraAttributes(['wire:partial' => 'table-filters-form'])
+            ->live(debounce: 500)
+            ->statePath('filters');
+
+        return $this->filtersForm($schema);
+    }
+
     public function filtersForm(Schema $schema): Schema
     {
+        // Bake options as plain arrays (no Closure / preload).
+        // Closure + preload marks the Select as "dynamic", so opening it fires Livewire
+        // and re-renders every dashboard widget — the dropdown never becomes usable.
+        $projectOptions = Project::query()->orderBy('name')->pluck('name', 'id')->all();
+        $assigneeOptions = User::query()->orderBy('name')->pluck('name', 'id')->all();
+        $tagOptions = Tag::query()->orderBy('name')->pluck('name', 'id')->all();
+        $partnerOptions = Partner::query()->orderBy('name')->pluck('name', 'id')->all();
+
         return $schema
             ->components([
-
                 Section::make()
                     ->columns([
                         'default' => 1,
                         'sm'      => 2,
                         'md'      => 3,
-                        'xl'      => 6,
+                        'xl'      => 5,
                     ])
-
                     ->schema([
                         Select::make('selectedProjects')
                             ->label(__('projects::filament/pages/dashboard.filters-form.project'))
                             ->multiple()
                             ->searchable()
-                            ->preload()
-                            ->options(fn () => Project::pluck('name', 'id'))
-                            ->reactive(),
+                            ->options($projectOptions)
+                            ->dynamicOptions(false),
                         Select::make('selectedAssignees')
                             ->label(__('projects::filament/pages/dashboard.filters-form.assignees'))
                             ->multiple()
                             ->searchable()
-                            ->preload()
-                            ->options(fn () => User::pluck('name', 'id'))
-                            ->reactive(),
+                            ->options($assigneeOptions)
+                            ->dynamicOptions(false),
                         Select::make('selectedTags')
                             ->label(__('projects::filament/pages/dashboard.filters-form.tags'))
                             ->multiple()
                             ->searchable()
-                            ->preload()
-                            ->options(fn () => Tag::pluck('name', 'id'))
-                            ->reactive(),
+                            ->options($tagOptions)
+                            ->dynamicOptions(false),
                         Select::make('selectedPartners')
                             ->label(__('projects::filament/pages/dashboard.filters-form.customer'))
                             ->multiple()
                             ->searchable()
-                            ->preload()
-                            ->options(fn () => Partner::pluck('name', 'id'))
-                            ->reactive(),
+                            ->options($partnerOptions)
+                            ->dynamicOptions(false),
                         ...DashboardDateRange::make(
                             __('projects::filament/pages/dashboard.filters-form.date-range'),
                         ),
-                    ])->columnSpanFull(),
-
+                    ])
+                    ->columnSpanFull(),
             ]);
     }
 
