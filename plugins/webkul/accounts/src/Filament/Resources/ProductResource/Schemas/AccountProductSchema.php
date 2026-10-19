@@ -4,6 +4,7 @@ namespace Webkul\Account\Filament\Resources\ProductResource\Schemas;
 
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
@@ -28,16 +29,13 @@ class AccountProductSchema
     public static function taxFields(): array
     {
         return [
-            Select::make('accounts_product_taxes')
+            CheckboxList::make('accounts_product_taxes')
                 ->relationship(
                     'productTaxes',
                     'name',
                     modifyQueryUsing: fn ($query) => $query->where('type_tax_use', TypeTaxUse::SALE),
                 )
-                ->multiple()
                 ->live()
-                ->searchable()
-                ->preload()
                 ->helperText(function (Get $get) {
                     $price = floatval($get('price'));
 
@@ -94,18 +92,21 @@ class AccountProductSchema
                     }
 
                     return ! empty($parts) ? '(= '.implode(', ', $parts).')' : ' ';
-                }),
+                })
+                ->searchable()
+                ->bulkToggleable()
+                ->columns(2),
 
-            Select::make('accounts_product_supplier_taxes')
+            CheckboxList::make('accounts_product_supplier_taxes')
                 ->relationship(
                     'supplierTaxes',
                     'name',
                     modifyQueryUsing: fn ($query) => $query->where('type_tax_use', TypeTaxUse::PURCHASE),
                 )
-                ->multiple()
                 ->live()
                 ->searchable()
-                ->preload(),
+                ->bulkToggleable()
+                ->columns(2),
         ];
     }
 
@@ -124,7 +125,6 @@ class AccountProductSchema
                     ->options(fn (Get $get) => static::accountOptions($get('company_id')))
                     ->getOptionLabelUsing(fn ($value, Get $get) => static::accountOptions($get('company_id'))[$value] ?? null)
                     ->preload()
-                    ->searchable()
                     ->default(fn (Get $get, DefaultAccountSettings $settings) => Account::resolveForCompany(
                         $settings->income_account_id,
                         $get('company_id'),
@@ -147,7 +147,6 @@ class AccountProductSchema
                     ->options(fn (Get $get) => static::accountOptions($get('company_id')))
                     ->getOptionLabelUsing(fn ($value, Get $get) => static::accountOptions($get('company_id'))[$value] ?? null)
                     ->preload()
-                    ->searchable()
                     ->default(fn (Get $get, DefaultAccountSettings $settings) => Account::resolveForCompany(
                         $settings->expense_account_id,
                         $get('company_id'),

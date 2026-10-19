@@ -7,6 +7,7 @@ use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Group;
@@ -75,7 +76,6 @@ class PartnerForm
                                         })
                                     )
                                     ->visible(fn (Get $get): bool => $get('account_type') === AccountType::INDIVIDUAL)
-                                    ->searchable()
                                     ->preload()
                                     ->columnSpan(2)
                                     ->createOptionForm(fn (Schema $schema): Schema => PartnerResource::form($schema))
@@ -169,26 +169,12 @@ class PartnerForm
                                     ->unique('partners_titles'),
                             ])
                             ->visible(fn (Get $get): bool => in_array($get('account_type'), [AccountType::INDIVIDUAL, AccountType::INDIVIDUAL->value], true)),
-                        Select::make('tags')
+                        CheckboxList::make('tags')
                             ->label(__('partners::filament/resources/partner.form.sections.general.fields.tags'))
                             ->relationship(name: 'tags', titleAttribute: 'name')
-                            ->multiple()
                             ->searchable()
-                            ->preload()
-                            ->createOptionForm([
-                                Group::make()
-                                    ->schema([
-                                        TextInput::make('name')
-                                            ->label(__('partners::filament/resources/partner.form.sections.general.fields.name'))
-                                            ->required()
-                                            ->maxLength(255)
-                                            ->unique('partners_tags'),
-                                        ColorPicker::make('color')
-                                            ->label(__('partners::filament/resources/partner.form.sections.general.fields.color'))
-                                            ->hexColor(),
-                                    ])
-                                    ->columns(2),
-                            ]),
+                            ->bulkToggleable()
+                            ->columns(2),
 
                         Fieldset::make('Address')
                             ->schema([
@@ -208,7 +194,6 @@ class PartnerForm
                                     ->label(__('partners::filament/resources/partner.form.sections.general.address.fields.country'))
                                     ->relationship(name: 'country', titleAttribute: 'name')
                                     ->afterStateUpdated(fn (Set $set) => $set('state_id', null))
-                                    ->searchable()
                                     ->preload()
                                     ->afterStateUpdated(function (Set $set, Get $get) {
                                         $set('state_id', null);
@@ -236,7 +221,6 @@ class PartnerForm
                                                 Select::make('country_id')
                                                     ->label(__('partners::filament/resources/partner.form.sections.general.address.fields.country'))
                                                     ->relationship('country', 'name')
-                                                    ->searchable()
                                                     ->preload()
                                                     ->live()
                                                     ->default($get('country_id'))
@@ -245,7 +229,6 @@ class PartnerForm
                                                     }),
                                             ]);
                                     })
-                                    ->searchable()
                                     ->preload(),
                             ])
                             ->columnSpanFull(),
@@ -274,7 +257,6 @@ class PartnerForm
                         Select::make('user_id')
                             ->label(__('partners::filament/resources/partner.form.tabs.sales-purchase.fields.responsible'))
                             ->relationship('user', 'name')
-                            ->searchable()
                             ->preload()
                             ->hintIcon('heroicon-m-question-mark-circle', tooltip: __('partners::filament/resources/partner.form.tabs.sales-purchase.fields.responsible-hint-text')),
                     ], Registry::renderForm('sales.fields')))

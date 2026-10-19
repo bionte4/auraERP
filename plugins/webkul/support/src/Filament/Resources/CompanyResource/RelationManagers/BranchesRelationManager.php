@@ -120,7 +120,6 @@ class BranchesRelationManager extends RelationManager
                                                     ->label(__('support::filament/resources/company/relation-managers/manage-branch.form.tabs.address-information.sections.address-information.fields.country'))
                                                     ->relationship(name: 'country', titleAttribute: 'name')
                                                     ->afterStateUpdated(fn (Set $set) => $set('state_id', null))
-                                                    ->searchable()
                                                     ->preload()
                                                     ->live(),
                                                 Select::make('state_id')
@@ -130,7 +129,6 @@ class BranchesRelationManager extends RelationManager
                                                         titleAttribute: 'name',
                                                         modifyQueryUsing: fn (Get $get, Builder $query) => $query->where('country_id', $get('country_id')),
                                                     )
-                                                    ->searchable()
                                                     ->preload()
                                                     ->createOptionForm(function (Schema $schema, Get $get, Set $set) {
                                                         return $schema
@@ -145,7 +143,6 @@ class BranchesRelationManager extends RelationManager
                                                                 Select::make('country_id')
                                                                     ->label(__('support::filament/resources/company/relation-managers/manage-branch.form.tabs.address-information.sections.address-information.fields.country'))
                                                                     ->relationship('country', 'name')
-                                                                    ->searchable()
                                                                     ->preload()
                                                                     ->live()
                                                                     ->default($get('country_id'))
@@ -166,7 +163,6 @@ class BranchesRelationManager extends RelationManager
                                                 modifyQueryUsing: fn (Builder $query) => $query->active(),
                                             )
                                             ->label(__('support::filament/resources/company/relation-managers/manage-branch.form.tabs.address-information.sections.additional-information.fields.default-currency'))
-                                            ->searchable()
                                             ->required()
                                             ->live()
                                             ->preload()

@@ -44,7 +44,6 @@ class LocationForm
                                         'full_name',
                                         modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(owned_by_company($get('company_id'))),
                                     )
-                                    ->searchable()
                                     ->preload()
                                     ->hintIcon('heroicon-m-question-mark-circle', tooltip: __('inventories::filament/clusters/configurations/resources/location.form.sections.general.fields.parent-location-hint-tooltip')),
 
@@ -79,7 +78,6 @@ class LocationForm
                                 Select::make('company_id')
                                     ->label(__('inventories::filament/clusters/configurations/resources/location.form.sections.settings.fields.company'))
                                     ->relationship('company', 'name')
-                                    ->searchable()
                                     ->preload()
                                     ->default(current_company_id())
                                     ->live()
@@ -94,7 +92,6 @@ class LocationForm
                                         'name',
                                         modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(owned_by_company($get('company_id'))),
                                     )
-                                    ->searchable()
                                     ->preload()
                                     ->createOptionForm(fn (Schema $schema): Schema => StorageCategoryResource::form($schema))
                                     ->visible(fn (Get $get): bool => $get('type') === LocationType::INTERNAL)

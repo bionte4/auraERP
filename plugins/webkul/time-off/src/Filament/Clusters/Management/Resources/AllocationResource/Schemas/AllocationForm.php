@@ -74,13 +74,11 @@ class AllocationForm
                                                     return $query->where(owned_by_company($employeeCompanyId));
                                                 },
                                             )
-                                            ->searchable()
                                             ->preload()
                                             ->required(),
                                         Select::make('employee_id')
                                             ->label(__('time-off::filament/clusters/management/resources/allocation.form.fields.employee-name'))
                                             ->relationship('employee', 'name')
-                                            ->searchable()
                                             ->preload()
                                             ->live()
                                             ->required(),

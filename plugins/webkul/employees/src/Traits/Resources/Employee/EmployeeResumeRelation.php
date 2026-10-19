@@ -47,7 +47,6 @@ trait EmployeeResumeRelation
                     Select::make('type')
                         ->label(__('employees::filament/resources/employee/relation-manager/resume.form.sections.fields.type'))
                         ->relationship(name: 'resumeType', titleAttribute: 'name')
-                        ->searchable()
                         ->preload()
                         ->createOptionForm([
                             Group::make()
@@ -84,7 +83,6 @@ trait EmployeeResumeRelation
                         ->preload()
                         ->options(ResumeDisplayType::options())
                         ->label(__('employees::filament/resources/employee/relation-manager/resume.form.sections.fields.display-type'))
-                        ->searchable()
                         ->required()
                         ->reactive(),
                     Textarea::make('description')

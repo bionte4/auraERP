@@ -53,14 +53,12 @@ class PurchaseAgreementForm
                                         return $record->name.($record->trashed() ? ' (Deleted)' : '');
                                     })
                                     ->disableOptionWhen(fn ($label) => str_contains($label, ' (Deleted)'))
-                                    ->searchable()
                                     ->required()
                                     ->preload()
                                     ->disabled(fn ($record): bool => $record && $record?->state != RequisitionState::DRAFT),
                                 Select::make('user_id')
                                     ->label(__('purchases::filament/admin/clusters/orders/resources/purchase-agreement.form.sections.general.fields.buyer'))
                                     ->relationship('user', 'name')
-                                    ->searchable()
                                     ->preload()
                                     ->disabled(fn ($record): bool => $record && $record?->state != RequisitionState::DRAFT),
                                 Select::make('type')
@@ -78,7 +76,6 @@ class PurchaseAgreementForm
                                         modifyQueryUsing: fn (Builder $query) => $query->active(),
                                     )
                                     ->required()
-                                    ->searchable()
                                     ->default(current_company()?->currency_id)
                                     ->preload(),
                             ]),
@@ -127,7 +124,6 @@ class PurchaseAgreementForm
                                     ->disableOptionWhen(function ($label) {
                                         return str_contains($label, ' (Deleted)');
                                     })
-                                    ->searchable()
                                     ->required()
                                     ->preload()
                                     ->default(current_company_id())
@@ -185,7 +181,6 @@ class PurchaseAgreementForm
                 TableColumn::make('ordered_qty')
                     ->label(__('purchases::filament/admin/clusters/orders/resources/purchase-agreement.form.tabs.products.columns.ordered'))
                     ->visible($get('type') === RequisitionType::BLANKET_ORDER)
-
                     ->width(250),
                 TableColumn::make('uom_id')
                     ->label(__('purchases::filament/admin/clusters/orders/resources/purchase-agreement.form.tabs.products.columns.uom'))
@@ -211,7 +206,6 @@ class PurchaseAgreementForm
                             ->where(owned_by_company($get('../../company_id'))),
                     )
                     ->required()
-                    ->searchable()
                     ->preload()
                     ->distinct()
                     ->wrapOptionLabels(false)
@@ -267,7 +261,6 @@ class PurchaseAgreementForm
                         'name',
                         fn ($query) => $query->where('category_id', 1),
                     )
-                    ->searchable()
                     ->preload()
                     ->required()
                     ->wrapOptionLabels(false)

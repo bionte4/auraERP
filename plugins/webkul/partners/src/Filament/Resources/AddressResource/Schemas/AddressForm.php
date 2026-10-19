@@ -27,7 +27,6 @@ class AddressForm
             Select::make('parent_id')
                 ->label(__('partners::filament/resources/address.form.partner'))
                 ->relationship('parent', 'name')
-                ->searchable()
                 ->preload()
                 ->required()
                 ->columnSpan(2)
@@ -64,7 +63,6 @@ class AddressForm
                 ->label(__('partners::filament/resources/address.form.country'))
                 ->relationship(name: 'country', titleAttribute: 'name')
                 ->afterStateUpdated(fn (Set $set) => $set('state_id', null))
-                ->searchable()
                 ->preload()
                 ->live()
                 ->afterStateUpdated(function (Set $set, Get $get) {
@@ -90,7 +88,6 @@ class AddressForm
                             Select::make('country_id')
                                 ->label(__('partners::filament/resources/address.form.country'))
                                 ->relationship('country', 'name')
-                                ->searchable()
                                 ->preload()
                                 ->live()
                                 ->default($get('country_id'))
@@ -99,7 +96,6 @@ class AddressForm
                                 }),
                         ]);
                 })
-                ->searchable()
                 ->preload(),
         ])
             ->columns(2);

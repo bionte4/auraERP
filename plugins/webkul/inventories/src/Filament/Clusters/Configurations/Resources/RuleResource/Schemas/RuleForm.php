@@ -60,7 +60,6 @@ class RuleForm
                                                         'name',
                                                         modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(owned_by_company($get('company_id'))),
                                                     )
-                                                    ->searchable()
                                                     ->preload()
                                                     ->required()
                                                     ->getOptionLabelFromRecordUsing(function (OperationType $record) {
@@ -85,7 +84,6 @@ class RuleForm
                                                         'full_name',
                                                         modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(owned_by_company($get('company_id'))),
                                                     )
-                                                    ->searchable()
                                                     ->preload()
                                                     ->required(),
                                                 Select::make('destination_location_id')
@@ -95,7 +93,6 @@ class RuleForm
                                                         'full_name',
                                                         modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(owned_by_company($get('company_id'))),
                                                     )
-                                                    ->searchable()
                                                     ->preload()
                                                     ->required(),
                                                 Select::make('procure_method')
@@ -172,7 +169,6 @@ class RuleForm
                                         modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(owned_by_company($get('company_id'))),
                                     )
                                     ->hintIcon('heroicon-m-question-mark-circle', tooltip: new HtmlString(__('inventories::filament/clusters/configurations/resources/rule.form.sections.settings.fields.partner-address-hint-tooltip')))
-                                    ->searchable()
                                     ->preload()
                                     ->createOptionForm(fn (Schema $schema): Schema => PartnerResource::form($schema))
                                     ->hidden(fn (Get $get): bool => $get('action') == RuleAction::PUSH),
@@ -200,14 +196,12 @@ class RuleForm
                                             ->disableOptionWhen(function ($label) {
                                                 return str_contains($label, ' (Deleted)');
                                             })
-                                            ->searchable()
                                             ->preload()
                                             ->required()
                                             ->hiddenOn([ManageRules::class, RulesRelationManager::class]),
                                         Select::make('company_id')
                                             ->label(__('inventories::filament/clusters/configurations/resources/rule.form.sections.settings.fieldsets.applicability.fields.company'))
                                             ->relationship('company', 'name')
-                                            ->searchable()
                                             ->preload()
                                             ->default(current_company_id())
                                             ->live()

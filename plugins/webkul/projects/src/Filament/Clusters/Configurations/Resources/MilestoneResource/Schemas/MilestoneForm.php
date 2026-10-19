@@ -35,7 +35,6 @@ class MilestoneForm
                         ManageMilestones::class,
                     ])
                     ->required()
-                    ->searchable()
                     ->preload(),
                 Section::make()
                     ->schema($customFormFields)

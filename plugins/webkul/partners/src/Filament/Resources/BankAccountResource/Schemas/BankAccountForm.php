@@ -38,7 +38,6 @@ class BankAccountForm
                         return str_contains($label, ' (Deleted)');
                     })
                     ->required()
-                    ->searchable()
                     ->preload()
                     ->createOptionForm(fn (Schema $schema) => BankResource::form($schema)),
                 Select::make('partner_id')
@@ -48,7 +47,6 @@ class BankAccountForm
                         ? $livewire->getRecord()->id
                         : null)
                     ->required()
-                    ->searchable()
                     ->preload(),
             ]);
     }

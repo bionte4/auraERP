@@ -4,6 +4,7 @@ namespace Webkul\Account\Filament\Resources\JournalResource\Schemas;
 
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Fieldset;
@@ -64,7 +65,6 @@ class JournalForm
                                                                         modifyQueryUsing: fn (Builder $query) => $query->active(),
                                                                     )
                                                                     ->preload()
-                                                                    ->searchable()
                                                                     ->live()
                                                                     ->afterStateUpdated(function (Set $set, Get $get) {
                                                                         $journalType = $get('type');
@@ -87,7 +87,6 @@ class JournalForm
                                                                         modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(owned_by_company($get('company_id'))),
                                                                     )
                                                                     ->preload()
-                                                                    ->searchable()
                                                                     ->required(),
 
                                                                 Select::make('profit_account_id')
@@ -101,7 +100,6 @@ class JournalForm
                                                                             ->where(owned_by_company($get('company_id')))
                                                                     )
                                                                     ->preload()
-                                                                    ->searchable()
                                                                     ->visible(fn (Get $get) => in_array($get('type'), [
                                                                         JournalType::CASH,
                                                                         JournalType::SALE,
@@ -119,7 +117,6 @@ class JournalForm
                                                                             ->where(owned_by_company($get('company_id')))
                                                                     )
                                                                     ->preload()
-                                                                    ->searchable()
                                                                     ->visible(fn (Get $get) => in_array($get('type'), [
                                                                         JournalType::CASH,
                                                                         JournalType::BANK,
@@ -134,7 +131,6 @@ class JournalForm
                                                                         modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(owned_by_company($get('company_id'))),
                                                                     )
                                                                     ->preload()
-                                                                    ->searchable()
                                                                     ->visible(fn (Get $get) => in_array($get('type'), [
                                                                         JournalType::BANK,
                                                                         JournalType::CASH,
@@ -151,7 +147,6 @@ class JournalForm
                                                         Group::make()
                                                             ->schema([
                                                                 Select::make('bank_account_id')
-                                                                    ->searchable()
                                                                     ->preload()
                                                                     ->relationship(
                                                                         name: 'bankAccount',
@@ -208,7 +203,6 @@ class JournalForm
                                                                 titleAttribute: 'name',
                                                                 modifyQueryUsing: fn ($query) => $query->where('payment_type', PaymentType::RECEIVE)
                                                             )
-                                                            ->searchable()
                                                             ->preload()
                                                             ->wrapOptionLabels(false)
                                                             ->required(),
@@ -225,7 +219,6 @@ class JournalForm
                                                                 'name',
                                                                 modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(owned_by_company($get('../../company_id'))),
                                                             )
-                                                            ->searchable()
                                                             ->preload()
                                                             ->wrapOptionLabels(false),
                                                     ])
@@ -272,7 +265,6 @@ class JournalForm
                                                                 titleAttribute: 'name',
                                                                 modifyQueryUsing: fn ($query) => $query->where('payment_type', PaymentType::SEND)
                                                             )
-                                                            ->searchable()
                                                             ->preload()
                                                             ->wrapOptionLabels(false)
                                                             ->required(),
@@ -289,7 +281,6 @@ class JournalForm
                                                                 'name',
                                                                 modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(owned_by_company($get('../../company_id'))),
                                                             )
-                                                            ->searchable()
                                                             ->preload()
                                                             ->wrapOptionLabels(false),
                                                     ])
@@ -302,15 +293,16 @@ class JournalForm
                                                     ->schema([
                                                         Group::make()
                                                             ->schema([
-                                                                Select::make('invoices_journal_accounts')
+                                                                CheckboxList::make('invoices_journal_accounts')
                                                                     ->relationship(
                                                                         'allowedAccounts',
                                                                         'name',
                                                                         modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(owned_by_company($get('company_id'))),
                                                                     )
-                                                                    ->multiple()
-                                                                    ->preload()
-                                                                    ->label(__('accounts::filament/resources/journal.form.tabs.advanced-settings.fields.allowed-accounts')),
+                                                                    ->label(__('accounts::filament/resources/journal.form.tabs.advanced-settings.fields.allowed-accounts'))
+                                                                    ->searchable()
+                                                                    ->bulkToggleable()
+                                                                    ->columns(2),
                                                                 Toggle::make('auto_check_on_post')
                                                                     ->label(__('accounts::filament/resources/journal.form.tabs.advanced-settings.fields.auto-check-on-post')),
                                                             ]),

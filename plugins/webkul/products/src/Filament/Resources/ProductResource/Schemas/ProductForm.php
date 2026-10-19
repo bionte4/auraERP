@@ -6,6 +6,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\FusedGroup;
@@ -70,19 +71,12 @@ class ProductForm
 
                 RichEditor::make('description')
                     ->label(__('products::filament/resources/product.form.sections.general.fields.description')),
-                Select::make('tags')
+                CheckboxList::make('tags')
                     ->label(__('products::filament/resources/product.form.sections.general.fields.tags'))
                     ->relationship(name: 'tags', titleAttribute: 'name')
-                    ->multiple()
                     ->searchable()
-                    ->preload()
-                    ->createOptionForm([
-                        TextInput::make('name')
-                            ->label(__('products::filament/resources/product.form.sections.general.fields.name'))
-                            ->required()
-                            ->maxLength(255)
-                            ->unique('products_tags'),
-                    ]),
+                    ->bulkToggleable()
+                    ->columns(2),
             ]);
     }
 
@@ -154,7 +148,6 @@ class ProductForm
                     ->label(__('products::filament/resources/product.form.sections.settings.fields.category'))
                     ->required()
                     ->relationship('category', 'full_name')
-                    ->searchable()
                     ->preload()
                     ->default(Category::first()?->id)
                     ->createOptionForm(fn (Schema $schema): Schema => CategoryResource::form($schema)),
@@ -171,7 +164,6 @@ class ProductForm
                     })
                     ->disableOptionWhen(fn ($label) => str_contains($label, ' (Deleted)'))
                     ->placeholder(__('products::filament/resources/product.form.sections.settings.fields.company-placeholder'))
-                    ->searchable()
                     ->preload()
                     ->live()
                     ->afterStateUpdated(function (Set $set, Get $get, $state): void {
@@ -202,11 +194,9 @@ class ProductForm
                         ->columnSpan(2),
                     Select::make('uom_id')
                         ->placeholder(__('products::filament/resources/product.form.sections.pricing.fields.uom-placeholder'))
-                        ->native(false)
                         ->required()
                         ->options(UOM::pluck('name', 'id'))
                         ->default(fn (Get $get): ?int => ProductResource::getDefaultUomIdByProductType($get('type')))
-                        ->searchable()
                         ->live()
                         ->afterStateUpdated(fn (Set $set, ?string $state) => $set('uom_po_id', $state)),
                 ])
@@ -220,11 +210,9 @@ class ProductForm
                         ->columnSpan(2),
                     Select::make('uom_po_id')
                         ->placeholder(__('products::filament/resources/product.form.sections.pricing.fields.uom-placeholder'))
-                        ->native(false)
                         ->required()
                         ->options(UOM::pluck('name', 'id'))
                         ->default(fn (Get $get): ?int => ProductResource::getDefaultUomIdByProductType($get('type')))
-                        ->searchable()
                         ->live()
                         ->afterStateUpdated(fn (Set $set, ?string $state) => $set('uom_id', $state)),
                 ])

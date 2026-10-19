@@ -7,6 +7,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Actions;
@@ -101,7 +102,6 @@ class JournalEntryForm
                                                     ->where('type', JournalType::GENERAL)
                                                     ->where('company_id', $get('company_id') ?? current_company_id()),
                                             )
-                                            ->searchable()
                                             ->preload()
                                             ->required()
                                             ->label(__('accounting::filament/clusters/accounting/resources/journal-entry.form.section.general.fields.journal'))
@@ -131,7 +131,6 @@ class JournalEntryForm
                                     ->disableOptionWhen(function ($label) {
                                         return str_contains($label, ' (Deleted)');
                                     })
-                                    ->searchable()
                                     ->preload()
                                     ->reactive()
                                     ->default(current_company_id())
@@ -158,7 +157,6 @@ class JournalEntryForm
                                         modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(owned_by_company($get('company_id'))),
                                     )
                                     ->preload()
-                                    ->searchable()
                                     ->label(__('accounting::filament/clusters/accounting/resources/journal-entry.form.tabs.other-information.fields.fiscal-position'))
                                     ->hintIcon('heroicon-o-question-mark-circle', tooltip: __('accounting::filament/clusters/accounting/resources/journal-entry.form.tabs.other-information.fields.fiscal-position-tooltip'))
                                     ->disabled(fn ($record) => in_array($record?->state, [MoveState::POSTED, MoveState::CANCEL])),
@@ -247,7 +245,6 @@ class JournalEntryForm
                         'name',
                         modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(owned_by_company($get('../../company_id'))),
                     )
-                    ->searchable()
                     ->required()
                     ->preload()
                     ->live()
@@ -258,7 +255,6 @@ class JournalEntryForm
                 Select::make('partner_id')
                     ->label(__('accounting::filament/clusters/accounting/resources/journal-entry.form.tabs.lines.repeater.fields.partner'))
                     ->relationship('partner', 'name')
-                    ->searchable()
                     ->wrapOptionLabels(false)
                     ->preload()
                     ->selectablePlaceholder(false)
@@ -292,7 +288,7 @@ class JournalEntryForm
                     ->wrapOptionLabels(false)
                     ->afterStateUpdated(fn (Set $set, Get $get) => self::currencyUpdated($set, $get))
                     ->disabled(fn ($record) => in_array($record?->parent_state, [MoveState::POSTED, MoveState::CANCEL])),
-                Select::make('taxes')
+                CheckboxList::make('taxes')
                     ->label(__('accounting::filament/clusters/accounting/resources/journal-entry.form.tabs.lines.repeater.fields.taxes'))
                     ->relationship(
                         'taxes',
@@ -302,14 +298,14 @@ class JournalEntryForm
                     ->getOptionLabelFromRecordUsing(function ($record): string {
                         return $record->name.' ('.$record->type_tax_use->getLabel().')';
                     })
-                    ->searchable()
-                    ->multiple()
-                    ->preload()
+
                     ->dehydrated()
                     ->live()
-                    ->wrapOptionLabels(false)
                     ->afterStateUpdated(fn (Get $get, Set $set) => self::taxesUpdated($set, $get))
-                    ->disabled(fn ($record) => in_array($record?->parent_state, [MoveState::POSTED, MoveState::CANCEL])),
+                    ->disabled(fn ($record) => in_array($record?->parent_state, [MoveState::POSTED, MoveState::CANCEL]))
+                    ->searchable()
+                    ->bulkToggleable()
+                    ->columns(2),
                 TextInput::make('debit')
                     ->label(__('accounting::filament/clusters/accounting/resources/journal-entry.form.tabs.lines.repeater.fields.debit'))
                     ->required()

@@ -136,7 +136,6 @@ class SaleServiceProvider extends PackageServiceProvider
                     ->pluck('name', 'id')
                     ->all())
                 ->getOptionLabelUsing(fn ($value): ?string => PriceList::find($value)?->name)
-                ->searchable()
                 ->visible(fn (): bool => app(ProductSettings::class)->enable_price_lists),
         ]);
     }

@@ -31,7 +31,6 @@ class QuantityForm
                         titleAttribute: 'full_name',
                         modifyQueryUsing: fn (Builder $query) => $query->where('type', LocationType::INTERNAL),
                     )
-                    ->searchable()
                     ->preload()
                     ->required()
                     ->default(fn (): ?int => Warehouse::where('company_id', current_company_id())->first()?->lot_stock_location_id)
@@ -43,7 +42,6 @@ class QuantityForm
                         titleAttribute: 'name',
                         modifyQueryUsing: fn (Builder $query) => $query->where('is_storable', true)->whereNull('is_configurable')->whereNull('deleted_at'),
                     )
-                    ->searchable()
                     ->preload()
                     ->required()
                     ->live()
@@ -57,7 +55,6 @@ class QuantityForm
                         titleAttribute: 'name',
                         modifyQueryUsing: fn (Builder $query, Get $get) => $query->where('product_id', $get('product_id')),
                     )
-                    ->searchable()
                     ->preload()
                     ->required()
                     ->createOptionForm(fn (Schema $schema): Schema => LotResource::form($schema))
@@ -85,7 +82,6 @@ class QuantityForm
                 Select::make('package_id')
                     ->label(__('inventories::filament/clusters/operations/resources/quantity.form.fields.package'))
                     ->relationship('package', 'name')
-                    ->searchable()
                     ->preload()
                     ->createOptionForm(fn (Schema $schema): Schema => PackageResource::form($schema))
                     ->visible(QuantityResource::getOperationSettings()->enable_packages),

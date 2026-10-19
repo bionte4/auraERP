@@ -5,6 +5,7 @@ namespace Webkul\TimeOff\Filament\Clusters\Configurations\Resources\LeaveTypeRes
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Group;
@@ -84,12 +85,12 @@ class LeaveTypeForm
                                 Section::make(__('time-off::filament/clusters/configurations/resources/leave-type.form.sections.configuration.title'))
                                     ->hiddenLabel()
                                     ->schema([
-                                        Select::make('time_off_user_leave_types')
+                                        CheckboxList::make('time_off_user_leave_types')
                                             ->label(__('time-off::filament/clusters/configurations/resources/leave-type.form.sections.configuration.fields.notified-time-off-officers'))
                                             ->relationship('notifiedTimeOffOfficers', 'name')
                                             ->searchable()
-                                            ->preload()
-                                            ->multiple(),
+                                            ->bulkToggleable()
+                                            ->columns(2),
                                         Select::make('request_unit')
                                             ->label(__('time-off::filament/clusters/configurations/resources/leave-type.form.sections.configuration.fields.take-time-off-in'))
                                             ->options(RequestUnit::class)

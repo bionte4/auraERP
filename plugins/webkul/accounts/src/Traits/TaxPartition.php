@@ -46,12 +46,10 @@ trait TaxPartition
                     ->label(__('accounts::traits/tax-partition.form.document-type')),
                 Select::make('account_id')
                     ->relationship('account', 'name')
-                    ->searchable()
                     ->preload()
                     ->label(__('accounts::traits/tax-partition.form.account')),
                 Select::make('tax_id')
                     ->relationship('tax', 'name')
-                    ->searchable()
                     ->preload()
                     ->label(__('accounts::traits/tax-partition.form.tax')),
                 Toggle::make('use_in_tax_closing')

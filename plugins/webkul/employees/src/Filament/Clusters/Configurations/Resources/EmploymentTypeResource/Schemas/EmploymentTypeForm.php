@@ -20,7 +20,6 @@ class EmploymentTypeForm
                 TextInput::make('code')
                     ->label(__('employees::filament/clusters/configurations/resources/employment-type.form.fields.code')),
                 Select::make('country_id')
-                    ->searchable()
                     ->preload()
                     ->label(__('employees::filament/clusters/configurations/resources/employment-type.form.fields.country'))
                     ->relationship('country', 'name'),

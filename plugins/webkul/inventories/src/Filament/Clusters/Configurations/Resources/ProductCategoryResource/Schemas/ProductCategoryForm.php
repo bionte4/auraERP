@@ -3,6 +3,7 @@
 namespace Webkul\Inventory\Filament\Clusters\Configurations\Resources\ProductCategoryResource\Schemas;
 
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -23,12 +24,12 @@ class ProductCategoryForm
             ->schema([
                 Fieldset::make(__('inventories::filament/clusters/configurations/resources/product-category.form.sections.inventory.fieldsets.logistics.title'))
                     ->schema([
-                        Select::make('routes')
+                        CheckboxList::make('routes')
                             ->label(__('inventories::filament/clusters/configurations/resources/product-category.form.sections.inventory.fieldsets.logistics.fields.routes'))
                             ->relationship('routes', 'name')
                             ->searchable()
-                            ->preload()
-                            ->multiple(),
+                            ->bulkToggleable()
+                            ->columns(2),
                     ])
                     ->columns(1),
             ])

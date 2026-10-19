@@ -61,7 +61,6 @@ class ManageCapacityByPackages extends ManageRelatedRecords
                     ->unique(modifyRuleUsing: function (Unique $rule) {
                         return $rule->where('storage_category_id', $this->getOwnerRecord()->id);
                     })
-                    ->searchable()
                     ->preload(),
                 TextInput::make('qty')
                     ->label(__('inventories::filament/clusters/configurations/resources/storage-category/pages/manage-capacity-by-packages.form.qty'))

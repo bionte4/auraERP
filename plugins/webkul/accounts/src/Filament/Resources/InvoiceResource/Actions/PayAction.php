@@ -109,7 +109,6 @@ class PayAction extends Action
                                     modifyQueryUsing: fn (Builder $query) => $query->whereIn('id', $paymentRegister->available_journal_ids)
                                 )
                                 ->label(__('accounts::filament/resources/invoice/actions/pay-action.form.fields.journal'))
-                                ->searchable()
                                 ->preload()
                                 ->required()
                                 ->live()
@@ -126,7 +125,6 @@ class PayAction extends Action
                             Select::make('payment_method_line_id')
                                 ->label(__('accounts::filament/resources/invoice.form.tabs.other-information.fieldset.accounting.fields.payment-method'))
                                 ->required()
-                                ->searchable()
                                 ->preload()
                                 ->live()
                                 ->default($paymentRegister->payment_method_line_id)
@@ -175,7 +173,6 @@ class PayAction extends Action
                                 })
                                 ->label(__('accounts::filament/resources/invoice/actions/pay-action.form.fields.recipient-bank-account'))
                                 ->default(fn () => $this->resolvePartnerBankId($paymentRegister, $paymentRegister->journal_id))
-                                ->searchable()
                                 ->preload()
                                 ->required(function (Get $get) use ($paymentRegister) {
                                     $journal = Journal::find($get('journal_id'));
@@ -285,7 +282,6 @@ class PayAction extends Action
                                             return $journal->currency_id ?? $record->currency_id;
                                         })
                                         ->required()
-                                        ->searchable()
                                         ->preload()
                                         ->required(),
                                 ])

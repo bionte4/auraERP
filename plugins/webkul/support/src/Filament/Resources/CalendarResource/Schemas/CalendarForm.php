@@ -35,13 +35,11 @@ class CalendarForm
                                             })
                                             ->default(date_default_timezone_get())
                                             ->preload()
-                                            ->searchable()
                                             ->required()
                                             ->hintIcon('heroicon-o-question-mark-circle', tooltip: __('support::filament/resources/calendar.form.sections.general.fields.timezone-tooltip')),
                                         Select::make('company_id')
                                             ->label(__('support::filament/resources/calendar.form.sections.general.fields.company'))
                                             ->relationship('company', 'name')
-                                            ->searchable()
                                             ->preload()
                                             ->default(current_company_id()),
                                     ])->columns(2),

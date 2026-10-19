@@ -6,6 +6,7 @@ use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Group;
@@ -85,7 +86,6 @@ class PostForm
                                         modifyQueryUsing: fn ($query, $state) => $query->withTrashed()
                                             ->where(hide_deleted_unless_selected($state)),
                                     )
-                                    ->searchable()
                                     ->getOptionLabelFromRecordUsing(function ($record): string {
                                         return $record->name.($record->trashed() ? ' (Deleted)' : '');
                                     })
@@ -94,22 +94,12 @@ class PostForm
                                     })
                                     ->preload()
                                     ->required(),
-                                Select::make('tags')
+                                CheckboxList::make('tags')
                                     ->label(__('blogs::filament/admin/resources/post.form.sections.settings.fields.tags'))
                                     ->relationship('tags', 'name')
                                     ->searchable()
-                                    ->preload()
-                                    ->multiple()
-                                    ->createOptionForm([
-                                        TextInput::make('name')
-                                            ->label(__('blogs::filament/admin/resources/post.form.sections.settings.fields.name'))
-                                            ->required()
-                                            ->maxLength(255)
-                                            ->unique('blogs_tags'),
-                                        ColorPicker::make('color')
-                                            ->label(__('blogs::filament/admin/resources/post.form.sections.settings.fields.color'))
-                                            ->hexColor(),
-                                    ]),
+                                    ->bulkToggleable()
+                                    ->columns(2),
                             ]),
                     ]),
             ])

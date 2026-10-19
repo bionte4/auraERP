@@ -6,6 +6,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Fieldset;
@@ -58,7 +59,6 @@ class ProjectForm
                                 Select::make('user_id')
                                     ->label(__('projects::filament/resources/project.form.sections.additional.fields.project-manager'))
                                     ->relationship('user', 'name')
-                                    ->searchable()
                                     ->preload()
                                     ->createOptionForm(fn (Schema $schema) => UserResource::form($schema)),
                                 Select::make('partner_id')
@@ -68,7 +68,6 @@ class ProjectForm
                                         'name',
                                         modifyQueryUsing: fn (Builder $query, Get $get): Builder => Project::filterExternalCustomersQuery($query, $get('partner_id')),
                                     )
-                                    ->searchable()
                                     ->preload()
                                     ->helperText(__('projects::filament/resources/project.form.sections.additional.fields.customer-helper-text'))
                                     ->createOptionForm([
@@ -122,16 +121,14 @@ class ProjectForm
                                     ->helperText(__('projects::filament/resources/project.form.sections.additional.fields.allocated-hours-helper-text'))
                                     ->visible(ProjectResource::getTimeSettings()->enable_timesheets)
                                     ->rules(['nullable', 'numeric', 'min:0']),
-                                Select::make('tags')
+                                CheckboxList::make('tags')
                                     ->label(__('projects::filament/resources/project.form.sections.additional.fields.tags'))
                                     ->relationship(name: 'tags', titleAttribute: 'name')
-                                    ->multiple()
                                     ->searchable()
-                                    ->preload()
-                                    ->createOptionForm(fn (Schema $schema) => TagResource::form($schema)),
+                                    ->bulkToggleable()
+                                    ->columns(2),
                                 Select::make('company_id')
                                     ->relationship('company', 'name')
-                                    ->searchable()
                                     ->preload()
                                     ->label(__('projects::filament/resources/project.form.sections.additional.fields.company'))
                                     ->live()

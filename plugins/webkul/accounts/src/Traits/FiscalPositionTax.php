@@ -24,13 +24,12 @@ trait FiscalPositionTax
                     ->relationship('taxSource', 'name')
                     ->label(__('accounts::traits/fiscal-position-tax.form.fields.tax-source'))
                     ->preload()
-                    ->searchable()
                     ->required(),
                 Select::make('tax_destination_id')
                     ->relationship('taxDestination', 'name')
                     ->label(__('accounts::traits/fiscal-position-tax.form.fields.tax-destination'))
                     ->preload()
-                    ->searchable(),
+                    ,
             ]);
     }
 

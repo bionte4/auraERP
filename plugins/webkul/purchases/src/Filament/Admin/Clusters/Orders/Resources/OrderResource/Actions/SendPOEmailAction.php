@@ -7,6 +7,7 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\MarkdownEditor;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
@@ -30,17 +31,18 @@ class SendPOEmailAction extends Action
         $this
             ->label(fn (Order $record) => __('purchases::filament/admin/clusters/orders/resources/order/actions/send-po-email.label'))
             ->schema(fn (Order $record) => [
-                Select::make('vendors')
+                CheckboxList::make('vendors')
                     ->label(__('purchases::filament/admin/clusters/orders/resources/order/actions/send-po-email.form.fields.to'))
                     ->options(fn () => Partner::get()->mapWithKeys(fn ($partner) => [
                         $partner->id => $partner->email
                             ? "{$partner->name} <{$partner->email}>"
                             : $partner->name,
                     ])->toArray())
-                    ->multiple()
+
+                    ->default([$record->partner_id])
                     ->searchable()
-                    ->preload()
-                    ->default([$record->partner_id]),
+                    ->bulkToggleable()
+                    ->columns(2),
 
                 TextInput::make('subject')
                     ->label(__('purchases::filament/admin/clusters/orders/resources/order/actions/send-po-email.form.fields.subject'))

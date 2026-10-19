@@ -21,7 +21,6 @@ class PutawayRuleForm
                 Select::make('company_id')
                     ->label(__('inventories::filament/clusters/configurations/resources/putaway-rule.form.fields.company'))
                     ->relationship('company', 'name')
-                    ->searchable()
                     ->preload()
                     ->required()
                     ->default(current_company_id())
@@ -50,7 +49,6 @@ class PutawayRuleForm
                         return str_contains($label, ' (Deleted)');
                     })
                     ->preload()
-                    ->searchable()
                     ->required()
                     ->live()
                     ->afterStateUpdated(fn (Set $set) => $set('out_location_id', null)),
@@ -82,7 +80,6 @@ class PutawayRuleForm
                     ->disableOptionWhen(function ($label) {
                         return str_contains($label, ' (Deleted)');
                     })
-                    ->searchable()
                     ->required(),
                 Select::make('product_id')
                     ->label(__('inventories::filament/clusters/configurations/resources/putaway-rule.form.fields.product'))
@@ -100,7 +97,6 @@ class PutawayRuleForm
                     ->disableOptionWhen(function ($label) {
                         return str_contains($label, ' (Deleted)');
                     })
-                    ->searchable()
                     ->preload()
                     ->placeholder(__('inventories::filament/clusters/configurations/resources/putaway-rule.form.fields.product-placeholder'))
                     ->nullable()
@@ -113,7 +109,6 @@ class PutawayRuleForm
                 Select::make('category_id')
                     ->label(__('inventories::filament/clusters/configurations/resources/putaway-rule.form.fields.category'))
                     ->relationship('category', 'name')
-                    ->searchable()
                     ->preload()
                     ->placeholder(__('inventories::filament/clusters/configurations/resources/putaway-rule.form.fields.category-placeholder'))
                     ->nullable()
@@ -130,14 +125,12 @@ class PutawayRuleForm
                         'name',
                         modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(owned_by_company($get('company_id'))),
                     )
-                    ->searchable()
                     ->preload()
                     ->nullable(),
                 Select::make('sub_location')
                     ->label(__('inventories::filament/clusters/configurations/resources/putaway-rule.form.fields.sub-location'))
                     ->options(SubLocation::class)
                     ->default(SubLocation::NO)
-                    ->native(false)
                     ->required(),
             ])
             ->columns(2);

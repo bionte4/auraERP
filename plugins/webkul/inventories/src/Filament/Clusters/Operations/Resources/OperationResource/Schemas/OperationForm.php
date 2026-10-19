@@ -97,7 +97,6 @@ class OperationForm
                                 return $record->name.($record->trashed() ? ' (Deleted)' : '');
                             })
                             ->disableOptionWhen(fn ($label) => str_contains($label, ' (Deleted)'))
-                            ->searchable()
                             ->preload()
                             ->createOptionForm(fn (Schema $schema): Schema => PartnerResource::form($schema))
                             ->visible(fn (Get $get): bool => OperationType::withTrashed()->find($get('operation_type_id'))?->type == Enums\OperationType::INCOMING)
@@ -105,7 +104,6 @@ class OperationForm
                         Select::make('partner_id')
                             ->label(__('inventories::filament/clusters/operations/resources/operation.form.sections.general.fields.contact'))
                             ->relationship('partner', 'name')
-                            ->searchable()
                             ->preload()
                             ->createOptionForm(fn (Schema $schema): Schema => PartnerResource::form($schema))
                             ->visible(fn (Get $get): bool => OperationType::withTrashed()->find($get('operation_type_id'))?->type == Enums\OperationType::INTERNAL)
@@ -113,7 +111,6 @@ class OperationForm
                         Select::make('partner_id')
                             ->label(__('inventories::filament/clusters/operations/resources/operation.form.sections.general.fields.delivery-address'))
                             ->relationship('partner', 'name')
-                            ->searchable()
                             ->preload()
                             ->createOptionForm(fn (Schema $schema): Schema => PartnerResource::form($schema))
                             ->visible(fn (Get $get): bool => OperationType::withTrashed()->find($get('operation_type_id'))?->type == Enums\OperationType::OUTGOING)
@@ -130,7 +127,6 @@ class OperationForm
                                     Enums\OperationType::DROPSHIP,
                                 ]),
                             )
-                            ->searchable()
                             ->preload()
                             ->required()
                             ->live()
@@ -167,7 +163,6 @@ class OperationForm
                             ->disableOptionWhen(function ($label) {
                                 return str_contains($label, ' (Deleted)');
                             })
-                            ->searchable()
                             ->preload()
                             ->required()
                             ->visible(fn (Get $get): bool => OperationResource::getWarehouseSettings()->enable_locations && OperationType::withTrashed()->find($get('operation_type_id'))?->type != Enums\OperationType::INCOMING)
@@ -188,7 +183,6 @@ class OperationForm
                             ->disableOptionWhen(function ($label) {
                                 return str_contains($label, ' (Deleted)');
                             })
-                            ->searchable()
                             ->preload()
                             ->required()
                             ->live()
@@ -225,7 +219,6 @@ class OperationForm
                                 Select::make('user_id')
                                     ->label(__('inventories::filament/clusters/operations/resources/operation.form.tabs.additional.fields.responsible'))
                                     ->relationship('user', 'name')
-                                    ->searchable()
                                     ->preload()
                                     ->default(Auth::id())
                                     ->disabled(fn ($record): bool => in_array($record?->state, [OperationState::DONE, OperationState::CANCELED])),
@@ -353,7 +346,6 @@ class OperationForm
                             ->where(owned_by_company(static::companyIdFor($get, '../../'))),
                     )
                     ->required()
-                    ->searchable()
                     ->preload()
                     ->wrapOptionLabels(false)
                     ->getOptionLabelFromRecordUsing(function ($record): string {
@@ -399,7 +391,6 @@ class OperationForm
                     ->disableOptionWhen(function ($label) {
                         return str_contains($label, ' (Deleted)');
                     })
-                    ->searchable()
                     ->preload()
                     ->wrapOptionLabels(false)
                     ->visible(OperationResource::getWarehouseSettings()->enable_locations)
@@ -426,7 +417,6 @@ class OperationForm
                         'name',
                         modifyQueryUsing: fn (Builder $query, Get $get) => $query->where('product_id', $get('product_id')),
                     )
-                    ->searchable()
                     ->preload()
                     ->wrapOptionLabels(false)
                     ->visible(OperationResource::getProductSettings()->enable_packagings)
@@ -489,11 +479,9 @@ class OperationForm
                             return $query->when($categoryId, fn ($q) => $q->where('category_id', $categoryId))->orderBy('id');
                         },
                     )
-                    ->searchable()
                     ->preload()
                     ->required()
                     ->live()
-                    ->native(false)
                     ->wrapOptionLabels(false)
                     ->afterStateUpdated(function (Set $set, Get $get) {
                         static::afterUOMUpdated($set, $get);
@@ -701,7 +689,6 @@ class OperationForm
                                     })
                                     ->toArray();
                             })
-                            ->searchable()
                             ->preload()
                             ->required()
                             ->live()
@@ -747,7 +734,6 @@ class OperationForm
                                     ->pluck('name', 'name')
                                     ->all()
                                 : [])
-                            ->searchable()
                             ->getOptionLabelUsing(fn ($value): ?string => $value)
                             ->createOptionForm([
                                 TextInput::make('name')
@@ -794,7 +780,6 @@ class OperationForm
                             ->disableOptionWhen(function ($label) {
                                 return str_contains($label, ' (Deleted)');
                             })
-                            ->searchable()
                             ->preload()
                             ->required()
                             ->live()
@@ -814,7 +799,6 @@ class OperationForm
                                             ->orWhereNull('location_id');
                                     }),
                             )
-                            ->searchable()
                             ->preload()
                             ->createOptionForm(fn (Schema $schema): Schema => PackageResource::form($schema))
                             ->disabled(fn (): bool => in_array($move->state, [MoveState::DONE, MoveState::CANCELED]))

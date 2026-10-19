@@ -7,6 +7,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Actions;
@@ -102,7 +103,6 @@ class BillForm
                                                     ->where(hide_deleted_unless_selected($state)),
                                             )
                                             ->required()
-                                            ->searchable()
                                             ->preload()
                                             ->live()
                                             ->afterStateUpdated(function (Set $set, $state) {
@@ -154,7 +154,6 @@ class BillForm
                                             ->disableOptionWhen(function ($label) {
                                                 return str_contains($label, ' (Deleted)');
                                             })
-                                            ->searchable()
                                             ->preload()
                                             ->label(__('accounts::filament/resources/bill.form.section.general.fields.recipient-bank'))
                                             ->createOptionForm(fn (Schema $schema, Get $get) => BankAccountResource::form($schema)->fill([
@@ -179,7 +178,6 @@ class BillForm
                                                     )
                                                     ->required(fn (Get $get) => $get('invoice_date_due') === null)
                                                     ->live()
-                                                    ->searchable()
                                                     ->preload()
                                                     ->label(__('accounts::filament/resources/bill.form.section.general.fields.payment-term'))
                                                     ->disabled(fn ($record) => in_array($record?->state, [MoveState::POSTED, MoveState::CANCEL])),
@@ -196,7 +194,6 @@ class BillForm
                                                             ->where('type', JournalType::PURCHASE)
                                                             ->where(owned_by_company($get('company_id'))),
                                                     )
-                                                    ->searchable()
                                                     ->preload()
                                                     ->required()
                                                     ->label(__('accounts::filament/resources/bill.form.section.general.fields.journal'))
@@ -231,7 +228,6 @@ class BillForm
                                                         modifyQueryUsing: fn (Builder $query) => $query->active(),
                                                     )
                                                     ->required()
-                                                    ->searchable()
                                                     ->preload()
                                                     ->live()
                                                     ->reactive()
@@ -279,7 +275,6 @@ class BillForm
                                         Select::make('company_id')
                                             ->label(__('accounts::filament/resources/bill.form.tabs.other-information.fieldset.accounting.fields.company'))
                                             ->relationship('company', 'name')
-                                            ->searchable()
                                             ->preload()
                                             ->live()
                                             ->afterStateUpdated(function (Set $set, Get $get) {
@@ -302,7 +297,6 @@ class BillForm
                                         Select::make('invoice_incoterm_id')
                                             ->label(__('accounts::filament/resources/bill.form.tabs.other-information.fieldset.accounting.fields.incoterm'))
                                             ->relationship('invoiceIncoterm', 'name')
-                                            ->searchable()
                                             ->preload()
                                             ->default(fn (CustomerInvoiceSettings $settings) => $settings->incoterm_id),
                                         TextInput::make('incoterm_location')
@@ -315,7 +309,6 @@ class BillForm
                                             )
                                             ->getOptionLabelFromRecordUsing(fn ($record) => $record->display_name)
                                             ->preload()
-                                            ->searchable()
                                             ->label(__('accounts::filament/resources/bill.form.tabs.other-information.fieldset.accounting.fields.payment-method')),
                                         Select::make('fiscal_position_id')
                                             ->relationship(
@@ -324,7 +317,6 @@ class BillForm
                                                 modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(owned_by_company($get('company_id'))),
                                             )
                                             ->preload()
-                                            ->searchable()
                                             ->label(__('accounts::filament/resources/bill.form.tabs.other-information.fieldset.accounting.fields.fiscal-position'))
                                             ->hintIcon('heroicon-o-question-mark-circle', tooltip: __('accounts::filament/resources/bill.form.tabs.other-information.fieldset.accounting.fields.fiscal-position-tooltip'))
                                             ->disabled(fn ($record) => in_array($record?->state, [MoveState::POSTED, MoveState::CANCEL])),
@@ -332,7 +324,6 @@ class BillForm
                                             ->label(__('accounts::filament/resources/bill.form.tabs.other-information.fieldset.accounting.fields.cash-rounding'))
                                             ->hintIcon('heroicon-o-question-mark-circle', tooltip: __('accounts::filament/resources/bill.form.tabs.other-information.fieldset.accounting.fields.cash-rounding-tooltip'))
                                             ->relationship('invoiceCashRounding', 'name')
-                                            ->searchable()
                                             ->preload()
                                             ->reactive()
                                             ->live()
@@ -425,7 +416,6 @@ class BillForm
                             ->whereNull('is_configurable')
                             ->where(owned_by_company($get('../../company_id'))),
                     )
-                    ->searchable()
                     ->preload()
                     ->live()
                     ->wrapOptionLabels(false)
@@ -482,7 +472,6 @@ class BillForm
                     ->wrapOptionLabels(false)
                     ->required()
                     ->live()
-                    ->native(false)
                     ->selectablePlaceholder(false)
                     ->dehydrated()
                     ->disabled(fn ($record) => in_array($record?->parent_state, [MoveState::POSTED, MoveState::CANCEL]))
@@ -509,7 +498,7 @@ class BillForm
                     ->dehydrated()
                     ->disabled(fn ($record) => in_array($record?->parent_state, [MoveState::POSTED, MoveState::CANCEL]))
                     ->afterStateUpdated(fn (Set $set, Get $get) => self::calculateLineTotals($set, $get)),
-                Select::make('taxes')
+                CheckboxList::make('taxes')
                     ->label(__('accounts::filament/resources/bill.form.tabs.invoice-lines.repeater.products.fields.taxes'))
                     ->relationship(
                         'taxes',
@@ -518,15 +507,14 @@ class BillForm
                             ->where('type_tax_use', TypeTaxUse::PURCHASE)
                             ->where(owned_by_company($get('../../company_id'))),
                     )
-                    ->wrapOptionLabels(false)
-                    ->searchable()
-                    ->multiple()
-                    ->preload()
                     ->dehydrated()
                     ->disabled(fn ($record) => in_array($record?->parent_state, [MoveState::POSTED, MoveState::CANCEL]))
                     ->afterStateHydrated(fn (Get $get, Set $set) => self::calculateLineTotals($set, $get))
                     ->afterStateUpdated(fn (Get $get, Set $set) => self::calculateLineTotals($set, $get))
-                    ->live(),
+                    ->live()
+                    ->searchable()
+                    ->bulkToggleable()
+                    ->columns(2),
                 TextInput::make('price_subtotal')
                     ->label(__('accounts::filament/resources/bill.form.tabs.invoice-lines.repeater.products.fields.sub-total'))
                     ->default(0)

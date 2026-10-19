@@ -94,8 +94,7 @@ class FieldForm
                                     ->label(__('fields::filament/resources/field.form.sections.settings.fields.type'))
                                     ->required()
                                     ->disabledOn('edit')
-                                    ->searchable()
-                                    ->native(false)
+
                                     ->live()
                                     ->options([
                                         'text'          => __('fields::filament/resources/field.form.sections.settings.fields.type-options.text'),
@@ -114,7 +113,6 @@ class FieldForm
                                     ->label(__('fields::filament/resources/field.form.sections.settings.fields.input-type'))
                                     ->required()
                                     ->disabledOn('edit')
-                                    ->native(false)
                                     ->visible(fn (Get $get): bool => $get('type') == 'text')
                                     ->options([
                                         'text'     => __('fields::filament/resources/field.form.sections.settings.fields.input-type-options.text'),
@@ -143,8 +141,7 @@ class FieldForm
                                 Select::make('plugin')
                                     ->label(__('fields::filament/resources/field.form.sections.resource.fields.plugin'))
                                     ->required(fn (string $operation): bool => $operation === 'create')
-                                    ->searchable()
-                                    ->native(false)
+
                                     ->live()
                                     ->dehydrated(false)
                                     ->disabledOn('edit')
@@ -156,8 +153,7 @@ class FieldForm
                                 Select::make('customizable_type')
                                     ->label(__('fields::filament/resources/field.form.sections.resource.fields.resource'))
                                     ->required()
-                                    ->searchable()
-                                    ->native(false)
+
                                     ->disabledOn('edit')
                                     ->visible(fn (Get $get): bool => filled($get('plugin')))
                                     ->options(fn (Get $get): array => FieldResource::getCustomizableResourceOptions($get('plugin'))),
@@ -178,7 +174,6 @@ class FieldForm
                         ->schema([
                             Select::make('validation')
                                 ->label(__('fields::filament/resources/field.form.sections.form-settings.field-sets.validations.fields.validation'))
-                                ->searchable()
                                 ->required()
                                 ->distinct()
                                 ->live()
@@ -253,7 +248,6 @@ class FieldForm
                                 ->label(__('fields::filament/resources/field.form.sections.form-settings.field-sets.additional-settings.fields.setting'))
                                 ->required()
                                 ->distinct()
-                                ->searchable()
                                 ->live()
                                 ->options(fn (Get $get): array => static::getTypeFormSettings($get('../../../type'))),
                             TextInput::make('value')
@@ -704,7 +698,6 @@ class FieldForm
                 ->schema([
                     Select::make('setting')
                         ->label(__('fields::filament/resources/field.form.sections.table-settings.fields.setting'))
-                        ->searchable()
                         ->required()
                         ->distinct()
                         ->live()
@@ -891,7 +884,6 @@ class FieldForm
                 ->schema([
                     Select::make('setting')
                         ->label(__('fields::filament/resources/field.form.sections.infolist-settings.fields.setting'))
-                        ->searchable()
                         ->required()
                         ->distinct()
                         ->live()

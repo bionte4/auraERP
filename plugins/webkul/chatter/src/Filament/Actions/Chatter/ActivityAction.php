@@ -83,7 +83,6 @@ class ActivityAction extends Action
                                     Select::make('activity_plan_id')
                                         ->label(__('chatter::filament/resources/actions/chatter/activity-action.setup.form.fields.activity-plan'))
                                         ->options($this->getActivityPlans())
-                                        ->searchable()
                                         ->hidden(fn (): bool => $this->getActivityPlans()->isEmpty())
                                         ->preload()
                                         ->live(),
@@ -122,7 +121,6 @@ class ActivityAction extends Action
                                     Select::make('activity_type_id')
                                         ->label(__('chatter::filament/resources/actions/chatter/activity-action.setup.form.fields.activity-type'))
                                         ->options(ActivityType::pluck('name', 'id'))
-                                        ->searchable()
                                         ->preload()
                                         ->live()
                                         ->required()
@@ -137,7 +135,6 @@ class ActivityAction extends Action
                                         ->visible(fn (Get $get) => ! $get('activity_plan_id')),
                                     Select::make('assigned_to')
                                         ->label(__('chatter::filament/resources/actions/chatter/activity-action.setup.form.fields.assigned-to'))
-                                        ->searchable()
                                         ->hidden(fn (Get $get) => $get('activity_type_id') ? ActivityType::find($get('activity_type_id'))->category == 'meeting' : false)
                                         ->live()
                                         ->visible(fn (Get $get) => ! $get('activity_plan_id'))

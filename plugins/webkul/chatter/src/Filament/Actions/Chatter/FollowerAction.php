@@ -5,6 +5,7 @@ namespace Webkul\Chatter\Filament\Actions\Chatter;
 use Filament\Actions\Action;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Model;
@@ -70,27 +71,15 @@ class FollowerAction extends Action
             ->schema(function ($schema) {
                 return $schema
                     ->components([
-                        Select::make('partners')
+                        CheckboxList::make('partners')
                             ->label(__('chatter::filament/resources/actions/chatter/follower-action.setup.form.fields.recipients'))
-                            ->multiple()
-                            ->preload()
+
                             ->live()
+
+                            ->required()
                             ->searchable()
-                            ->getSearchResultsUsing(function (string $search) {
-                                return Partner::query()
-                                    ->when($search, fn ($q) => $q->whereLike('name', "%{$search}%")
-                                        ->orWhereLike('email', "%{$search}%"))
-                                    ->limit(50)
-                                    ->pluck('name', 'id')
-                                    ->toArray();
-                            })
-                            ->getOptionLabelsUsing(function (array $values) {
-                                return Partner::query()
-                                    ->whereIn('id', $values)
-                                    ->pluck('name', 'id')
-                                    ->toArray();
-                            })
-                            ->required(),
+                            ->bulkToggleable()
+                            ->columns(2),
                         Toggle::make('notify')
                             ->live()
                             ->label(__('chatter::filament/resources/actions/chatter/follower-action.setup.form.fields.notify-user')),

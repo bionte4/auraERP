@@ -7,6 +7,7 @@ use Exception;
 use Filament\Actions\Action;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Schema;
@@ -88,13 +89,13 @@ class CancelQuotationAction extends Action
             ->schema(
                 function (Schema $schema, $record) {
                     return $schema->components([
-                        Select::make('partners')
+                        CheckboxList::make('partners')
                             ->options(Partner::all()->pluck('name', 'id'))
-                            ->multiple()
                             ->default([$record->partner_id])
-                            ->searchable()
                             ->label(__('sales::filament/clusters/orders/resources/quotation/actions/cancel-quotation.form.fields.partner'))
-                            ->preload(),
+                            ->searchable()
+                            ->bulkToggleable()
+                            ->columns(2),
                         TextInput::make('subject')
                             ->default(fn () => __('sales::filament/clusters/orders/resources/quotation/actions/cancel-quotation.form.fields.subject-default', [
                                 'name' => $record->name,

@@ -70,7 +70,6 @@ class MyAllocationForm
                                                     Employee::withoutGlobalScope(CompanyScope::class)->where('user_id', Auth::id())->value('company_id')
                                                 )),
                                             )
-                                            ->searchable()
                                             ->preload()
                                             ->required(),
                                     ]),

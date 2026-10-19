@@ -74,12 +74,10 @@ class PosRegisterResource extends Resource
                     Select::make('warehouse_id')
                         ->label('Gudang Utama (Warehouse)')
                         ->options(fn (): array => Warehouse::withTrashed()->withoutGlobalScopes()->pluck('name', 'id')->all())
-                        ->searchable()
                         ->preload(),
                     Select::make('stock_location_id')
                         ->label('Lokasi Potong Stok (Stock Location)')
                         ->options(fn (): array => Location::withTrashed()->withoutGlobalScopes()->where('type', 'internal')->pluck('full_name', 'id')->all())
-                        ->searchable()
                         ->preload(),
                     TextInput::make('default_tax_rate')
                         ->label('Pajak Default / PPN (%)')

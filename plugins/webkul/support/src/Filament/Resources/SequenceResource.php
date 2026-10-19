@@ -88,7 +88,6 @@ class SequenceResource extends Resource
                         Select::make('company_id')
                             ->label(__('support::filament/resources/sequence.form.sections.general.fields.company'))
                             ->relationship('company', 'name')
-                            ->searchable()
                             ->preload()
                             ->disabled(fn (?Sequence $record): bool => $record !== null),
                     ])

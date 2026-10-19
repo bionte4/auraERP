@@ -48,7 +48,6 @@ class MovementsRelationManager extends RelationManager
                     ->options(EquipmentMovementType::options())
                     ->default(EquipmentMovementType::Relocation->value)
                     ->required()
-                    ->native(false)
                     ->live(),
 
                 DatePicker::make('movement_date')
@@ -69,9 +68,7 @@ class MovementsRelationManager extends RelationManager
                         'name',
                         modifyQueryUsing: fn (Builder $query) => $query->whereKeyNot($this->getOwnerRecord()->getKey()),
                     )
-                    ->searchable()
                     ->preload()
-                    ->native(false)
                     ->visible(fn (Get $get): bool => $get('movement_type') === EquipmentMovementType::Replacement->value)
                     ->required(fn (Get $get): bool => $get('movement_type') === EquipmentMovementType::Replacement->value),
 
@@ -79,17 +76,14 @@ class MovementsRelationManager extends RelationManager
                     ->label(__('maintenance::filament/resources/equipment.movements.fields.to-employee'))
                     ->relationship('toEmployee', 'name')
                     ->default(fn (): ?int => $this->getOwnerRecord()->employee_id)
-                    ->searchable()
                     ->preload()
-                    ->native(false),
+                    ,
 
                 Select::make('to_project_id')
                     ->label(__('maintenance::filament/resources/equipment.movements.fields.to-project'))
                     ->relationship('toProject', 'name')
                     ->default(fn (): ?int => $this->getOwnerRecord()->project_id)
-                    ->searchable()
                     ->preload()
-                    ->native(false)
                     ->live()
                     ->afterStateUpdated(function (Set $set, Get $get, mixed $state): void {
                         if (! $state || $get('to_customer_id')) {
@@ -124,9 +118,8 @@ class MovementsRelationManager extends RelationManager
                     ])
                     ->createOptionUsing(fn (array $data): int => Equipment::createExternalPartner($data, 'customer'))
                     ->default(fn (): ?int => $this->getOwnerRecord()->customer_id)
-                    ->searchable()
                     ->preload()
-                    ->native(false),
+                    ,
 
                 TextInput::make('to_location')
                     ->label(__('maintenance::filament/resources/equipment.movements.fields.to-location'))

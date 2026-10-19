@@ -6,6 +6,7 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 use Webkul\Account\Enums\MoveState;
@@ -60,12 +61,12 @@ class PrintAndSendAction extends Action
         $this->schema(
             function (Schema $schema) {
                 return $schema->components([
-                    Select::make('partners')
+                    CheckboxList::make('partners')
                         ->options(Partner::all()->pluck('name', 'id'))
-                        ->multiple()
                         ->label(__('accounts::filament/resources/invoice/actions/print-and-send.modal.form.partners'))
                         ->searchable()
-                        ->preload(),
+                        ->bulkToggleable()
+                        ->columns(2),
                     TextInput::make('subject')
                         ->label(__('accounts::filament/resources/invoice/actions/print-and-send.modal.form.subject'))
                         ->hiddenLabel(),

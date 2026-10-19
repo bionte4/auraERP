@@ -109,9 +109,7 @@ class ManufacturingOrderForm
                                             ->where(owned_by_company($get('company_id')))
                                     )
                                     ->getOptionLabelFromRecordUsing(fn (Product $record): string => $record->name)
-                                    ->searchable()
                                     ->preload()
-                                    ->native(false)
                                     ->wrapOptionLabels(false)
                                     ->live()
                                     ->disabled(fn (?Order $record) => $record && $record->state !== ManufacturingOrderState::DRAFT)
@@ -204,9 +202,7 @@ class ManufacturingOrderForm
                                         }
                                     )
                                     ->getOptionLabelFromRecordUsing(fn (BillOfMaterial $record): string => ManufacturingOrderResource::getBillOfMaterialLabel($record))
-                                    ->searchable()
                                     ->preload()
-                                    ->native(false)
                                     ->wrapOptionLabels(false)
                                     ->live()
                                     ->disabled(fn (?Order $record) => $record && $record->state !== ManufacturingOrderState::DRAFT)
@@ -241,9 +237,7 @@ class ManufacturingOrderForm
                                 Select::make('assigned_user_id')
                                     ->label(__('manufacturing::filament/clusters/operations/resources/manufacturing-order.form.sections.general.fields.responsible'))
                                     ->relationship('assignedUser', 'name')
-                                    ->searchable()
                                     ->preload()
-                                    ->native(false)
                                     ->default(Auth::id())
                                     ->disabled(fn (?Order $record) => $record && in_array($record->state, [ManufacturingOrderState::DONE, ManufacturingOrderState::CANCEL])),
                             ]),
@@ -283,9 +277,7 @@ class ManufacturingOrderForm
                                                     ->where(owned_by_company($get('company_id')))
                                             )
                                             ->getOptionLabelFromRecordUsing(fn (OperationType $record): string => ManufacturingOrderResource::getOperationTypeLabel($record))
-                                            ->searchable()
                                             ->preload()
-                                            ->native(false)
                                             ->wrapOptionLabels(false)
                                             ->live()
                                             ->required()
@@ -312,10 +304,8 @@ class ManufacturingOrderForm
                                                 ->withTrashed()
                                                 ->where(hide_deleted_unless_selected($state))
                                                 ->where(owned_by_company($get('company_id'))))
-                                            ->searchable()
                                             ->preload()
                                             ->required()
-                                            ->native(false)
                                             ->disabled(fn (?Order $record) => $record && $record->state !== ManufacturingOrderState::DRAFT)
                                             ->visible(ManufacturingOrderResource::getWarehouseSettings()->enable_locations)
                                             ->wrapOptionLabels(false)
@@ -335,10 +325,8 @@ class ManufacturingOrderForm
                                                 ->withTrashed()
                                                 ->where(hide_deleted_unless_selected($state))
                                                 ->where(owned_by_company($get('company_id'))))
-                                            ->searchable()
                                             ->preload()
                                             ->required()
-                                            ->native(false)
                                             ->wrapOptionLabels(false)
                                             ->live()
                                             ->disabled(fn (?Order $record) => $record && $record->state !== ManufacturingOrderState::DRAFT)
@@ -349,9 +337,7 @@ class ManufacturingOrderForm
                                         Select::make('company_id')
                                             ->label(__('manufacturing::filament/clusters/operations/resources/manufacturing-order.form.tabs.miscellaneous.fields.company'))
                                             ->relationship('company', 'name')
-                                            ->searchable()
                                             ->preload()
-                                            ->native(false)
                                             ->disabled(fn (?Order $record) => $record && $record->state !== ManufacturingOrderState::DRAFT)
                                             ->default(current_company_id())
                                             ->live()
@@ -483,9 +469,7 @@ class ManufacturingOrderForm
                 ->columnSpan(fn (?Order $record): int => $record && $record->state !== ManufacturingOrderState::DRAFT ? 2 : 3),
             Select::make('uom_id')
                 ->hiddenLabel()
-                ->native(false)
                 ->required()
-                ->searchable()
                 ->preload()
                 ->disabled(fn (?Order $record) => $record && $record->state !== ManufacturingOrderState::DRAFT)
                 ->live()
@@ -623,9 +607,7 @@ class ManufacturingOrderForm
                             ->whereNull('is_configurable')
                             ->where(owned_by_company($get('../../company_id'))),
                     )
-                    ->searchable()
                     ->preload()
-                    ->native(false)
                     ->wrapOptionLabels(false)
                     ->live()
                     ->getOptionLabelFromRecordUsing(function ($record): string {
@@ -729,9 +711,7 @@ class ManufacturingOrderForm
                                 ->orderBy('name');
                         },
                     )
-                    ->searchable()
                     ->preload()
-                    ->native(false)
                     ->wrapOptionLabels(false)
                     ->required()
                     ->disabled(fn ($record): bool => $record instanceof Move && $record->id && $record->state !== MoveState::DRAFT),
@@ -821,9 +801,7 @@ class ManufacturingOrderForm
                             ->where(hide_deleted_unless_selected($state))
                             ->where(owned_by_company($get('../../company_id'))),
                     )
-                    ->searchable()
                     ->preload()
-                    ->native(false)
                     ->wrapOptionLabels(false)
                     ->required()
                     ->disabled(fn ($record): bool => $record && ! in_array($record->state, [WorkOrderState::PENDING, WorkOrderState::WAITING])),

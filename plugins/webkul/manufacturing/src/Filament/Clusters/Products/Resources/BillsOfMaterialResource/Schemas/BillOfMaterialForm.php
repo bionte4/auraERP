@@ -9,6 +9,7 @@ use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Infolists\Components\TextEntry;
@@ -86,7 +87,6 @@ class BillOfMaterialForm
 
                                         return $isDeleted || $isDuplicate;
                                     })
-                                    ->searchable()
                                     ->preload()
                                     ->live()
                                     ->afterStateHydrated(function (Set $set, ?string $state): void {
@@ -119,7 +119,6 @@ class BillOfMaterialForm
                                         ->orderBy('name')
                                         ->pluck('name', 'id')
                                         ->all())
-                                    ->native(false)
                                     ->live()
                                     ->dehydrated(false)
                                     ->afterStateUpdated(function (Set $set, ?string $state): void {
@@ -156,7 +155,6 @@ class BillOfMaterialForm
                                             },
                                         )
                                         ->default(fn (Get $get): ?int => Product::query()->withTrashed()->find($get('product_id'))?->uom_id)
-                                        ->searchable()
                                         ->preload()
                                         ->required(),
                                 ])
@@ -177,7 +175,6 @@ class BillOfMaterialForm
                                 Select::make('company_id')
                                     ->label(__('manufacturing::filament/clusters/products/resources/bill-of-material.form.sections.general.fields.company'))
                                     ->relationship('company', 'name')
-                                    ->searchable()
                                     ->preload()
                                     ->default(current_company_id())
                                     ->live()
@@ -235,9 +232,7 @@ class BillOfMaterialForm
                                         ->where(hide_deleted_unless_selected($state))
                                         ->where('type', OperationType::MANUFACTURE)
                                         ->where(owned_by_company($get('company_id'))))
-                                    ->searchable()
                                     ->preload()
-                                    ->native(false)
                                     ->wrapOptionLabels(false)
                                     ->getOptionLabelFromRecordUsing(fn ($record): string => $record->warehouse
                                         ? $record->warehouse->name.': '.$record->name
@@ -247,7 +242,6 @@ class BillOfMaterialForm
                                 Select::make('consumption')
                                     ->label(__('manufacturing::filament/clusters/products/resources/bill-of-material.form.tabs.miscellaneous.fields.consumption'))
                                     ->options(BillOfMaterialConsumption::class)
-                                    ->native(false)
                                     ->default(BillOfMaterialConsumption::WARNING->value)
                                     ->visible(fn (Get $get): bool => ! static::matchesEnumState($get('type'), BillOfMaterialType::PHANTOM))
                                     ->required()
@@ -353,7 +347,6 @@ class BillOfMaterialForm
                                 ->orWhereNull('is_configurable');
                         })
                         ->where(owned_by_company($get('../../company_id'))))
-                    ->searchable()
                     ->preload()
                     ->required()
                     ->createOptionForm(fn (Schema $schema): Schema => ProductResource::form($schema))
@@ -420,10 +413,9 @@ class BillOfMaterialForm
                         },
                     )
                     ->default(fn (Get $get): ?int => Product::query()->withTrashed()->find($get('product_id'))?->uom_id)
-                    ->searchable()
                     ->preload()
                     ->required(),
-                Select::make('attributeValues')
+                CheckboxList::make('attributeValues')
                     ->label(__('manufacturing::filament/clusters/products/resources/bill-of-material.form.tabs.components.columns.apply-on-variants'))
                     ->relationship(
                         name: 'attributeValues',
@@ -436,12 +428,10 @@ class BillOfMaterialForm
                     )
                     ->getOptionLabelFromRecordUsing(fn ($record): string => $record->attribute?->name && $record->attributeOption?->name ? "{$record->attribute->name}: {$record->attributeOption->name}" : ($record->attributeOption?->name ?? (string) $record->id))
                     ->searchable()
-                    ->preload()
-                    ->multiple(),
+                    ->bulkToggleable()
+                    ->columns(2),
                 Select::make('operation_id')
                     ->relationship('operation', 'name')
-                    ->native(false)
-                    ->searchable()
                     ->preload()
                     ->wrapOptionLabels(false)
                     ->createOptionForm(fn (Schema $schema): Schema => OperationResource::form($schema))
@@ -501,8 +491,6 @@ class BillOfMaterialForm
                                     return [$operation->id => implode(' / ', $labelParts)];
                                 })
                                 ->all())
-                            ->native(false)
-                            ->searchable()
                             ->preload()
                             ->wrapOptionLabels(false)
                             ->required(),
@@ -607,10 +595,8 @@ class BillOfMaterialForm
 
                         return Company::query()->find($companyId)?->name ?? '—';
                     }),
-                Select::make('attributeValues')
+                CheckboxList::make('attributeValues')
                     ->label(__('manufacturing::filament/clusters/products/resources/bill-of-material.form.tabs.operations.columns.apply-on-variants'))
-                    ->native(false)
-                    ->wrapOptionLabels(false)
                     ->hidden()
                     ->relationship(
                         'attributeValues',
@@ -629,8 +615,8 @@ class BillOfMaterialForm
                     )
                     ->getOptionLabelFromRecordUsing(fn ($record): string => $record->attribute?->name && $record->attributeOption?->name ? "{$record->attribute->name}: {$record->attributeOption->name}" : ($record->attributeOption?->name ?? (string) $record->id))
                     ->searchable()
-                    ->preload()
-                    ->multiple(),
+                    ->bulkToggleable()
+                    ->columns(2),
                 TextEntry::make('display_attribute_values')
                     ->hiddenLabel()
                     ->state(function (Get $get): string {
@@ -715,7 +701,6 @@ class BillOfMaterialForm
                         ->withTrashed()
                         ->where(hide_deleted_unless_selected($state))
                         ->where(owned_by_company($get('../../company_id'))))
-                    ->searchable()
                     ->preload()
                     ->required()
                     ->live()
@@ -775,13 +760,10 @@ class BillOfMaterialForm
                         },
                     )
                     ->default(fn (Get $get): ?int => Product::query()->withTrashed()->find($get('product_id'))?->uom_id)
-                    ->searchable()
                     ->preload()
                     ->required(),
                 Select::make('operation_id')
                     ->relationship('operation', 'name')
-                    ->native(false)
-                    ->searchable()
                     ->preload()
                     ->wrapOptionLabels(false)
                     ->createOptionForm(fn (Schema $schema): Schema => OperationResource::form($schema))

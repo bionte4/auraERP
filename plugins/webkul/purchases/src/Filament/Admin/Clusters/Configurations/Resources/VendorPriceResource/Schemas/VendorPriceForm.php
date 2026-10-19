@@ -27,7 +27,6 @@ class VendorPriceForm
                                 Select::make('partner_id')
                                     ->label(__('purchases::filament/admin/clusters/configurations/resources/vendor-price.form.sections.general.fields.vendor'))
                                     ->relationship('partner', 'name')
-                                    ->searchable()
                                     ->required()
                                     ->preload(),
                                 TextInput::make('product_name')
@@ -62,7 +61,6 @@ class VendorPriceForm
                                             ->where('is_configurable', null)
                                             ->where(owned_by_company($get('company_id')))
                                     )
-                                    ->searchable()
                                     ->preload()
                                     ->hiddenOn(ManageVendors::class),
                                 TextInput::make('min_qty')
@@ -89,7 +87,6 @@ class VendorPriceForm
                                                 modifyQueryUsing: fn (Builder $query) => $query->active(),
                                             )
                                             ->required()
-                                            ->searchable()
                                             ->default(current_company()?->currency_id)
                                             ->preload(),
                                         DatePicker::make('starts_at')
@@ -111,7 +108,6 @@ class VendorPriceForm
                                 Select::make('company_id')
                                     ->label(__('purchases::filament/admin/clusters/configurations/resources/vendor-price.form.sections.prices.fields.company'))
                                     ->relationship('company', 'name')
-                                    ->searchable()
                                     ->default(current_company_id())
                                     ->preload()
                                     ->live()

@@ -172,7 +172,6 @@ JS,
 
                                 Select::make('guard_name')
                                     ->label(__('filament-shield::filament-shield.field.guard_name'))
-                                    ->native(false)
                                     ->selectablePlaceholder(false)
                                     ->options([
                                         'web'     => __('security::filament/resources/role.form.fields.web'),

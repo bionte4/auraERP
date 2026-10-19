@@ -60,7 +60,6 @@ class LotForm
                                         return str_contains($label, ' (Deleted)');
                                     })
                                     ->required()
-                                    ->searchable()
                                     ->preload()
                                     ->live()
                                     ->afterStateUpdated(function (Set $set, $state): void {
@@ -83,7 +82,6 @@ class LotForm
                                 Select::make('company_id')
                                     ->label(__('inventories::filament/clusters/products/resources/lot.form.sections.general.fields.company'))
                                     ->relationship('company', 'name')
-                                    ->searchable()
                                     ->preload()
                                     ->live()
                                     ->afterStateUpdated(fn (Set $set, Get $get, $state) => clear_foreign_company_values($set, $get, [

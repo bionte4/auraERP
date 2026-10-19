@@ -42,7 +42,6 @@ class PackagingForm
                         return str_contains($label, ' (Deleted)');
                     })
                     ->required()
-                    ->searchable()
                     ->preload(),
                 TextInput::make('qty')
                     ->label(__('products::filament/resources/packaging.form.qty'))
@@ -53,7 +52,6 @@ class PackagingForm
                 Select::make('company_id')
                     ->label(__('products::filament/resources/packaging.form.company'))
                     ->relationship('company', 'name')
-                    ->searchable()
                     ->preload()
                     ->default(current_company_id())
                     ->live()

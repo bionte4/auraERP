@@ -32,7 +32,6 @@ class QuantityForm
                         titleAttribute: 'name',
                         modifyQueryUsing: fn (Builder $query) => $query->where('is_storable', true)->whereNull('is_configurable')->whereNull('deleted_at'),
                     )
-                    ->searchable()
                     ->preload()
                     ->required()
                     ->live()
@@ -47,7 +46,6 @@ class QuantityForm
                         titleAttribute: 'full_name',
                         modifyQueryUsing: fn (Builder $query) => $query->where('type', LocationType::INTERNAL),
                     )
-                    ->searchable()
                     ->preload()
                     ->required()
                     ->default(fn (): ?int => Warehouse::where('company_id', current_company_id())->first()?->lot_stock_location_id)
@@ -64,7 +62,6 @@ class QuantityForm
                         modifyQueryUsing: fn (Builder $query, Get $get) => $query->where('product_id', $get('product_id')),
                     )
                     ->required()
-                    ->searchable()
                     ->preload()
                     ->createOptionForm(fn (Schema $schema): Schema => LotResource::form($schema))
                     ->createOptionAction(function (Action $action, Get $get) {
@@ -90,7 +87,6 @@ class QuantityForm
                             ->where('location_id', $get('location_id'))
                             ->orWhereNull('location_id'),
                     )
-                    ->searchable()
                     ->reactive()
                     ->preload()
                     ->createOptionForm(fn (Schema $schema): Schema => PackageResource::form($schema))

@@ -7,6 +7,7 @@ use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Group;
@@ -95,7 +96,6 @@ class OrderForm
                                     ->disableOptionWhen(function ($label) {
                                         return str_contains($label, ' (Deleted)');
                                     })
-                                    ->searchable()
                                     ->required()
                                     ->preload()
                                     ->createOptionForm(fn (Schema $schema) => VendorResource::form($schema))
@@ -135,7 +135,6 @@ class OrderForm
                                         return $record->name.($record->trashed() ? ' (Deleted)' : '');
                                     })
                                     ->disableOptionWhen(fn ($label) => str_contains($label, ' (Deleted)'))
-                                    ->searchable()
                                     ->preload()
                                     ->visible(OrderResource::getOrderSettings()->enable_purchase_agreements)
                                     ->afterStateUpdated(fn ($state, Set $set, Get $get) => static::handleRequisitionChange($state, $set, $get))
@@ -148,7 +147,6 @@ class OrderForm
                                         modifyQueryUsing: fn (Builder $query) => $query->active(),
                                     )
                                     ->required()
-                                    ->searchable()
                                     ->preload()
                                     ->default(current_company()?->currency_id)
                                     ->live()
@@ -202,7 +200,6 @@ class OrderForm
                                         return $record->warehouse->name.': '.$record->name.($record->trashed() ? ' (Deleted)' : '');
                                     })
                                     ->required()
-                                    ->searchable()
                                     ->preload()
                                     ->visible(fn (): bool => static::canUseInventoryWarehouses())
                                     ->default(fn (Get $get) => static::getInventoryOperationTypeId($get('company_id') ?? current_company_id()))
@@ -238,7 +235,6 @@ class OrderForm
                                         Select::make('user_id')
                                             ->label(__('purchases::filament/admin/clusters/orders/resources/order.form.tabs.additional.fields.buyer'))
                                             ->relationship('user', 'name')
-                                            ->searchable()
                                             ->preload()
                                             ->default(Auth::id())
                                             ->disabled(fn ($record): bool => $record && ! in_array($record?->state, [OrderState::DRAFT, OrderState::SENT, OrderState::PURCHASE])),
@@ -254,7 +250,6 @@ class OrderForm
                                                 return $record->name.($record->trashed() ? ' (Deleted)' : '');
                                             })
                                             ->disableOptionWhen(fn ($label) => str_contains($label, ' (Deleted)'))
-                                            ->searchable()
                                             ->preload()
                                             ->required()
                                             ->live()
@@ -273,7 +268,6 @@ class OrderForm
                                         Select::make('incoterm_id')
                                             ->label(__('purchases::filament/admin/clusters/orders/resources/order.form.tabs.additional.fields.incoterm'))
                                             ->relationship('incoterm', 'name')
-                                            ->searchable()
                                             ->preload()
                                             ->createOptionForm(fn (Schema $schema) => IncotermResource::form($schema))
                                             ->hintIcon('heroicon-o-question-mark-circle', tooltip: __('purchases::filament/admin/clusters/orders/resources/order.form.tabs.additional.fields.incoterm-tooltip'))
@@ -293,7 +287,6 @@ class OrderForm
                                                 'name',
                                                 modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(owned_by_company($get('company_id'))),
                                             )
-                                            ->searchable()
                                             ->preload()
                                             ->disabled(fn ($record): bool => $record && ! in_array($record?->state, [OrderState::DRAFT, OrderState::SENT, OrderState::PURCHASE])),
                                     ]),
@@ -452,7 +445,6 @@ class OrderForm
                     ->getOptionLabelFromRecordUsing(function ($record): string {
                         return $record->name.($record->trashed() ? ' (Deleted)' : '');
                     })
-                    ->searchable()
                     ->preload()
                     ->live()
                     ->required()
@@ -561,7 +553,6 @@ class OrderForm
                     )
                     ->required()
                     ->live()
-                    ->native(false)
                     ->wrapOptionLabels(false)
                     ->selectablePlaceholder(false)
                     ->afterStateUpdated(function (Set $set, Get $get) {
@@ -588,7 +579,6 @@ class OrderForm
                         'name',
                         modifyQueryUsing: fn (Builder $query, Get $get) => $query->where('product_id', $get('product_id')),
                     )
-                    ->searchable()
                     ->preload()
                     ->live()
                     ->wrapOptionLabels(false)
@@ -611,7 +601,7 @@ class OrderForm
                     })
                     ->disabled(fn (): bool => in_array($record?->state, [OrderState::DONE, OrderState::CANCELED])),
 
-                Select::make('taxes')
+                CheckboxList::make('taxes')
                     ->label(__('purchases::filament/admin/clusters/orders/resources/order.form.tabs.products.repeater.products.fields.taxes'))
                     ->relationship(
                         'taxes',
@@ -620,15 +610,14 @@ class OrderForm
                             ->where('type_tax_use', TypeTaxUse::PURCHASE)
                             ->where(owned_by_company($get('../../company_id'))),
                     )
-                    ->searchable()
-                    ->multiple()
-                    ->preload()
-                    ->wrapOptionLabels(false)
                     ->afterStateUpdated(function (Get $get, Set $set, $state) {
                         self::calculateLineTotals($set, $get);
                     })
                     ->live()
-                    ->disabled(fn (): bool => in_array($record?->state, [OrderState::DONE, OrderState::CANCELED])),
+                    ->disabled(fn (): bool => in_array($record?->state, [OrderState::DONE, OrderState::CANCELED]))
+                    ->searchable()
+                    ->bulkToggleable()
+                    ->columns(2),
 
                 TextInput::make('discount')
                     ->label(__('purchases::filament/admin/clusters/orders/resources/order.form.tabs.products.repeater.products.fields.discount-percentage'))

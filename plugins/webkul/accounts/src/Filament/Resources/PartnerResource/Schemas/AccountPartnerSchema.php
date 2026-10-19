@@ -32,7 +32,6 @@ class AccountPartnerSchema
                     Select::make('property_payment_term_id')
                         ->relationship('propertyPaymentTerm', 'name')
                         ->preload()
-                        ->searchable()
                         ->label(__('accounts::filament/resources/partner.form.tabs.sales-purchases.fieldsets.sales.fields.payment-terms')),
                     Select::make('property_inbound_payment_method_line_id')
                         ->relationship(
@@ -44,7 +43,6 @@ class AccountPartnerSchema
                         )
                         ->getOptionLabelFromRecordUsing(fn ($record) => $record->display_name)
                         ->preload()
-                        ->searchable()
                         ->label(__('accounts::filament/resources/partner.form.tabs.sales-purchases.fieldsets.sales.fields.payment-method')),
                 ])
                 ->columns(2),
@@ -61,7 +59,6 @@ class AccountPartnerSchema
                             Select::make('property_supplier_payment_term_id')
                                 ->label(__('accounts::filament/resources/partner.form.tabs.sales-purchases.fieldsets.purchase.fields.payment-terms'))
                                 ->relationship('propertySupplierPaymentTerm', 'name')
-                                ->searchable()
                                 ->preload(),
                             Select::make('property_outbound_payment_method_line_id')
                                 ->relationship(
@@ -73,7 +70,6 @@ class AccountPartnerSchema
                                 )
                                 ->getOptionLabelFromRecordUsing(fn ($record) => $record->display_name)
                                 ->preload()
-                                ->searchable()
                                 ->label(__('accounts::filament/resources/partner.form.tabs.sales-purchases.fieldsets.purchase.fields.payment-method')),
                         ])->columns(2),
                 ])
@@ -86,7 +82,6 @@ class AccountPartnerSchema
                             Select::make('property_account_position_id')
                                 ->label(__('accounts::filament/resources/partner.form.tabs.sales-purchases.fieldsets.fiscal-information.fields.fiscal-position'))
                                 ->relationship('propertyAccountPosition', 'name')
-                                ->searchable()
                                 ->preload(),
                         ])->columns(2),
                 ])
@@ -135,7 +130,6 @@ class AccountPartnerSchema
                                     ->where(fn ($q) => $q->whereHas('companies', fn ($c) => $c->where('companies.id', $record?->company_id ?? current_company_id()))->orWhereDoesntHave('companies'))
                             )
                             ->required()
-                            ->searchable()
                             ->preload()
                             ->default(Account::where('account_type', AccountType::ASSET_RECEIVABLE)->where('deprecated', false)->where(fn ($q) => $q->whereHas('companies', fn ($c) => $c->where('companies.id', current_company_id()))->orWhereDoesntHave('companies'))->first()?->id),
                         Select::make('property_account_payable_id')
@@ -149,7 +143,6 @@ class AccountPartnerSchema
                                     ->where(fn ($q) => $q->whereHas('companies', fn ($c) => $c->where('companies.id', $record?->company_id ?? current_company_id()))->orWhereDoesntHave('companies'))
                             )
                             ->required()
-                            ->searchable()
                             ->preload()
                             ->default(Account::where('account_type', AccountType::LIABILITY_PAYABLE)->where('deprecated', false)->where(fn ($q) => $q->whereHas('companies', fn ($c) => $c->where('companies.id', current_company_id()))->orWhereDoesntHave('companies'))->first()?->id),
                     ]),

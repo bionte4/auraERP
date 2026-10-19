@@ -6,6 +6,7 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Group;
@@ -47,7 +48,6 @@ class JobPositionForm
                                                 titleAttribute: 'name',
                                                 modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(fn ($query) => $query->whereNull('company_id')->orWhere('company_id', $get('company_id') ?? current_company_id())),
                                             )
-                                            ->searchable()
                                             ->preload()
                                             ->live()
                                             ->reactive()
@@ -80,14 +80,12 @@ class JobPositionForm
                                                 titleAttribute: 'name',
                                                 modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(owned_by_company($get('company_id'))),
                                             )
-                                            ->searchable()
                                             ->preload()
                                             ->reactive()
                                             ->live(),
                                         Select::make('company_id')
                                             ->label(__('recruitments::filament/clusters/configurations/resources/job-position.form.sections.employment-information.fields.company'))
                                             ->relationship(name: 'company', titleAttribute: 'name')
-                                            ->searchable()
                                             ->preload()
                                             ->default(current_company_id())
                                             ->live()
@@ -104,7 +102,6 @@ class JobPositionForm
                                         Select::make('recruiter_id')
                                             ->label(__('recruitments::filament/clusters/configurations/resources/job-position.form.sections.employment-information.fields.recruiter'))
                                             ->relationship(name: 'recruiter', titleAttribute: 'name')
-                                            ->searchable()
                                             ->preload()
                                             ->live()
                                             ->createOptionForm(fn (Schema $schema) => UserResource::form($schema))
@@ -113,18 +110,16 @@ class JobPositionForm
                                                     ->modalIcon('heroicon-o-user')
                                                     ->modalHeading(__('recruitments::filament/clusters/configurations/resources/job-position.form.sections.employment-information.fields.recruiter-modal-title'));
                                             }),
-                                        Select::make('recruitments_job_position_interviewers')
+                                        CheckboxList::make('recruitments_job_position_interviewers')
                                             ->label(__('recruitments::filament/clusters/configurations/resources/job-position.form.sections.employment-information.fields.interviewers'))
                                             ->relationship(name: 'interviewers', titleAttribute: 'name')
-                                            ->searchable()
-                                            ->multiple()
-                                            ->preload()
                                             ->live()
-                                            ->createOptionForm(fn (Schema $schema) => UserResource::form($schema)),
+                                            ->searchable()
+                                            ->bulkToggleable()
+                                            ->columns(2),
                                         Select::make('address_id')
                                             ->label(__('recruitments::filament/clusters/configurations/resources/job-position.form.sections.employment-information.fields.job-location'))
                                             ->relationship(name: 'address', titleAttribute: 'name')
-                                            ->searchable()
                                             ->preload()
                                             ->createOptionForm(fn (Schema $schema) => AddressResource::form($schema))
                                             ->createOptionAction(function (Action $action) {
@@ -136,7 +131,6 @@ class JobPositionForm
                                         Select::make('industry_id')
                                             ->label(__('recruitments::filament/clusters/configurations/resources/job-position.form.sections.employment-information.fields.industry'))
                                             ->relationship('industry', 'name')
-                                            ->searchable()
                                             ->createOptionForm(fn ($form) => IndustryResource::form($form)->columns(2))
                                             ->preload(),
                                     ])->columns(2),
@@ -179,18 +173,15 @@ class JobPositionForm
                                             ->dehydrated(false),
                                         TextInput::make('no_of_hired_employee')
                                             ->disabled(),
-                                        Select::make('job_position_skills')
+                                        CheckboxList::make('job_position_skills')
                                             ->label(__('recruitments::filament/clusters/configurations/resources/job-position.form.sections.workforce-planning.fields.expected-skills'))
                                             ->relationship('skills', 'name')
                                             ->searchable()
-                                            ->multiple()
-                                            ->preload()
-                                            ->searchable()
-                                            ->preload(),
+                                            ->bulkToggleable()
+                                            ->columns(2),
                                         Select::make('employment_type_id')
                                             ->label(__('recruitments::filament/clusters/configurations/resources/job-position.form.sections.workforce-planning.fields.employment-type'))
                                             ->relationship('employmentType', 'name')
-                                            ->searchable()
                                             ->preload(),
                                         Toggle::make('is_active')
                                             ->label(__('recruitments::filament/clusters/configurations/resources/job-position.form.sections.workforce-planning.fields.status'))

@@ -4,6 +4,7 @@ namespace Webkul\Sale\Filament\Clusters\Configuration\Resources\TeamResource\Sch
 
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Fieldset;
@@ -34,13 +35,13 @@ class TeamForm
                                     ->relationship('user', 'name')
                                     ->preload()
                                     ->label(__('sales::filament/clusters/configurations/resources/team.form.sections.fields.fieldset.team-details.fields.team-leader'))
-                                    ->searchable(),
+                                    ,
                                 Select::make('company_id')
                                     ->relationship('company', 'name')
                                     ->preload()
                                     ->label(__('sales::filament/clusters/configurations/resources/team.form.sections.fields.fieldset.team-details.fields.company'))
                                     ->default(current_company_id())
-                                    ->searchable(),
+                                    ,
                                 TextInput::make('invoiced_target')
                                     ->numeric()
                                     ->default(0)
@@ -52,12 +53,12 @@ class TeamForm
                                 ColorPicker::make('color')
                                     ->label(__('sales::filament/clusters/configurations/resources/team.form.sections.fields.fieldset.team-details.fields.color'))
                                     ->hexColor(),
-                                Select::make('sales_team_members')
+                                CheckboxList::make('sales_team_members')
                                     ->relationship('members', 'name')
-                                    ->multiple()
+                                    ->label(__('sales::filament/clusters/configurations/resources/team.form.sections.fields.fieldset.team-details.fields.members'))
                                     ->searchable()
-                                    ->preload()
-                                    ->label(__('sales::filament/clusters/configurations/resources/team.form.sections.fields.fieldset.team-details.fields.members')),
+                                    ->bulkToggleable()
+                                    ->columns(2),
                             ])->columns(2),
                         Toggle::make('is_active')
                             ->inline(false)

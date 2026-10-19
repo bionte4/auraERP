@@ -58,7 +58,6 @@ class UOMCategoryForm
                                     ->options(UOMType::class)
                                     ->default(UOMType::REFERENCE->value)
                                     ->required()
-                                    ->native(false)
                                     ->live()
                                     ->afterStateUpdated(function ($state, Set $set): void {
                                         if (static::isReferenceType($state)) {

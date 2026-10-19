@@ -39,12 +39,10 @@ class FiscalPositionForm
                                     ->required(),
                                 Select::make('country_id')
                                     ->relationship('country', 'name')
-                                    ->searchable()
                                     ->preload()
                                     ->label(__('accounts::filament/resources/fiscal-position.form.fields.country')),
                                 Select::make('country_group_id')
                                     ->relationship('countryGroup', 'name')
-                                    ->searchable()
                                     ->preload()
                                     ->label(__('accounts::filament/resources/fiscal-position.form.fields.country-group')),
                                 TextInput::make('zip_from')
@@ -55,7 +53,6 @@ class FiscalPositionForm
                                     ->required(),
                                 Select::make('company_id')
                                     ->relationship('company', 'name')
-                                    ->searchable()
                                     ->preload()
                                     ->label(__('accounts::filament/resources/fiscal-position.form.fields.company'))
                                     ->default(current_company_id())
@@ -141,7 +138,6 @@ class FiscalPositionForm
                                             ->wrapOptionLabels(false)
                                             ->label(__('accounts::traits/fiscal-position-tax.form.fields.tax-source'))
                                             ->preload()
-                                            ->searchable()
                                             ->required(),
 
                                         Select::make('tax_destination_id')
@@ -153,7 +149,7 @@ class FiscalPositionForm
                                             ->wrapOptionLabels(false)
                                             ->label(__('accounts::traits/fiscal-position-tax.form.fields.tax-destination'))
                                             ->preload()
-                                            ->searchable(),
+                                            ,
                                     ])
                                     ->columns(2),
                             ]),
@@ -179,7 +175,6 @@ class FiscalPositionForm
                                         Select::make('account_source_id')
                                             ->label(__('accounts::filament/resources/fiscal-position.form.tabs.account-mapping.table.columns.source-account'))
                                             ->wrapOptionLabels(false)
-                                            ->searchable()
                                             ->preload()
                                             ->relationship(
                                                 'accountSource',
@@ -191,7 +186,6 @@ class FiscalPositionForm
                                         Select::make('account_destination_id')
                                             ->label(__('accounts::filament/resources/fiscal-position.form.tabs.account-mapping.table.columns.destination-account'))
                                             ->wrapOptionLabels(false)
-                                            ->searchable()
                                             ->preload()
                                             ->relationship(
                                                 'accountDestination',

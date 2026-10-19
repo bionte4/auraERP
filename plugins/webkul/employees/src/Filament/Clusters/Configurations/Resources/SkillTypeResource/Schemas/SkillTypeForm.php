@@ -31,7 +31,6 @@ class SkillTypeForm
                                 ];
                             });
                         })
-                        ->native(false)
                         ->allowHtml(),
                     Toggle::make('is_active')
                         ->label(__('employees::filament/clusters/configurations/resources/skill-type.form.sections.fields.status'))

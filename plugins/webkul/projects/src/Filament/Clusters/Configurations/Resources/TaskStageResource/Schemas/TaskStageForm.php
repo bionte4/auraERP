@@ -32,7 +32,6 @@ class TaskStageForm
                     ->disableOptionWhen(fn ($label) => str_contains($label, ' (Deleted)'))
                     ->hiddenOn(TaskStagesRelationManager::class)
                     ->required()
-                    ->searchable()
                     ->preload(),
             ])
             ->columns(1);

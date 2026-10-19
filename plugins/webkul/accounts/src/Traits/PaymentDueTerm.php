@@ -47,7 +47,6 @@ trait PaymentDueTerm
                 Select::make('payment_id')
                     ->relationship('paymentTerm', 'name')
                     ->label(__('accounts::traits/payment-due-term.form.payment-term'))
-                    ->searchable()
                     ->preload(),
             ]);
     }

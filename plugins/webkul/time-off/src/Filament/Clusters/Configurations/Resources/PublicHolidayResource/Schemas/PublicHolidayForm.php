@@ -58,7 +58,6 @@ class PublicHolidayForm
                                 ]),
                         ])->columns(2),
                     Select::make('calendar')
-                        ->searchable()
                         ->label(__('time-off::filament/clusters/configurations/resources/public-holiday.form.fields.calendar'))
                         ->preload()
                         ->relationship('calendar', 'name'),

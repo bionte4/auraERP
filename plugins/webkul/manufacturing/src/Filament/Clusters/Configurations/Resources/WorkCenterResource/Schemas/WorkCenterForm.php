@@ -4,6 +4,7 @@ namespace Webkul\Manufacturing\Filament\Clusters\Configurations\Resources\WorkCe
 
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
@@ -44,38 +45,23 @@ class WorkCenterForm
                                     ->maxLength(255)
                                     ->placeholder(__('manufacturing::filament/clusters/configurations/resources/work-center.form.sections.general.fields.code-placeholder')),
 
-                                Select::make('tags')
+                                CheckboxList::make('tags')
                                     ->label(__('manufacturing::filament/clusters/configurations/resources/work-center.form.sections.general.fields.tags'))
                                     ->relationship('tags', 'name')
-                                    ->multiple()
                                     ->searchable()
-                                    ->preload()
-                                    ->createOptionForm([
-                                        Group::make()
-                                            ->schema([
-                                                TextInput::make('name')
-                                                    ->label(__('manufacturing::filament/clusters/configurations/resources/work-center.form.sections.general.fields.name'))
-                                                    ->required()
-                                                    ->maxLength(255)
-                                                    ->unique(WorkCenterTag::query()->getModel()->getTable()),
-                                                ColorPicker::make('color')
-                                                    ->default('#808080')
-                                                    ->hexColor()
-                                                    ->label(__('manufacturing::filament/clusters/configurations/resources/work-center.form.sections.general.fields.color')),
-                                            ])
-                                            ->columns(2),
-                                    ]),
+                                    ->bulkToggleable()
+                                    ->columns(2),
 
-                                Select::make('alternativeWorkCenters')
+                                CheckboxList::make('alternativeWorkCenters')
                                     ->label(__('manufacturing::filament/clusters/configurations/resources/work-center.form.sections.general.fields.alternative-work-centers'))
                                     ->relationship(
                                         'alternativeWorkCenters',
                                         'name',
                                         modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(owned_by_company($get('company_id'))),
                                     )
-                                    ->multiple()
                                     ->searchable()
-                                    ->preload(),
+                                    ->bulkToggleable()
+                                    ->columns(2),
 
                                 Select::make('calendar_id')
                                     ->label(__('manufacturing::filament/clusters/configurations/resources/work-center.form.sections.general.fields.calendar'))
@@ -83,14 +69,12 @@ class WorkCenterForm
                                         ->where(hide_deleted_unless_selected($state))
                                         ->pluck('name', 'id')
                                         ->all())
-                                    ->searchable()
                                     ->preload()
                                     ->required(),
 
                                 Select::make('company_id')
                                     ->label(__('manufacturing::filament/clusters/configurations/resources/work-center.form.sections.general.fields.company'))
                                     ->relationship('company', 'name')
-                                    ->searchable()
                                     ->preload()
                                     ->required()
                                     ->disabled(fn (): bool => filled(current_company_id()))
@@ -141,7 +125,6 @@ class WorkCenterForm
                                                     ->where(hide_deleted_unless_selected($state))
                                                     ->where(owned_by_company($get('../../company_id'))),
                                             )
-                                            ->searchable()
                                             ->preload()
                                             ->wrapOptionLabels(false)
                                             ->getOptionLabelFromRecordUsing(function ($record): string {

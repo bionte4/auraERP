@@ -6,6 +6,7 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Actions;
@@ -156,7 +157,6 @@ class ApplicantForm
                                             ->relationship('candidate', 'name')
                                             ->required()
                                             ->preload()
-                                            ->searchable()
                                             ->label(__('recruitments::filament/clusters/applications/resources/applicant.form.sections.general-information.fields.candidate-name'))
                                             ->live()
                                             ->afterStateHydrated(function (Set $set, Get $get, $state) {
@@ -225,7 +225,7 @@ class ApplicantForm
                                                     }
                                                 }
                                             })
-                                            ->searchable(),
+                                            ,
                                         DatePicker::make('date_closed')
                                             ->label(__('recruitments::filament/clusters/applications/resources/applicant.form.sections.general-information.fields.hired-date'))
                                             ->hidden(fn ($record) => ! $record->date_closed)
@@ -239,18 +239,16 @@ class ApplicantForm
                                             ->preload()
                                             ->live()
                                             ->reactive()
-                                            ->searchable(),
-                                        Select::make('recruitments_applicant_interviewers')
+                                            ,
+                                        CheckboxList::make('recruitments_applicant_interviewers')
                                             ->relationship('interviewer', 'name')
                                             ->label(__('recruitments::filament/clusters/applications/resources/applicant.form.sections.general-information.fields.interviewer'))
-                                            ->preload()
-                                            ->multiple()
-                                            ->searchable()
                                             ->dehydrated(true)
                                             ->saveRelationshipsUsing(function () {})
-                                            ->createOptionForm(fn (Schema $schema) => UserResource::form($schema)),
-                                        Select::make('recruitments_applicant_applicant_categories')
-                                            ->multiple()
+                                            ->searchable()
+                                            ->bulkToggleable()
+                                            ->columns(2),
+                                        CheckboxList::make('recruitments_applicant_applicant_categories')
                                             ->label(__('recruitments::filament/clusters/applications/resources/applicant.form.sections.general-information.fields.tags'))
                                             ->afterStateHydrated(function (Select $component, $state, $record) {
                                                 if (
@@ -262,7 +260,8 @@ class ApplicantForm
                                             })
                                             ->relationship('categories', 'name')
                                             ->searchable()
-                                            ->preload(),
+                                            ->bulkToggleable()
+                                            ->columns(2),
                                     ])
                                     ->columns(2),
                             ])->columnSpanFull(),
@@ -281,7 +280,6 @@ class ApplicantForm
                             ->schema([
                                 Select::make('degree_id')
                                     ->relationship('degree', 'name')
-                                    ->searchable()
                                     ->label(__('recruitments::filament/clusters/applications/resources/applicant.form.sections.education-and-availability.fields.degree'))
                                     ->preload(),
                                 DatePicker::make('availability_date')
@@ -293,7 +291,6 @@ class ApplicantForm
                                 Select::make('department_id')
                                     ->relationship('department', 'name')
                                     ->hiddenLabel()
-                                    ->searchable()
                                     ->preload(),
                             ])->columnSpanFull(),
                         Section::make(__('recruitments::filament/clusters/applications/resources/applicant.form.sections.salary.title'))

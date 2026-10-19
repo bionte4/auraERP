@@ -51,13 +51,11 @@ class PriceListForm
                                 modifyQueryUsing: fn (Builder $query) => $query->active(),
                             )
                             ->required()
-                            ->searchable()
                             ->preload()
                             ->default(fn (): ?int => default_currency_id()),
                         Select::make('company_id')
                             ->label(__('products::filament/resources/price-list.form.section.general.fields.company'))
                             ->relationship('company', 'name')
-                            ->searchable()
                             ->preload()
                             ->default(fn (): ?int => current_company_id()),
                         Toggle::make('is_active')
@@ -212,22 +210,13 @@ class PriceListForm
                                 ->label(__($lang.'category'))
                                 ->placeholder(__($lang.'all-categories'))
                                 ->options(fn (): array => Category::query()->orderBy('full_name')->limit(50)->pluck('full_name', 'id')->all())
-                                ->getSearchResultsUsing(fn (string $search): array => Category::query()
-                                    ->where('full_name', 'like', "%{$search}%")
-                                    ->orderBy('full_name')
-                                    ->limit(50)
-                                    ->pluck('full_name', 'id')
-                                    ->all())
                                 ->getOptionLabelUsing(fn ($value): ?string => Category::find($value)?->full_name)
-                                ->searchable()
                                 ->visible(fn (Get $get): bool => static::enumValue($get('display_apply_to')) === PriceRuleApplyTo::CATEGORY->value),
                             Select::make('product_id')
                                 ->label(__($lang.'product'))
                                 ->placeholder(__($lang.'all-products'))
                                 ->options(fn (): array => static::templateOptions())
-                                ->getSearchResultsUsing(fn (string $search): array => static::templateOptions($search))
                                 ->getOptionLabelUsing(fn ($value): ?string => Product::find($value)?->name)
-                                ->searchable()
                                 ->live()
                                 ->afterStateUpdated(fn (Set $set) => $set('variant_id', null))
                                 ->visible(fn (Get $get): bool => static::enumValue($get('display_apply_to')) !== PriceRuleApplyTo::CATEGORY->value),
@@ -236,7 +225,6 @@ class PriceListForm
                                 ->placeholder(__($lang.'all-variants'))
                                 ->options(fn (Get $get): array => static::variantOptions($get('product_id')))
                                 ->getOptionLabelUsing(fn ($value): ?string => Product::find($value)?->name)
-                                ->searchable()
                                 ->visible(fn (Get $get): bool => static::enumValue($get('display_apply_to')) !== PriceRuleApplyTo::CATEGORY->value
                                     && static::variantOptions($get('product_id')) !== []),
                             Radio::make('type')
@@ -266,7 +254,7 @@ class PriceListForm
                                         ->placeholder(__($lang.'sales-price'))
                                         ->options(fn ($livewire): array => static::basePriceListOptions($livewire))
                                         ->getOptionLabelUsing(fn ($value): ?string => PriceList::find($value)?->name)
-                                        ->searchable(),
+                                        ,
                                 ])
                                 ->visible(fn (Get $get): bool => static::enumValue($get('type')) === PriceRuleType::PERCENTAGE->value),
                         ]),
@@ -301,7 +289,6 @@ class PriceListForm
                                 ->label(__($lang.'base-price-list'))
                                 ->options(fn ($livewire): array => static::basePriceListOptions($livewire))
                                 ->getOptionLabelUsing(fn ($value): ?string => PriceList::find($value)?->name)
-                                ->searchable()
                                 ->required()
                                 ->live()
                                 ->visible(fn (Get $get): bool => static::enumValue($get('base')) === PriceRuleBase::PRICE_RULES->value),

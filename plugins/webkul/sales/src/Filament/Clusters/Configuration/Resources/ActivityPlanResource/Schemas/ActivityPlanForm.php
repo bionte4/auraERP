@@ -24,7 +24,6 @@ class ActivityPlanForm
                         Select::make('company_id')
                             ->label(__('sales::filament/clusters/configurations/resources/activity-plan.form.sections.general.fields.company'))
                             ->relationship(name: 'company', titleAttribute: 'name')
-                            ->searchable()
                             ->preload()
                             ->default(current_company_id())
                             ->createOptionForm(fn (Schema $schema) => CompanyResource::form($schema))

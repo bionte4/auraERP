@@ -148,7 +148,6 @@ class ListApplicants extends ListRecords
                             Select::make('candidate_id')
                                 ->relationship('candidate', 'name')
                                 ->required()
-                                ->searchable()
                                 ->preload()
                                 ->label(__('recruitments::filament/clusters/applications/resources/applicant/pages/list-applicant.header-actions.create-applicant.form.fields.candidate'))
                                 ->createOptionForm(fn (Schema $schema) => CandidateResource::form($schema))

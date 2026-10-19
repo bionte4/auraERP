@@ -44,7 +44,6 @@ class WorkLocationForm
                     ->maxValue(180)
                     ->step(0.0000001),
                 Select::make('company_id')
-                    ->searchable()
                     ->label(__('employees::filament/clusters/configurations/resources/work-location.form.company'))
                     ->required()
                     ->preload()

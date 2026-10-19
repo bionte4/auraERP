@@ -29,7 +29,6 @@ class CategoryForm
                                 Select::make('parent_id')
                                     ->label(__('products::filament/resources/category.form.sections.general.fields.parent'))
                                     ->relationship('parent', 'full_name')
-                                    ->searchable()
                                     ->preload(),
                             ]),
                     ])

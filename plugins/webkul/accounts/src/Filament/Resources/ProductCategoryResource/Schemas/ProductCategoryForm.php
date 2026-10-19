@@ -28,7 +28,6 @@ class ProductCategoryForm
                         ->hintIcon('heroicon-m-question-mark-circle', tooltip: __('accounts::filament/resources/category.form.fieldsets.account-properties.fields.income-account-hint-tooltip'))
                         ->relationship('propertyAccountIncome', 'name')
                         ->preload()
-                        ->searchable()
                         ->default(fn (DefaultAccountSettings $settings) => Account::resolveForCompany($settings->income_account_id))
                         ->afterStateHydrated(function (Select $component, $state, DefaultAccountSettings $settings): void {
                             if (filled($state)) {
@@ -42,7 +41,6 @@ class ProductCategoryForm
                         ->hintIcon('heroicon-m-question-mark-circle', tooltip: __('accounts::filament/resources/category.form.fieldsets.account-properties.fields.expense-account-hint-tooltip'))
                         ->relationship('propertyAccountExpense', 'name')
                         ->preload()
-                        ->searchable()
                         ->default(fn (DefaultAccountSettings $settings) => Account::resolveForCompany($settings->expense_account_id))
                         ->afterStateHydrated(function (Select $component, $state, DefaultAccountSettings $settings): void {
                             if (filled($state)) {

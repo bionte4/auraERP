@@ -58,7 +58,6 @@ class CalendarAttendance extends RelationManager
                             ->maxLength(255),
                         Select::make('day_of_week')
                             ->label(__('support::filament/resources/calendar/relation-managers/working-hours.form.sections.general.fields.day-of-week'))
-                            ->searchable()
                             ->preload()
                             ->options(DayOfWeek::options())
                             ->required(),
@@ -68,13 +67,11 @@ class CalendarAttendance extends RelationManager
                     ->schema([
                         Select::make('day_period')
                             ->label(__('support::filament/resources/calendar/relation-managers/working-hours.form.sections.timing-information.fields.day-period'))
-                            ->searchable()
                             ->preload()
                             ->options(DayPeriod::options())
                             ->required(),
                         Select::make('week_type')
                             ->label(__('support::filament/resources/calendar/relation-managers/working-hours.form.sections.timing-information.fields.week-type'))
-                            ->searchable()
                             ->preload()
                             ->options(WeekType::options()),
                         TimePicker::make('hour_from')

@@ -28,7 +28,6 @@ class TimesheetForm
                     ->label(__('timesheets::filament/resources/timesheet.form.employee'))
                     ->required()
                     ->relationship('user', 'name')
-                    ->searchable()
                     ->preload(),
                 Select::make('project_id')
                     ->label(__('timesheets::filament/resources/timesheet.form.project'))
@@ -38,7 +37,6 @@ class TimesheetForm
                         titleAttribute: 'name',
                         modifyQueryUsing: fn (Builder $query) => $query->where(owned_by_company()),
                     )
-                    ->searchable()
                     ->preload()
                     ->live()
                     ->afterStateUpdated(function (Set $set) {
@@ -52,7 +50,6 @@ class TimesheetForm
                         titleAttribute: 'title',
                         modifyQueryUsing: fn (Get $get, Builder $query) => $query->where('project_id', $get('project_id')),
                     )
-                    ->searchable()
                     ->preload(),
                 TextInput::make('name')
                     ->label(__('timesheets::filament/resources/timesheet.form.description')),

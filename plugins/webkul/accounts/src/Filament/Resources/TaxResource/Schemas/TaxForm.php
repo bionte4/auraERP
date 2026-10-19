@@ -6,6 +6,7 @@ use Closure;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Fieldset;
@@ -45,12 +46,10 @@ class TaxForm
                                     ->required(),
                                 Select::make('type_tax_use')
                                     ->options(TypeTaxUse::class)
-                                    ->native(false)
                                     ->label(__('accounts::filament/resources/tax.form.sections.fields.tax-type'))
                                     ->live()
                                     ->required(),
                                 Select::make('amount_type')
-                                    ->native(false)
                                     ->options(AmountType::class)
                                     ->label(__('accounts::filament/resources/tax.form.sections.fields.tax-computation'))
                                     ->live()
@@ -69,7 +68,6 @@ class TaxForm
                                     })
                                     ->required(),
                                 Select::make('tax_scope')
-                                    ->native(false)
                                     ->options(TaxScope::class)
                                     ->label(__('accounts::filament/resources/tax.form.sections.fields.tax-scope')),
                                 Toggle::make('is_active')
@@ -105,7 +103,7 @@ class TaxForm
                                     ])
                                     ->visible(fn (Get $get): bool => TaxResource::normalizeAmountType($get('amount_type')) === AmountType::CODE->value)
                                     ->columnSpanFull(),
-                                Select::make('childrenTaxes')
+                                CheckboxList::make('childrenTaxes')
                                     ->label(__('accounts::filament/resources/tax.form.sections.fields.children-taxes'))
                                     ->relationship(
                                         name: 'childrenTaxes',
@@ -126,9 +124,6 @@ class TaxForm
                                             return $query;
                                         },
                                     )
-                                    ->multiple()
-                                    ->preload()
-                                    ->searchable()
                                     ->required()
                                     ->rules([
                                         fn (Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
@@ -152,7 +147,10 @@ class TaxForm
                                     ->helperText(__('accounts::filament/resources/tax.form.sections.fields.children-taxes-helper-text'))
                                     ->visible(fn (Get $get): bool => TaxResource::normalizeAmountType($get('amount_type')) === AmountType::GROUP->value
                                         && TaxResource::normalizeTypeTaxUse($get('type_tax_use')) !== TypeTaxUse::NONE->value)
-                                    ->columnSpanFull(),
+                                    ->columnSpanFull()
+                                    ->searchable()
+                                    ->bulkToggleable()
+                                    ->columns(2),
                             ])->columns(2),
                         Fieldset::make(__('accounts::filament/resources/tax.form.sections.field-set.advanced-options.title'))
                             ->schema([
@@ -161,17 +159,14 @@ class TaxForm
                                 Select::make('tax_group_id')
                                     ->relationship('taxGroup', 'name')
                                     ->required()
-                                    ->native(false)
                                     ->createOptionForm(fn (Schema $schema): Schema => TaxGroupResource::form($schema))
                                     ->label(__('accounts::filament/resources/tax.form.sections.field-set.advanced-options.fields.tax-group')),
                                 Select::make('country_id')
-                                    ->searchable()
                                     ->preload()
                                     ->relationship('country', 'name')
                                     ->label(__('accounts::filament/resources/tax.form.sections.field-set.advanced-options.fields.country')),
                                 Select::make('price_include_override')
                                     ->options(TaxIncludeOverride::class)
-                                    ->native(false)
                                     ->default(TaxIncludeOverride::DEFAULT->value)
                                     ->label(__('accounts::filament/resources/tax.form.sections.field-set.advanced-options.fields.include-in-price'))
                                     ->hintIcon('heroicon-o-question-mark-circle', tooltip: __('Overrides the Company\'s default on whether the price you use on the product and invoices includes this tax.')),
@@ -213,7 +208,6 @@ class TaxForm
                                                             ->label(__('accounts::filament/resources/tax.form.sections.repeater.fields.type'))
                                                             ->options(RepartitionType::options())
                                                             ->required()
-                                                            ->native(false)
                                                             ->reactive()
                                                             ->afterStateUpdated(function ($state, callable $set) {
                                                                 if ($state === 'base') {
@@ -235,7 +229,6 @@ class TaxForm
                                                             ->relationship('account', 'name')
                                                             ->required(fn (callable $get) => $get('repartition_type') !== 'base')
                                                             ->preload()
-                                                            ->searchable()
                                                             ->disabled(fn (callable $get) => $get('repartition_type') === 'base'),
                                                     ])
                                                     ->columns(3)
@@ -272,7 +265,6 @@ class TaxForm
                                                             ->label(__('accounts::filament/resources/tax.form.sections.repeater.fields.type'))
                                                             ->options(RepartitionType::options())
                                                             ->required()
-                                                            ->native(false)
                                                             ->reactive()
                                                             ->afterStateUpdated(function ($state, callable $set) {
                                                                 if ($state === 'base') {
@@ -294,7 +286,6 @@ class TaxForm
                                                             ->relationship('account', 'name')
                                                             ->required(fn (callable $get) => $get('repartition_type') !== 'base')
                                                             ->preload()
-                                                            ->searchable()
                                                             ->disabled(fn (callable $get) => $get('repartition_type') === 'base'),
                                                     ])
                                                     ->columns(3)

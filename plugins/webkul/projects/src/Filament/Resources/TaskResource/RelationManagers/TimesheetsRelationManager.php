@@ -49,7 +49,6 @@ class TimesheetsRelationManager extends RelationManager
                     ->label(__('projects::filament/resources/task/relation-managers/timesheets.form.employee'))
                     ->required()
                     ->relationship('user', 'name')
-                    ->searchable()
                     ->preload(),
                 TextInput::make('name')
                     ->label(__('projects::filament/resources/task/relation-managers/timesheets.form.description')),

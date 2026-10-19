@@ -49,7 +49,6 @@ class ManageVendors extends ManageRelatedRecords
                     fn (Builder $query) => $query->where('parent_id', $this->getRecord()->id),
                 )
                 ->required()
-                ->searchable()
                 ->preload(),
             );
 

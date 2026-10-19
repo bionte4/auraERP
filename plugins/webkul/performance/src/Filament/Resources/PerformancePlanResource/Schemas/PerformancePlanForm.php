@@ -29,7 +29,6 @@ class PerformancePlanForm
                         Select::make('employee_id')
                             ->label(__('performance::filament/resources/performance-plan.form.employee'))
                             ->relationship('employee', 'name')
-                            ->searchable()
                             ->preload()
                             ->required()
                             ->default(fn (): ?int => Employee::query()->where('user_id', Auth::id())->value('id')),

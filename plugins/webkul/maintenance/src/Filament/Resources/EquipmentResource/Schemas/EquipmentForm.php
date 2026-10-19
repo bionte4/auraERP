@@ -62,8 +62,6 @@ class EquipmentForm
                                             ->maxLength(255),
                                     ])
                                     ->createOptionUsing(fn (array $data): int => Equipment::createExternalPartner($data, 'vendor'))
-                                    ->native(false)
-                                    ->searchable()
                                     ->preload(),
 
                                 TextInput::make('partner_ref')
@@ -109,8 +107,6 @@ class EquipmentForm
                                         'name',
                                         modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(owned_by_company($get('company_id'))),
                                     )
-                                    ->native(false)
-                                    ->searchable()
                                     ->preload()
                                     ->live()
                                     ->afterStateUpdated(function (Set $set, mixed $state): void {
@@ -131,15 +127,11 @@ class EquipmentForm
                                         return $record->name.($record->trashed() ? ' (Deleted)' : '');
                                     })
                                     ->disableOptionWhen(fn ($label) => str_contains($label, ' (Deleted)'))
-                                    ->native(false)
-                                    ->searchable()
                                     ->preload(),
 
                                 Select::make('company_id')
                                     ->label(__('maintenance::filament/resources/equipment.form.sections.settings.fields.company'))
                                     ->relationship('company', 'name')
-                                    ->native(false)
-                                    ->searchable()
                                     ->preload()
                                     ->default(current_company_id())
                                     ->live()
@@ -151,22 +143,16 @@ class EquipmentForm
                                 Select::make('technician_user_id')
                                     ->label(__('maintenance::filament/resources/equipment.form.sections.settings.fields.technician'))
                                     ->relationship('technician', 'name')
-                                    ->native(false)
-                                    ->searchable()
                                     ->preload(),
 
                                 Select::make('owner_user_id')
                                     ->label(__('maintenance::filament/resources/equipment.form.sections.settings.fields.owner'))
                                     ->relationship('owner', 'name')
-                                    ->native(false)
-                                    ->searchable()
                                     ->preload(),
 
                                 Select::make('employee_id')
                                     ->label(__('maintenance::filament/resources/equipment.form.sections.settings.fields.employee'))
                                     ->relationship('employee', 'name')
-                                    ->native(false)
-                                    ->searchable()
                                     ->preload()
                                     ->live()
                                     ->afterStateUpdated(function (Set $set, Get $get, mixed $state): void {
@@ -184,8 +170,6 @@ class EquipmentForm
                                 Select::make('project_id')
                                     ->label(__('maintenance::filament/resources/equipment.form.sections.settings.fields.project'))
                                     ->relationship('project', 'name')
-                                    ->native(false)
-                                    ->searchable()
                                     ->preload()
                                     ->live()
                                     ->afterStateUpdated(function (Set $set, Get $get, mixed $state): void {
@@ -220,8 +204,6 @@ class EquipmentForm
                                             ->maxLength(255),
                                     ])
                                     ->createOptionUsing(fn (array $data): int => Equipment::createExternalPartner($data, 'customer'))
-                                    ->native(false)
-                                    ->searchable()
                                     ->preload(),
 
                                 TextInput::make('location')

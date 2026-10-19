@@ -4,6 +4,7 @@ namespace Webkul\Recruitment\Filament\Clusters\Applications\Resources\CandidateR
 
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Infolists\Components\TextEntry;
@@ -45,18 +46,16 @@ class CandidateForm
                             ->schema([
                                 Select::make('degree_id')
                                     ->relationship('degree', 'name')
-                                    ->searchable()
                                     ->preload()
                                     ->label(__('recruitments::filament/clusters/applications/resources/candidate.form.sections.additional-details.fields.degree')),
-                                Select::make('recruitments_candidate_categories')
-                                    ->multiple()
+                                CheckboxList::make('recruitments_candidate_categories')
                                     ->relationship('categories', 'name')
+                                    ->label(__('recruitments::filament/clusters/applications/resources/candidate.form.sections.additional-details.fields.tags'))
                                     ->searchable()
-                                    ->preload()
-                                    ->label(__('recruitments::filament/clusters/applications/resources/candidate.form.sections.additional-details.fields.tags')),
+                                    ->bulkToggleable()
+                                    ->columns(2),
                                 Select::make('manager_id')
                                     ->relationship('manager', 'name')
-                                    ->searchable()
                                     ->preload()
                                     ->label(__('recruitments::filament/clusters/applications/resources/candidate.form.sections.additional-details.fields.manager')),
                                 DatePicker::make('availability_date')

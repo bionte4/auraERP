@@ -100,7 +100,6 @@ class PaymentForm
                                                 $set('partner_bank_id', $partner?->bankAccounts->first()?->id);
                                                 $set('payment_method_line_id', $partner?->propertyInboundPaymentMethodLine?->id);
                                             })
-                                            ->searchable()
                                             ->preload(),
 
                                         Group::make()
@@ -120,7 +119,6 @@ class PaymentForm
                                                         modifyQueryUsing: fn (Builder $query) => $query->active(),
                                                     )
                                                     ->required()
-                                                    ->searchable()
                                                     ->preload()
                                                     ->default(fn () => current_company()?->currency_id),
                                             ])
@@ -162,7 +160,6 @@ class PaymentForm
                                                 $set('partner_bank_id', null);
                                             })
                                             ->required()
-                                            ->searchable()
                                             ->preload()
                                             ->live(),
                                         Select::make('payment_method_line_id')
@@ -184,7 +181,6 @@ class PaymentForm
                                             )
                                             ->getOptionLabelFromRecordUsing(fn ($record) => $record->display_name)
                                             ->required()
-                                            ->searchable()
                                             ->preload()
                                             ->live(),
                                         Select::make('partner_bank_id')
@@ -214,7 +210,6 @@ class PaymentForm
                                             ->disabled(function (Get $get) {
                                                 return static::computePayment($get)->require_partner_bank_account;
                                             })
-                                            ->searchable()
                                             ->preload(),
                                     ])
                                     ->columns(1),

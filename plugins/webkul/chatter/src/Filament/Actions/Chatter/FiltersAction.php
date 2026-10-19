@@ -60,7 +60,7 @@ class FiltersAction extends Action
                                 'notification' => __('chatter::filament/resources/actions/chatter/filters-action.type-options.notification'),
                                 'activity'     => __('chatter::filament/resources/actions/chatter/filters-action.type-options.activity'),
                             ])
-                            ->native(false),
+                            ,
                         Select::make('dateRange')
                             ->label(__('chatter::filament/resources/actions/chatter/filters-action.fields.date'))
                             ->options([
@@ -72,7 +72,7 @@ class FiltersAction extends Action
                                 'quarter'   => __('chatter::filament/resources/actions/chatter/filters-action.date-options.quarter'),
                                 'year'      => __('chatter::filament/resources/actions/chatter/filters-action.date-options.year'),
                             ])
-                            ->native(false),
+                            ,
                         Select::make('sortBy')
                             ->label(__('chatter::filament/resources/actions/chatter/filters-action.fields.sort-by'))
                             ->options([
@@ -81,7 +81,7 @@ class FiltersAction extends Action
                                 'updated_at_desc' => __('chatter::filament/resources/actions/chatter/filters-action.sort-options.updated_at_desc'),
                                 'priority'        => __('chatter::filament/resources/actions/chatter/filters-action.sort-options.priority'),
                             ])
-                            ->native(false),
+                            ,
                         Toggle::make('pinnedOnly')
                             ->label(__('chatter::filament/resources/actions/chatter/filters-action.fields.pinned-only')),
                     ])

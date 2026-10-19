@@ -7,6 +7,7 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Group;
@@ -56,9 +57,7 @@ class WorkOrderForm
                                 Select::make('operation_id')
                                     ->label(__('manufacturing::filament/clusters/operations/resources/work-order.form.sections.general.fields.work-order'))
                                     ->relationship('operation', 'name', fn (Builder $query, $state) => $query->withTrashed()->where(hide_deleted_unless_selected($state)))
-                                    ->searchable()
                                     ->preload()
-                                    ->native(false)
                                     ->wrapOptionLabels(false)
                                     ->createOptionForm(fn (Schema $schema): Schema => OperationResource::form($schema->model(Operation::class)))
                                     ->createOptionAction(fn (Action $action) => $action->modalWidth(Width::SevenExtraLarge))
@@ -76,9 +75,7 @@ class WorkOrderForm
                                 Select::make('work_center_id')
                                     ->label(__('manufacturing::filament/clusters/operations/resources/work-order.form.sections.general.fields.work-center'))
                                     ->relationship('workCenter', 'name', fn (Builder $query, $state) => $query->withTrashed()->where(hide_deleted_unless_selected($state)))
-                                    ->searchable()
                                     ->preload()
-                                    ->native(false)
                                     ->wrapOptionLabels(false)
                                     ->required()
                                     ->disabled(fn (?WorkOrder $record): bool => $record && ! in_array($record->state, [WorkOrderState::PENDING, WorkOrderState::WAITING], true)),
@@ -137,9 +134,7 @@ class WorkOrderForm
                                     ->label(__('manufacturing::filament/clusters/operations/resources/work-order.form.sections.general.fields.manufacturing-order'))
                                     ->relationship('manufacturingOrder', 'name')
                                     ->getOptionLabelFromRecordUsing(fn (Order $record): string => WorkOrderResource::getManufacturingOrderLabel($record))
-                                    ->searchable()
                                     ->preload()
-                                    ->native(false)
                                     ->wrapOptionLabels(false)
                                     ->live()
                                     ->required()
@@ -185,7 +180,7 @@ class WorkOrderForm
                             ]),
                         Tab::make(__('manufacturing::filament/clusters/operations/resources/work-order.form.tabs.blocked-by.title'))
                             ->schema([
-                                Select::make('blockedByWorkOrders')
+                                CheckboxList::make('blockedByWorkOrders')
                                     ->label(__('manufacturing::filament/clusters/operations/resources/work-order.form.tabs.blocked-by.fields.work-orders'))
                                     ->relationship(
                                         'blockedByWorkOrders',
@@ -194,12 +189,10 @@ class WorkOrderForm
                                             ->when($record, fn (Builder $relationQuery) => $relationQuery->whereKeyNot($record->getKey()))
                                     )
                                     ->getOptionLabelFromRecordUsing(fn (WorkOrder $record): string => $record->display_name)
+                                    ->disabled(fn (?WorkOrder $record): bool => $record && ! in_array($record->state, [WorkOrderState::PENDING, WorkOrderState::WAITING], true))
                                     ->searchable()
-                                    ->preload()
-                                    ->multiple()
-                                    ->native(false)
-                                    ->wrapOptionLabels(false)
-                                    ->disabled(fn (?WorkOrder $record): bool => $record && ! in_array($record->state, [WorkOrderState::PENDING, WorkOrderState::WAITING], true)),
+                                    ->bulkToggleable()
+                                    ->columns(2),
                             ]),
                     ]),
 
@@ -244,9 +237,7 @@ class WorkOrderForm
                 Select::make('assigned_user_id')
                     ->hiddenLabel()
                     ->relationship('assignedUser', 'name')
-                    ->searchable()
                     ->preload()
-                    ->native(false)
                     ->wrapOptionLabels(false)
                     ->default(fn (): ?int => auth()->id())
                     ->required(),
@@ -301,9 +292,7 @@ class WorkOrderForm
                 Select::make('loss_id')
                     ->hiddenLabel()
                     ->relationship('loss', 'name')
-                    ->searchable()
                     ->preload()
-                    ->native(false)
                     ->wrapOptionLabels(false)
                     ->default(fn (): ?int => static::getDefaultProductivityLossId())
                     ->required(),

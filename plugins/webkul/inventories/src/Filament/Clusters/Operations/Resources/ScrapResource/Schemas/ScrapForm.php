@@ -4,6 +4,7 @@ namespace Webkul\Inventory\Filament\Clusters\Operations\Resources\ScrapResource\
 
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
@@ -62,7 +63,6 @@ class ScrapForm
                                             ->disableOptionWhen(function ($label) {
                                                 return str_contains($label, ' (Deleted)');
                                             })
-                                            ->searchable()
                                             ->preload()
                                             ->live()
                                             ->afterStateUpdated(function (Set $set, Get $get) {
@@ -95,15 +95,12 @@ class ScrapForm
                                                     return $query->when($categoryId, fn ($q) => $q->where('category_id', $categoryId))->orderBy('id');
                                                 },
                                             )
-                                            ->searchable()
                                             ->preload()
                                             ->required()
-                                            ->native(false)
                                             ->visible(ScrapResource::getProductSettings()->enable_uom)
                                             ->disabled(fn ($record): bool => $record?->state == ScrapState::DONE),
                                         Select::make('lot_id')
                                             ->label(__('inventories::filament/clusters/operations/resources/scrap.form.sections.general.fields.lot'))
-                                            ->searchable()
                                             ->preload()
                                             ->required()
                                             ->relationship(
@@ -136,19 +133,12 @@ class ScrapForm
                                                         return $data;
                                                     });
                                             }),
-                                        Select::make('tags')
+                                        CheckboxList::make('tags')
                                             ->label(__('inventories::filament/clusters/operations/resources/scrap.form.sections.general.fields.tags'))
                                             ->relationship(name: 'tags', titleAttribute: 'name')
-                                            ->multiple()
                                             ->searchable()
-                                            ->preload()
-                                            ->createOptionForm([
-                                                TextInput::make('name')
-                                                    ->label(__('inventories::filament/clusters/operations/resources/scrap.form.sections.general.fields.name'))
-                                                    ->required()
-                                                    ->maxLength(255)
-                                                    ->unique('inventories_tags'),
-                                            ]),
+                                            ->bulkToggleable()
+                                            ->columns(2),
                                     ]),
 
                                 Group::make()
@@ -160,7 +150,6 @@ class ScrapForm
                                                 'name',
                                                 modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(owned_by_company($get('company_id'))),
                                             )
-                                            ->searchable()
                                             ->preload()
                                             ->createOptionForm(fn (Schema $schema): Schema => PackageResource::form($schema))
                                             ->visible(ScrapResource::getOperationSettings()->enable_packages)
@@ -168,7 +157,6 @@ class ScrapForm
                                         Select::make('partner_id')
                                             ->label(__('inventories::filament/clusters/operations/resources/scrap.form.sections.general.fields.owner'))
                                             ->relationship('partner', 'name')
-                                            ->searchable()
                                             ->preload()
                                             ->createOptionForm(fn (Schema $schema): Schema => PartnerResource::form($schema))
                                             ->disabled(fn ($record): bool => $record?->state == ScrapState::DONE),
@@ -183,7 +171,6 @@ class ScrapForm
                                                     ->where(owned_by_company($get('company_id'))),
                                             )
                                             ->required()
-                                            ->searchable()
                                             ->preload()
                                             ->default(fn (Get $get) => Location::where('type', LocationType::INTERNAL)
                                                 ->where('is_scrap', false)
@@ -201,7 +188,6 @@ class ScrapForm
                                                     ->where(owned_by_company($get('company_id'))),
                                             )
                                             ->required()
-                                            ->searchable()
                                             ->preload()
                                             ->default(fn (Get $get) => Location::where('is_scrap', true)
                                                 ->where(owned_by_company($get('company_id')))
@@ -216,7 +202,6 @@ class ScrapForm
                                             ->label(__('inventories::filament/clusters/operations/resources/scrap.form.sections.general.fields.company'))
                                             ->relationship('company', 'name')
                                             ->required()
-                                            ->searchable()
                                             ->preload()
                                             ->default(current_company_id())
                                             ->live()

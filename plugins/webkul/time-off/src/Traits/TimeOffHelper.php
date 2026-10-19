@@ -50,7 +50,6 @@ trait TimeOffHelper
                 ->schema([
                     Select::make('employee_id')
                         ->relationship('employee', 'name')
-                        ->searchable()
                         ->preload()
                         ->live()
                         ->visible(fn (Get $get) => $isVisible ?? false)
@@ -70,7 +69,6 @@ trait TimeOffHelper
                     Select::make('department_id')
                         ->relationship('department', 'name')
                         ->label(__('time-off::filament/clusters/management/resources/time-off.form.fields.department-name'))
-                        ->searchable()
                         ->visible(fn (Get $get) => $isVisible ?? false)
                         ->preload()
                         ->required(),
@@ -145,7 +143,6 @@ trait TimeOffHelper
                                 ->label(__('time-off::filament/widgets/calendar-widget.form.fields.period'))
                                 ->options(RequestDateFromPeriod::class)
                                 ->default(RequestDateFromPeriod::MORNING)
-                                ->native(false)
                                 ->visible(fn (Get $get) => $get('request_unit_half'))
                                 ->required(fn (Get $get) => $get('request_unit_half'))
                                 ->prefixIcon('heroicon-o-sun'),

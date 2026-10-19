@@ -107,7 +107,6 @@ class EvaluationForm
                         Select::make('employee_id')
                             ->label('Karyawan yang Dinilai (Employee)')
                             ->relationship('employee', 'name')
-                            ->searchable()
                             ->preload()
                             ->required()
                             ->live()
@@ -155,13 +154,11 @@ class EvaluationForm
                         Select::make('reviewer_id')
                             ->label('Approver Level 1: Penilai (Atasan Langsung / Pembimbing)')
                             ->relationship('reviewer', 'name')
-                            ->searchable()
                             ->preload()
                             ->helperText('Otomatis terisi dari Atasan Langsung karyawan di struktur organisasi.'),
                         Select::make('gm_approver_id')
                             ->label('Approver Level 2: Atasan Penilai / Kepala Departemen (Berjenjang)')
                             ->relationship('gmApprover', 'name')
-                            ->searchable()
                             ->preload()
                             ->helperText('Otomatis terisi dari Atasan Level 2 / Manager Departemen di struktur organisasi.'),
                         DatePicker::make('join_date')
@@ -197,7 +194,6 @@ class EvaluationForm
                         Select::make('performance_plan_id')
                             ->label('Link Program Goal Setting (Modul Performance)')
                             ->relationship('performancePlan', 'title')
-                            ->searchable()
                             ->preload()
                             ->live()
                             ->afterStateUpdated(function ($state, Set $set): void {
@@ -254,7 +250,6 @@ class EvaluationForm
                                         2 => '2 — Kurang dari standar yang diharapkan',
                                         1 => '1 — Sama sekali tidak memenuhi standar yang diharapkan',
                                     ])
-                                    ->native(false)
                                     ->live()
                                     ->placeholder('Pilih Rating 1 - 5')
                                     ->columnSpan(1),

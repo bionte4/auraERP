@@ -3,6 +3,7 @@
 namespace Webkul\Maintenance\Filament\Clusters\Configurations\Resources\TeamResource\Schemas;
 
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
@@ -19,17 +20,16 @@ class TeamForm
                     ->autofocus()
                     ->unique(ignoreRecord: true),
 
-                Select::make('users')
+                CheckboxList::make('users')
                     ->label(__('maintenance::filament/clusters/configurations/resources/team.form.users'))
                     ->relationship('users', 'name')
-                    ->multiple()
                     ->searchable()
-                    ->preload(),
+                    ->bulkToggleable()
+                    ->columns(2),
 
                 Select::make('company_id')
                     ->label(__('maintenance::filament/clusters/configurations/resources/team.form.company'))
                     ->relationship('company', 'name')
-                    ->searchable()
                     ->preload()
                     ->default(current_company_id()),
             ])

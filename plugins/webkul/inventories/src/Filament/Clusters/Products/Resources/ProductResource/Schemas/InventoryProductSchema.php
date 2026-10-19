@@ -98,7 +98,6 @@ class InventoryProductSchema
                         Select::make('responsible_id')
                             ->label(__('inventories::filament/clusters/products/resources/product.form.sections.inventory.fieldsets.logistics.fields.responsible'))
                             ->relationship('responsible', 'name')
-                            ->searchable()
                             ->preload()
                             ->hintIcon('heroicon-m-question-mark-circle', tooltip: __('inventories::filament/clusters/products/resources/product.form.sections.inventory.fieldsets.logistics.fields.responsible-hint-tooltip')),
                         TextInput::make('weight')

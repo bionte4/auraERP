@@ -7,6 +7,7 @@ use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\ToggleButtons;
@@ -57,26 +58,12 @@ class TaskForm
                                     ->options(TaskState::options())
                                     ->colors(TaskState::colors())
                                     ->icons(TaskState::icons()),
-                                Select::make('tags')
+                                CheckboxList::make('tags')
                                     ->label(__('projects::filament/resources/task.form.sections.general.fields.tags'))
                                     ->relationship(name: 'tags', titleAttribute: 'name')
-                                    ->multiple()
                                     ->searchable()
-                                    ->preload()
-                                    ->createOptionForm([
-                                        Group::make()
-                                            ->schema([
-                                                TextInput::make('name')
-                                                    ->label(__('projects::filament/resources/task.form.sections.general.fields.name'))
-                                                    ->required()
-                                                    ->maxLength(255)
-                                                    ->unique('projects_tags'),
-                                                ColorPicker::make('color')
-                                                    ->default('#808080')
-                                                    ->hexColor()
-                                                    ->label(__('projects::filament/resources/task.form.sections.general.fields.color')),
-                                            ])->columns(2),
-                                    ]),
+                                    ->bulkToggleable()
+                                    ->columns(2),
                                 RichEditor::make('description')
                                     ->label(__('projects::filament/resources/task.form.sections.general.fields.description')),
                             ]),
@@ -101,7 +88,6 @@ class TaskForm
                                         return str_contains($label, ' (Deleted)');
                                     })
                                     ->preload()
-                                    ->searchable()
                                     ->preload()
                                     ->live()
                                     ->createOptionForm(fn (Schema $schema): Schema => ProjectResource::form($schema))
@@ -118,7 +104,6 @@ class TaskForm
                                         titleAttribute: 'name',
                                         modifyQueryUsing: fn (Get $get, Builder $query) => $query->where('project_id', $get('project_id')),
                                     )
-                                    ->searchable()
                                     ->preload()
                                     ->hintIcon('heroicon-m-question-mark-circle', tooltip: __('projects::filament/resources/task.form.sections.settings.fields.milestone-hint-text'))
                                     ->createOptionForm(fn ($get) => [
@@ -128,7 +113,6 @@ class TaskForm
                                             ->maxLength(255),
                                         DateTimePicker::make('deadline')
                                             ->label(__('projects::filament/resources/task.form.sections.settings.fields.deadline'))
-                                            ->native(false)
                                             ->suffixIcon('heroicon-o-clock'),
                                         Toggle::make('is_completed')
                                             ->label(__('projects::filament/resources/task.form.sections.settings.fields.is-completed'))
@@ -153,17 +137,15 @@ class TaskForm
                                 Select::make('partner_id')
                                     ->label(__('projects::filament/resources/task.form.sections.settings.fields.customer'))
                                     ->relationship('partner', 'name')
-                                    ->searchable()
                                     ->preload()
                                     ->createOptionForm(fn (Schema $schema): Schema => PartnerResource::form($schema))
                                     ->editOptionForm(fn (Schema $schema): Schema => PartnerResource::form($schema)),
-                                Select::make('users')
+                                CheckboxList::make('users')
                                     ->label(__('projects::filament/resources/task.form.sections.settings.fields.assignees'))
                                     ->relationship('users', 'name')
                                     ->searchable()
-                                    ->multiple()
-                                    ->preload()
-                                    ->createOptionForm(fn (Schema $schema) => UserResource::form($schema)),
+                                    ->bulkToggleable()
+                                    ->columns(2),
                                 DateTimePicker::make('deadline')
                                     ->label(__('projects::filament/resources/task.form.sections.settings.fields.deadline'))
                                     ->native(false)

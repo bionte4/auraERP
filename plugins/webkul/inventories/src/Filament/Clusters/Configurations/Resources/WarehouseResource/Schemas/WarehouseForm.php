@@ -62,7 +62,6 @@ class WarehouseForm
                                         Select::make('partner_address_id')
                                             ->label(__('inventories::filament/clusters/configurations/resources/warehouse.form.sections.general.fields.address'))
                                             ->relationship('partnerAddress', 'name')
-                                            ->searchable()
                                             ->preload()
                                             ->createOptionForm(fn (Schema $schema): Schema => PartnerResource::form($schema)),
                                     ])

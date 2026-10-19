@@ -561,7 +561,6 @@ class ChatterPanel extends Component implements HasActions, HasForms, HasInfolis
                                     Select::make('activity_plan_id')
                                         ->label(__('chatter::livewire/chatter-panel.edit-activity.form.fields.activity-plan'))
                                         ->options($this->activityPlans)
-                                        ->searchable()
                                         ->hidden(fn (): bool => $this->activityPlans->isEmpty())
                                         ->preload()
                                         ->live(),
@@ -600,7 +599,6 @@ class ChatterPanel extends Component implements HasActions, HasForms, HasInfolis
                                     Select::make('activity_type_id')
                                         ->label(__('chatter::livewire/chatter-panel.edit-activity.form.fields.activity-type'))
                                         ->options(ActivityType::pluck('name', 'id'))
-                                        ->searchable()
                                         ->preload()
                                         ->live()
                                         ->required()
@@ -615,7 +613,6 @@ class ChatterPanel extends Component implements HasActions, HasForms, HasInfolis
                                         ->visible(fn (Get $get) => ! $get('activity_plan_id')),
                                     Select::make('assigned_to')
                                         ->label(__('chatter::livewire/chatter-panel.edit-activity.form.fields.assigned-to'))
-                                        ->searchable()
                                         ->hidden(fn (Get $get) => $get('activity_type_id') ? ActivityType::find($get('activity_type_id'))?->category == 'meeting' : false)
                                         ->live()
                                         ->visible(fn (Get $get) => ! $get('activity_plan_id'))

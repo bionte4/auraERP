@@ -7,6 +7,7 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
@@ -55,7 +56,6 @@ class OperationForm
                                         ManageBillsOfMaterials::class,
                                     ])
                                     ->getOptionLabelFromRecordUsing(fn (BillOfMaterial $record): string => OperationResource::getBillOfMaterialLabel($record))
-                                    ->searchable()
                                     ->preload()
                                     ->live()
                                     ->afterStateUpdated(fn (Set $set) => $set('attributeValues', []))
@@ -64,13 +64,12 @@ class OperationForm
                                 Select::make('work_center_id')
                                     ->label(__('manufacturing::filament/clusters/configurations/resources/operation.form.sections.general.fields.work-center'))
                                     ->relationship('workCenter', 'name')
-                                    ->searchable()
                                     ->preload()
                                     ->required()
                                     ->createOptionForm(fn (Schema $schema): Schema => WorkCenterResource::form($schema))
                                     ->createOptionAction(fn (Action $action) => $action->modalWidth(Width::SevenExtraLarge)),
 
-                                Select::make('attributeValues')
+                                CheckboxList::make('attributeValues')
                                     ->label(__('manufacturing::filament/clusters/configurations/resources/operation.form.sections.general.fields.apply-on-variants'))
                                     ->relationship(
                                         'attributeValues',
@@ -93,10 +92,10 @@ class OperationForm
                                     )
                                     ->getOptionLabelFromRecordUsing(fn (ProductAttributeValue $record): string => $record->attributeOption?->name ?? (string) $record->id)
                                     ->searchable()
-                                    ->preload()
-                                    ->multiple(),
+                                    ->bulkToggleable()
+                                    ->columns(2),
 
-                                Select::make('blockedByOperations')
+                                CheckboxList::make('blockedByOperations')
                                     ->label(__('manufacturing::filament/clusters/configurations/resources/operation.form.sections.general.fields.blocked-by'))
                                     ->relationship(
                                         'blockedByOperations',
@@ -104,8 +103,8 @@ class OperationForm
                                         modifyQueryUsing: fn (Get $get, Builder $query) => $query->where('id', '!=', $get('id'))->where('bill_of_material_id', $get('bill_of_material_id'))
                                     )
                                     ->searchable()
-                                    ->preload()
-                                    ->multiple(),
+                                    ->bulkToggleable()
+                                    ->columns(2),
 
                                 TextEntry::make('company')
                                     ->label(__('manufacturing::filament/clusters/configurations/resources/operation.form.sections.general.fields.company'))

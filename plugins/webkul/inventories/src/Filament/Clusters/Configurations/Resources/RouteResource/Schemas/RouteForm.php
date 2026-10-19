@@ -3,6 +3,7 @@
 namespace Webkul\Inventory\Filament\Clusters\Configurations\Resources\RouteResource\Schemas;
 
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Group;
@@ -49,7 +50,6 @@ class RouteForm
                             ->afterStateUpdated(fn (Set $set, Get $get, $state) => clear_foreign_company_values($set, $get, [
                                 'warehouses' => Warehouse::class,
                             ], $state))
-                            ->searchable()
                             ->preload()
                             ->default(current_company_id()),
                     ]),
@@ -80,17 +80,17 @@ class RouteForm
                                     ->inline(false)
                                     ->hintIcon('heroicon-m-question-mark-circle', tooltip: __('inventories::filament/clusters/configurations/resources/route.form.sections.applicable-on.fields.warehouses-hint-tooltip'))
                                     ->live(),
-                                Select::make('warehouses')
+                                CheckboxList::make('warehouses')
                                     ->hiddenLabel()
                                     ->relationship(
                                         'warehouses',
                                         'name',
                                         modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(owned_by_company($get('company_id'))),
                                     )
+                                    ->visible(fn (Get $get) => $get('warehouse_selectable'))
                                     ->searchable()
-                                    ->preload()
-                                    ->multiple()
-                                    ->visible(fn (Get $get) => $get('warehouse_selectable')),
+                                    ->bulkToggleable()
+                                    ->columns(2),
                             ])
                             ->hiddenOn(ManageRoutes::class),
                     ])

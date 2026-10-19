@@ -88,7 +88,6 @@ class CompanyForm
                                                             $set('currency_id', $currencyId);
                                                         }
                                                     })
-                                                    ->searchable()
                                                     ->preload()
                                                     ->live(),
                                                 Select::make('state_id')
@@ -98,7 +97,6 @@ class CompanyForm
                                                         titleAttribute: 'name',
                                                         modifyQueryUsing: fn (Get $get, Builder $query) => $query->where('country_id', $get('country_id')),
                                                     )
-                                                    ->searchable()
                                                     ->preload()
                                                     ->createOptionForm(function (Schema $schema, Get $get, Set $set) {
                                                         return $schema
@@ -113,7 +111,6 @@ class CompanyForm
                                                                 Select::make('country_id')
                                                                     ->label(__('support::filament/resources/company.form.sections.address-information.fields.country'))
                                                                     ->relationship('country', 'name')
-                                                                    ->searchable()
                                                                     ->preload()
                                                                     ->live()
                                                                     ->default($get('country_id'))
@@ -133,7 +130,6 @@ class CompanyForm
                                                 titleAttribute: 'name',
                                             )
                                             ->label(__('support::filament/resources/company.form.sections.additional-information.fields.default-currency'))
-                                            ->searchable()
                                             ->required()
                                             ->live()
                                             ->preload()

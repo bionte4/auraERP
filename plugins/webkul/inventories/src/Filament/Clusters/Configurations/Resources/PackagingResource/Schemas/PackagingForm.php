@@ -3,6 +3,7 @@
 namespace Webkul\Inventory\Filament\Clusters\Configurations\Resources\PackagingResource\Schemas;
 
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
@@ -33,7 +34,6 @@ class PackagingForm
                     ->where(owned_by_company($get('company_id'))),
             )
             ->required()
-            ->searchable()
             ->preload();
 
         $components[] = Select::make('package_type_id')
@@ -43,21 +43,20 @@ class PackagingForm
                 'name',
                 fn (Builder $query, Get $get) => $query->where(owned_by_company($get('company_id'))),
             )
-            ->searchable()
             ->preload()
             ->visible(PackagingResource::getOperationSettings()->enable_packages);
 
-        $components[] = Select::make('routes')
+        $components[] = CheckboxList::make('routes')
             ->label(__('inventories::filament/clusters/configurations/resources/packaging.form.routes'))
             ->relationship(
                 'routes',
                 'name',
                 fn (Builder $query, Get $get) => $query->where(owned_by_company($get('company_id'))),
             )
+            ->visible(PackagingResource::getWarehouseSettings()->enable_multi_steps_routes)
             ->searchable()
-            ->preload()
-            ->multiple()
-            ->visible(PackagingResource::getWarehouseSettings()->enable_multi_steps_routes);
+            ->bulkToggleable()
+            ->columns(2);
 
         foreach ($components as $index => $component) {
             if ($component instanceof Select && $component->getName() === 'company_id') {

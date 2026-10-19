@@ -7,6 +7,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Actions;
@@ -104,7 +105,6 @@ class InvoiceForm
                                                     ->where(hide_deleted_unless_selected($state)),
                                             )
                                             ->required()
-                                            ->searchable()
                                             ->preload()
                                             ->live()
                                             ->afterStateUpdated(function (Set $set, Get $get, $state) {
@@ -154,7 +154,6 @@ class InvoiceForm
                                                     })
                                                     ->required(fn (Get $get) => $get('invoice_date_due') === null)
                                                     ->live()
-                                                    ->searchable()
                                                     ->preload()
                                                     ->disabled(fn ($record) => in_array($record?->state, [MoveState::POSTED, MoveState::CANCEL]))
                                                     ->label(__('accounts::filament/resources/invoice.form.section.general.fields.payment-term')),
@@ -171,7 +170,6 @@ class InvoiceForm
                                                             ->where('type', JournalType::SALE)
                                                             ->where(owned_by_company($get('company_id'))),
                                                     )
-                                                    ->searchable()
                                                     ->preload()
                                                     ->required()
                                                     ->label(__('accounts::filament/resources/invoice.form.section.general.fields.journal'))
@@ -205,7 +203,6 @@ class InvoiceForm
                                                         modifyQueryUsing: fn (Builder $query) => $query->active(),
                                                     )
                                                     ->required()
-                                                    ->searchable()
                                                     ->preload()
                                                     ->live()
                                                     ->reactive()
@@ -254,7 +251,6 @@ class InvoiceForm
                                             ->maxLength(255),
                                         Select::make('invoice_user_id')
                                             ->relationship('invoiceUser', 'name')
-                                            ->searchable()
                                             ->preload()
                                             ->label(__('accounts::filament/resources/invoice.form.tabs.other-information.fieldset.invoice.fields.sales-person')),
                                         Select::make('partner_bank_id')
@@ -288,7 +284,6 @@ class InvoiceForm
                                                 return str_contains($label, ' (Deleted)');
                                             })
                                             ->default(fn (Get $get) => static::getDefaultRecipientBankId($get('move_type'), $get('company_id'), $get('partner_id')))
-                                            ->searchable()
                                             ->preload()
                                             ->createOptionForm(fn (Schema $schema, Get $get) => BankAccountResource::form($schema)->fill([
                                                 'partner_id' => $get('partner_id'),
@@ -314,7 +309,6 @@ class InvoiceForm
                                             ->disableOptionWhen(function ($label) {
                                                 return str_contains($label, ' (Deleted)');
                                             })
-                                            ->searchable()
                                             ->preload()
                                             ->reactive()
                                             ->default(current_company_id())
@@ -340,7 +334,6 @@ class InvoiceForm
                                         Select::make('invoice_incoterm_id')
                                             ->label(__('accounts::filament/resources/invoice.form.tabs.other-information.fieldset.accounting.fields.incoterm'))
                                             ->relationship('invoiceIncoterm', 'name')
-                                            ->searchable()
                                             ->preload()
                                             ->default(fn (CustomerInvoiceSettings $settings) => $settings->incoterm_id),
                                         TextInput::make('incoterm_location')
@@ -353,7 +346,6 @@ class InvoiceForm
                                             )
                                             ->getOptionLabelFromRecordUsing(fn ($record) => $record->display_name)
                                             ->preload()
-                                            ->searchable()
                                             ->label(__('accounts::filament/resources/invoice.form.tabs.other-information.fieldset.accounting.fields.payment-method')),
                                         Select::make('fiscal_position_id')
                                             ->relationship(
@@ -362,7 +354,6 @@ class InvoiceForm
                                                 modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(owned_by_company($get('company_id'))),
                                             )
                                             ->preload()
-                                            ->searchable()
                                             ->label(__('accounts::filament/resources/invoice.form.tabs.other-information.fieldset.accounting.fields.fiscal-position'))
                                             ->hintIcon('heroicon-o-question-mark-circle', tooltip: __('accounts::filament/resources/invoice.form.tabs.other-information.fieldset.accounting.fields.fiscal-position-tooltip'))
                                             ->disabled(fn ($record) => in_array($record?->state, [MoveState::POSTED, MoveState::CANCEL])),
@@ -370,7 +361,6 @@ class InvoiceForm
                                             ->label(__('accounts::filament/resources/invoice.form.tabs.other-information.fieldset.accounting.fields.cash-rounding'))
                                             ->hintIcon('heroicon-o-question-mark-circle', tooltip: __('accounts::filament/resources/invoice.form.tabs.other-information.fieldset.accounting.fields.cash-rounding-tooltip'))
                                             ->relationship('invoiceCashRounding', 'name')
-                                            ->searchable()
                                             ->preload()
                                             ->reactive()
                                             ->live()
@@ -509,7 +499,6 @@ class InvoiceForm
                             ->filter(fn (mixed $siblingItemState): bool => filled($siblingItemState))
                             ->contains($value);
                     })
-                    ->searchable()
                     ->preload()
                     ->live()
                     ->dehydrated()
@@ -541,7 +530,6 @@ class InvoiceForm
                     ->wrapOptionLabels(false)
                     ->required()
                     ->live()
-                    ->native(false)
                     ->selectablePlaceholder(false)
                     ->dehydrated()
                     ->disabled(fn ($record) => in_array($record?->parent_state, [MoveState::POSTED, MoveState::CANCEL]))
@@ -568,7 +556,7 @@ class InvoiceForm
                     ->dehydrated()
                     ->disabled(fn ($record) => in_array($record?->parent_state, [MoveState::POSTED, MoveState::CANCEL]))
                     ->afterStateUpdated(fn (Set $set, Get $get) => self::calculateLineTotals($set, $get)),
-                Select::make('taxes')
+                CheckboxList::make('taxes')
                     ->label(__('accounts::filament/resources/invoice.form.tabs.invoice-lines.repeater.products.fields.taxes'))
                     ->relationship(
                         'taxes',
@@ -577,15 +565,14 @@ class InvoiceForm
                             ->where('type_tax_use', TypeTaxUse::SALE)
                             ->where(owned_by_company($get('../../company_id'))),
                     )
-                    ->wrapOptionLabels(false)
-                    ->searchable()
-                    ->multiple()
-                    ->preload()
                     ->dehydrated()
                     ->disabled(fn ($record) => in_array($record?->parent_state, [MoveState::POSTED, MoveState::CANCEL]))
                     ->afterStateHydrated(fn (Get $get, Set $set) => self::calculateLineTotals($set, $get))
                     ->afterStateUpdated(fn (Get $get, Set $set) => self::calculateLineTotals($set, $get))
-                    ->live(),
+                    ->live()
+                    ->searchable()
+                    ->bulkToggleable()
+                    ->columns(2),
                 TextInput::make('price_subtotal')
                     ->label(__('accounts::filament/resources/invoice.form.tabs.invoice-lines.repeater.products.fields.sub-total'))
                     ->numeric()

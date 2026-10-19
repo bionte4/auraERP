@@ -7,6 +7,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Fieldset;
@@ -95,7 +96,6 @@ class QuotationForm
                                                 modifyQueryUsing: fn (Builder $query, $state) => $query->orderBy('id')->withTrashed()
                                                     ->where(hide_deleted_unless_selected($state))
                                             )
-                                            ->searchable()
                                             ->preload()
                                             ->required()
                                             ->createOptionForm(fn (Schema $schema) => CustomerResource::form($schema))
@@ -137,7 +137,6 @@ class QuotationForm
                                         'name',
                                         modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(owned_by_company($get('company_id'))),
                                     )
-                                    ->searchable()
                                     ->preload()
                                     ->required()
                                     ->columnSpan(1),
@@ -148,7 +147,6 @@ class QuotationForm
                                         titleAttribute: 'name',
                                         modifyQueryUsing: fn (Builder $query, Get $get) => $query->active()->where(owned_by_company($get('company_id'))),
                                     )
-                                    ->searchable()
                                     ->preload()
                                     ->live()
                                     ->visible(fn (ProductSettings $settings): bool => $settings->enable_price_lists)
@@ -199,17 +197,16 @@ class QuotationForm
                                     ->schema([
                                         Select::make('user_id')
                                             ->relationship('user', 'name')
-                                            ->searchable()
                                             ->preload()
                                             ->label(__('sales::filament/clusters/orders/resources/quotation.form.tabs.other-information.fieldset.sales.fields.sales-person')),
                                         TextInput::make('client_order_ref')
                                             ->label(__('sales::filament/clusters/orders/resources/quotation.form.tabs.other-information.fieldset.sales.fields.customer-reference')),
-                                        Select::make('sales_order_tags')
+                                        CheckboxList::make('sales_order_tags')
                                             ->label(__('sales::filament/clusters/orders/resources/quotation.form.tabs.other-information.fieldset.sales.fields.tags'))
                                             ->relationship('tags', 'name')
-                                            ->multiple()
                                             ->searchable()
-                                            ->preload(),
+                                            ->bulkToggleable()
+                                            ->columns(2),
                                     ]),
                                 Fieldset::make(__('sales::filament/clusters/orders/resources/quotation.form.tabs.other-information.fieldset.shipping.title'))
                                     ->schema([
@@ -226,7 +223,6 @@ class QuotationForm
                                             ->default(fn (Get $get): ?int => static::getDefaultWarehouseId(
                                                 $get('company_id') ?? current_company_id()
                                             ))
-                                            ->searchable()
                                             ->preload()
                                             ->disabled(fn ($record) => in_array($record?->state, [OrderState::SALE, OrderState::CANCEL]))
                                             ->live()
@@ -244,17 +240,14 @@ class QuotationForm
                                         Select::make('campaign_id')
                                             ->label(__('sales::filament/clusters/orders/resources/quotation.form.tabs.other-information.fieldset.tracking.fields.campaign'))
                                             ->relationship('campaign', 'name')
-                                            ->searchable()
                                             ->preload(),
                                         Select::make('medium_id')
                                             ->label(__('sales::filament/clusters/orders/resources/quotation.form.tabs.other-information.fieldset.tracking.fields.medium'))
                                             ->relationship('medium', 'name')
-                                            ->searchable()
                                             ->preload(),
                                         Select::make('utm_source_id')
                                             ->label(__('sales::filament/clusters/orders/resources/quotation.form.tabs.other-information.fieldset.tracking.fields.source'))
                                             ->relationship('utmSource', 'name')
-                                            ->searchable()
                                             ->preload(),
                                     ]),
                                 Fieldset::make(__('sales::filament/clusters/orders/resources/quotation.form.tabs.other-information.fieldset.additional-information.title'))
@@ -268,7 +261,6 @@ class QuotationForm
                                             ->disableOptionWhen(function ($label) {
                                                 return str_contains($label, ' (Deleted)');
                                             })
-                                            ->searchable()
                                             ->preload()
                                             ->live()
                                             ->afterStateUpdated(function (Set $set, Get $get, ?int $state): void {
@@ -467,7 +459,6 @@ class QuotationForm
                         return $record->name.($record->trashed() ? ' (Deleted)' : '');
                     })
                     ->selectablePlaceholder(false)
-                    ->searchable()
                     ->preload()
                     ->live()
                     ->required()
@@ -616,7 +607,6 @@ class QuotationForm
                     )
                     ->required()
                     ->live()
-                    ->native(false)
                     ->selectablePlaceholder(false)
                     ->afterStateUpdated(fn (Set $set, Get $get) => static::afterUOMUpdated($set, $get))
                     ->visible(fn (ProductSettings $settings) => $settings->enable_uom)
@@ -647,7 +637,6 @@ class QuotationForm
                         'name',
                         modifyQueryUsing: fn (Builder $query, Get $get) => $query->where('product_id', $get('product_id')),
                     )
-                    ->searchable()
                     ->preload()
                     ->live()
                     ->afterStateUpdated(fn (Set $set, Get $get) => static::afterProductPackagingUpdated($set, $get))
@@ -677,8 +666,7 @@ class QuotationForm
                     ->maxValue(100)
                     ->visible(fn (PriceSettings $settings) => $settings->enable_margin)
                     ->readonly(),
-                Select::make('taxes')
-                    ->wrapOptionLabels(false)
+                CheckboxList::make('taxes')
                     ->label(__('sales::filament/clusters/orders/resources/quotation.form.tabs.order-line.repeater.products.fields.taxes'))
                     ->relationship(
                         'taxes',
@@ -687,12 +675,12 @@ class QuotationForm
                             ->where('type_tax_use', TypeTaxUse::SALE)
                             ->where(owned_by_company($get('../../company_id'))),
                     )
-                    ->searchable()
-                    ->multiple()
-                    ->preload()
                     ->afterStateUpdated(fn (Get $get, Set $set) => self::calculateLineTotals($set, $get))
                     ->live()
-                    ->disableOptionWhen(fn ($value): bool => $record?->locked || in_array($record?->state, [OrderState::CANCEL])),
+                    ->disableOptionWhen(fn ($value): bool => $record?->locked || in_array($record?->state, [OrderState::CANCEL]))
+                    ->searchable()
+                    ->bulkToggleable()
+                    ->columns(2),
                 TextInput::make('discount')
                     ->label(__('sales::filament/clusters/orders/resources/quotation.form.tabs.order-line.repeater.products.fields.discount-percentage'))
                     ->numeric()
@@ -807,7 +795,6 @@ class QuotationForm
                             ->whereNull('is_configurable')
                             ->where(owned_by_company($get('../../company_id'))),
                     )
-                    ->searchable()
                     ->preload()
                     ->live()
                     ->dehydrated(true)

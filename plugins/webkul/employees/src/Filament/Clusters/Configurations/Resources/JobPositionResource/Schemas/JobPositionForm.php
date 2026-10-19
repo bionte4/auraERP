@@ -42,7 +42,6 @@ class JobPositionForm
                                                 titleAttribute: 'name',
                                                 modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(fn ($query) => $query->whereNull('company_id')->orWhere('company_id', $get('company_id') ?? current_company_id())),
                                             )
-                                            ->searchable()
                                             ->preload()
                                             ->live()
                                             ->afterStateUpdated(function (Set $set, Get $get, $state) {
@@ -63,7 +62,6 @@ class JobPositionForm
                                         Select::make('company_id')
                                             ->label(__('employees::filament/clusters/configurations/resources/job-position.form.sections.employment-information.fields.company'))
                                             ->relationship(name: 'company', titleAttribute: 'name')
-                                            ->searchable()
                                             ->preload()
                                             ->default(current_company_id())
                                             ->live()
@@ -108,7 +106,6 @@ class JobPositionForm
                                         Select::make('employment_type_id')
                                             ->label(__('employees::filament/clusters/configurations/resources/job-position.form.sections.workforce-planning.fields.employment-type'))
                                             ->relationship('employmentType', 'name')
-                                            ->searchable()
                                             ->preload(),
                                         Toggle::make('is_active')
                                             ->label(__('employees::filament/clusters/configurations/resources/job-position.form.sections.workforce-planning.fields.status')),

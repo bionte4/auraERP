@@ -27,14 +27,12 @@ class EquipmentCategoryForm
                         Select::make('technician_user_id')
                             ->label(__('maintenance::filament/clusters/configurations/resources/equipment-category.form.sections.general.fields.technician'))
                             ->relationship('technician', 'name')
-                            ->searchable()
                             ->preload()
                             ->default(Auth::id()),
 
                         Select::make('company_id')
                             ->label(__('maintenance::filament/clusters/configurations/resources/equipment-category.form.sections.general.fields.company'))
                             ->relationship('company', 'name')
-                            ->searchable()
                             ->preload()
                             ->default(current_company_id()),
 

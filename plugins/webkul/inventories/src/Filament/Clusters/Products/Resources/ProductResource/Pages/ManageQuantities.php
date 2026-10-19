@@ -120,7 +120,6 @@ class ManageQuantities extends ManageRelatedRecords
                         titleAttribute: 'name',
                         modifyQueryUsing: fn (Builder $query) => $query->where('parent_id', $this->getOwnerRecord()->id),
                     )
-                    ->searchable()
                     ->preload()
                     ->required()
                     ->live()
@@ -137,7 +136,6 @@ class ManageQuantities extends ManageRelatedRecords
                             ->where('type', LocationType::INTERNAL)
                             ->when($this->ownerCompanyId(), fn (Builder $scoped, $companyId) => $scoped->where(owned_by_company($companyId))),
                     )
-                    ->searchable()
                     ->preload()
                     ->required()
                     ->default(fn (): ?int => $this->defaultStockLocationId())
@@ -158,7 +156,6 @@ class ManageQuantities extends ManageRelatedRecords
                         },
                     )
                     ->required()
-                    ->searchable()
                     ->preload()
                     ->createOptionForm(fn (Schema $schema): Schema => LotResource::form($schema))
                     ->createOptionAction(function (Action $action, Get $get) {
@@ -179,7 +176,6 @@ class ManageQuantities extends ManageRelatedRecords
                             ->where('location_id', $get('location_id'))
                             ->orWhereNull('location_id'),
                     )
-                    ->searchable()
                     ->reactive()
                     ->preload()
                     ->createOptionForm(fn (Schema $schema): Schema => PackageResource::form($schema))

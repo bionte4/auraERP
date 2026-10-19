@@ -7,6 +7,7 @@ use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ManageRelatedRecords;
 use Filament\Schemas\Components\Utilities\Get;
@@ -60,14 +61,13 @@ class ManageAttributes extends ManageRelatedRecords
                         return $this->getOwnerRecord()->attributes->contains('attribute_id', $value)
                             && $state !== $value;
                     })
-                    ->searchable()
                     ->preload()
                     ->disabledOn('edit')
                     ->createOptionForm(fn (Schema $schema): Schema => AttributeResource::form($schema))
                     ->afterStateUpdated(function ($state, Set $set) {
                         $set('options', []);
                     }),
-                Select::make('options')
+                CheckboxList::make('options')
                     ->label(__('products::filament/resources/product/pages/manage-attributes.form.values'))
                     ->required()
                     ->relationship(
@@ -76,8 +76,8 @@ class ManageAttributes extends ManageRelatedRecords
                         modifyQueryUsing: fn (Get $get, Builder $query) => $query->where('products_attribute_options.attribute_id', $get('attribute_id')),
                     )
                     ->searchable()
-                    ->preload()
-                    ->multiple(),
+                    ->bulkToggleable()
+                    ->columns(2),
             ])
             ->columns(1);
     }

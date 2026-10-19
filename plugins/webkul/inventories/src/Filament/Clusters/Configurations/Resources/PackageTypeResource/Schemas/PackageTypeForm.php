@@ -36,7 +36,6 @@ class PackageTypeForm
                                     ->label(__('inventories::filament/clusters/configurations/resources/package-type.form.sections.general.fields.company'))
                                     ->prefixIcon('heroicon-o-building-office')
                                     ->relationship('company', 'name')
-                                    ->searchable()
                                     ->preload()
                                     ->default(current_company_id()),
                             ]),

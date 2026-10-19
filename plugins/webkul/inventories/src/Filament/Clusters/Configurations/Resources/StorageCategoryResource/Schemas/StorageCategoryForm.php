@@ -34,7 +34,6 @@ class StorageCategoryForm
                         Select::make('company_id')
                             ->label(__('inventories::filament/clusters/configurations/resources/storage-category.form.sections.general.fields.company'))
                             ->relationship(name: 'company', titleAttribute: 'name')
-                            ->searchable()
                             ->preload()
                             ->default(current_company_id()),
                     ])

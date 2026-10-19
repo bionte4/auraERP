@@ -23,7 +23,6 @@ class AccountTagForm
                             ->label(__('accounts::filament/resources/account-tag.form.fields.color'))
                             ->hexColor(),
                         Select::make('country_id')
-                            ->searchable()
                             ->preload()
                             ->label(__('accounts::filament/resources/account-tag.form.fields.country'))
                             ->relationship('country', 'name'),

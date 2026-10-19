@@ -3,6 +3,7 @@
 namespace Webkul\Account\Filament\Resources\AccountResource\Schemas;
 
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Fieldset;
@@ -57,7 +58,7 @@ class AccountForm
                                             $set('invoices_account_journals', $journalIds);
                                         }
                                     })
-                                    ->searchable(),
+                                    ,
                                 Select::make('parent_id')
                                     ->relationship(
                                         name: 'parent',
@@ -83,27 +84,27 @@ class AccountForm
                                     ->label(__('accounts::filament/resources/account.form.sections.fields.parent-account'))
                                     ->helperText(__('accounts::filament/resources/account.form.sections.fields.parent-account-helper'))
                                     ->preload()
-                                    ->searchable(),
-                                Select::make('invoices_account_tax')
+                                    ,
+                                CheckboxList::make('invoices_account_tax')
                                     ->relationship('taxes', 'name')
                                     ->label(__('accounts::filament/resources/account.form.sections.fields.default-taxes'))
                                     ->hidden(fn (Get $get) => $get('account_type') === AccountType::OFF_BALANCE->value)
-                                    ->multiple()
-                                    ->preload()
-                                    ->searchable(),
-                                Select::make('invoices_account_account_tags')
+                                    ->searchable()
+                                    ->bulkToggleable()
+                                    ->columns(2),
+                                CheckboxList::make('invoices_account_account_tags')
                                     ->relationship('tags', 'name')
-                                    ->multiple()
-                                    ->preload()
                                     ->label(__('accounts::filament/resources/account.form.sections.fields.tags'))
-                                    ->searchable(),
-                                Select::make('invoices_account_journals')
+                                    ->searchable()
+                                    ->bulkToggleable()
+                                    ->columns(2),
+                                CheckboxList::make('invoices_account_journals')
                                     ->relationship('journals', 'name')
-                                    ->multiple()
                                     ->label(__('accounts::filament/resources/account.form.sections.fields.journals'))
                                     ->helperText(__('accounts::filament/resources/account.form.sections.fields.journals-helper'))
-                                    ->preload()
-                                    ->searchable(),
+                                    ->searchable()
+                                    ->bulkToggleable()
+                                    ->columns(2),
                                 Select::make('currency_id')
                                     ->relationship(
                                         name: 'currency',
@@ -112,14 +113,14 @@ class AccountForm
                                     )
                                     ->preload()
                                     ->label(__('accounts::filament/resources/account.form.sections.fields.currency'))
-                                    ->searchable(),
-                                Select::make('companies')
+                                    ,
+                                CheckboxList::make('companies')
                                     ->label(__('accounts::filament/resources/account.form.sections.fields.companies'))
                                     ->relationship('companies', 'name')
-                                    ->multiple()
-                                    ->preload()
+                                    ->required()
                                     ->searchable()
-                                    ->required(),
+                                    ->bulkToggleable()
+                                    ->columns(2),
                                 Toggle::make('deprecated')
                                     ->inline(false)
                                     ->label(__('accounts::filament/resources/account.form.sections.fields.deprecated')),

@@ -42,7 +42,6 @@ class PaymentTermForm
                                     ->label(__('accounts::filament/resources/payment-term.form.sections.fields.company'))
                                     ->relationship('company', 'name')
                                     ->placeholder(__('accounts::filament/resources/payment-term.form.sections.fields.company-placeholder'))
-                                    ->searchable()
                                     ->preload()
                                     ->default(current_company_id())
                                     ->columnSpan(1),
@@ -120,7 +119,6 @@ class PaymentTermForm
                                                 Select::make('value')
                                                     ->options(DueTermValue::class)
                                                     ->wrapOptionLabels(false)
-                                                    ->native(false)
                                                     ->required(),
 
                                                 TextInput::make('value_amount')
@@ -133,7 +131,6 @@ class PaymentTermForm
                                                 Select::make('delay_type')
                                                     ->options(DelayType::class)
                                                     ->wrapOptionLabels(false)
-                                                    ->native(false)
                                                     ->required(),
 
                                                 TextInput::make('days_next_month')

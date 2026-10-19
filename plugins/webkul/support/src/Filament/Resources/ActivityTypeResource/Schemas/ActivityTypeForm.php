@@ -4,6 +4,7 @@ namespace Webkul\Support\Filament\Resources\ActivityTypeResource\Schemas;
 
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -41,12 +42,10 @@ class ActivityTypeForm
                                             ->label(__('support::filament/resources/activity-type.form.sections.activity-type-details.fields.action'))
                                             ->options(ActivityTypeAction::options())
                                             ->live()
-                                            ->searchable()
                                             ->preload(),
                                         Select::make('default_user_id')
                                             ->label(__('support::filament/resources/activity-type.form.sections.activity-type-details.fields.default-user'))
                                             ->options(fn () => User::query()->pluck('name', 'id'))
-                                            ->searchable()
                                             ->preload(),
                                         Textarea::make('summary')
                                             ->label(__('support::filament/resources/activity-type.form.sections.activity-type-details.fields.summary'))
@@ -93,26 +92,24 @@ class ActivityTypeForm
                                         Select::make('decoration_type')
                                             ->label(__('support::filament/resources/activity-type.form.sections.advanced-information.fields.decoration-type'))
                                             ->options(ActivityDecorationType::options())
-                                            ->native(false),
+                                            ,
                                         Select::make('chaining_type')
                                             ->label(__('support::filament/resources/activity-type.form.sections.advanced-information.fields.chaining-type'))
                                             ->options(ActivityChainingType::options())
                                             ->default(ActivityChainingType::SUGGEST->value)
                                             ->live()
                                             ->required()
-                                            ->native(false)
                                             ->hidden(fn (Get $get) => $get('category') === 'upload_file'),
-                                        Select::make('activity_type_suggestions')
-                                            ->multiple()
+                                        CheckboxList::make('activity_type_suggestions')
                                             ->relationship('suggestedActivityTypes', 'name')
-                                            ->searchable()
-                                            ->preload()
                                             ->label(__('support::filament/resources/activity-type.form.sections.advanced-information.fields.suggest'))
-                                            ->hidden(fn (Get $get) => $get('chaining_type') === 'trigger' || $get('category') === 'upload_file'),
+                                            ->hidden(fn (Get $get) => $get('chaining_type') === 'trigger' || $get('category') === 'upload_file')
+                                            ->searchable()
+                                            ->bulkToggleable()
+                                            ->columns(2),
                                         Select::make('triggered_next_type_id')
                                             ->relationship('triggeredNextType', 'name')
                                             ->label(__('support::filament/resources/activity-type.form.sections.advanced-information.fields.trigger'))
-                                            ->native(false)
                                             ->hidden(fn (Get $get) => $get('chaining_type') === 'suggest' && $get('category') !== 'upload_file'),
                                     ]),
                                 Section::make(__('support::filament/resources/activity-type.form.sections.status-and-configuration-information.title'))

@@ -4,6 +4,7 @@ namespace Webkul\Recruitment\Filament\Clusters\Configurations\Resources\StageRes
 
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Group;
@@ -59,11 +60,13 @@ class StageForm
                                 ]),
                             Section::make(__('recruitments::filament/clusters/configurations/resources/stage.form.sections.additional-information.title'))
                                 ->schema([
-                                    Select::make('recruitments_job_positions')
+                                    CheckboxList::make('recruitments_job_positions')
                                         ->relationship('jobs', 'name')
-                                        ->multiple()
-                                        ->preload()
-                                        ->label(__('recruitments::filament/clusters/configurations/resources/stage.form.sections.additional-information.fields.job-positions')),
+
+                                        ->label(__('recruitments::filament/clusters/configurations/resources/stage.form.sections.additional-information.fields.job-positions'))
+                                        ->searchable()
+                                        ->bulkToggleable()
+                                        ->columns(2),
                                     Toggle::make('fold')
                                         ->label(__('recruitments::filament/clusters/configurations/resources/stage.form.sections.additional-information.fields.folded')),
                                     Toggle::make('hired_stage')

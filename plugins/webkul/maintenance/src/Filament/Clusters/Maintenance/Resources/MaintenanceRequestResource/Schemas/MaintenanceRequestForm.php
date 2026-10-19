@@ -71,8 +71,6 @@ class MaintenanceRequestForm
                                         return $record->name.($record->trashed() ? ' (Deleted)' : '');
                                     })
                                     ->disableOptionWhen(fn ($label) => str_contains($label, ' (Deleted)'))
-                                    ->native(false)
-                                    ->searchable()
                                     ->preload()
                                     ->live()
                                     ->afterStateUpdated(function (Set $set, mixed $state): void {
@@ -96,8 +94,6 @@ class MaintenanceRequestForm
                                         'name',
                                         modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(owned_by_company($get('company_id'))),
                                     )
-                                    ->native(false)
-                                    ->searchable()
                                     ->preload()
                                     ->disabled()
                                     ->dehydrated(),
@@ -220,8 +216,6 @@ class MaintenanceRequestForm
                                         return $record->name.($record->trashed() ? ' (Deleted)' : '');
                                     })
                                     ->disableOptionWhen(fn ($label) => str_contains($label, ' (Deleted)'))
-                                    ->native(false)
-                                    ->searchable()
                                     ->preload()
                                     ->required()
                                     ->default(fn (Get $get) => Team::query()->where(owned_by_company($get('company_id')))->value('id')),
@@ -229,8 +223,6 @@ class MaintenanceRequestForm
                                 Select::make('user_id')
                                     ->label(__('maintenance::filament/clusters/maintenance/resources/maintenance-request.form.sections.settings.fields.responsible'))
                                     ->relationship('user', 'name')
-                                    ->native(false)
-                                    ->searchable()
                                     ->preload()
                                     ->default(Auth::id()),
 
@@ -261,8 +253,6 @@ class MaintenanceRequestForm
                                 Select::make('company_id')
                                     ->label(__('maintenance::filament/clusters/maintenance/resources/maintenance-request.form.sections.settings.fields.company'))
                                     ->relationship('company', 'name')
-                                    ->native(false)
-                                    ->searchable()
                                     ->preload()
                                     ->required()
                                     ->default(current_company_id())

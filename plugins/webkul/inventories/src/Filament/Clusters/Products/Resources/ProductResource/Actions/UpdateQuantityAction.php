@@ -54,7 +54,6 @@ class UpdateQuantityAction extends Action
                     ->label(__('inventories::filament/clusters/products/resources/product/actions/update-quantity.form.fields.product'))
                     ->required()
                     ->options($record->variants->pluck('name', 'id'))
-                    ->searchable()
                     ->live()
                     ->afterStateUpdated(function (Get $get, Set $set): void {
                         $product = Product::find($get('product_id'));

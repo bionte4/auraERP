@@ -30,7 +30,6 @@ class PackageForm
                                 Select::make('package_type_id')
                                     ->label(__('inventories::filament/clusters/products/resources/package.form.sections.general.fields.package-type'))
                                     ->relationship('packageType', 'name')
-                                    ->searchable()
                                     ->preload()
                                     ->createOptionForm(fn (Schema $schema): Schema => PackageTypeResource::form($schema)),
                                 DatePicker::make('pack_date')
@@ -41,7 +40,6 @@ class PackageForm
                                 Select::make('location_id')
                                     ->label(__('inventories::filament/clusters/products/resources/package.form.sections.general.fields.location'))
                                     ->relationship('location', 'full_name')
-                                    ->searchable()
                                     ->preload(),
                             ])
                             ->columns(2),

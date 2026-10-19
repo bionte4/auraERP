@@ -48,7 +48,6 @@ class DepartmentForm
                                             ->disableOptionWhen(
                                                 fn (string $label): bool => str_contains($label, ' (Deleted)'),
                                             )
-                                            ->searchable()
                                             ->preload()
                                             ->live(),
                                         Select::make('manager_id')
@@ -58,7 +57,6 @@ class DepartmentForm
                                                 'name',
                                                 modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(owned_by_company($get('company_id'))),
                                             )
-                                            ->searchable()
                                             ->preload()
                                             ->placeholder(__('employees::filament/resources/department.form.sections.general.fields.manager-placeholder'))
                                             ->nullable(),
@@ -72,7 +70,6 @@ class DepartmentForm
                                                 return str_contains($label, ' (Deleted)');
                                             })
                                             ->preload()
-                                            ->searchable()
                                             ->placeholder(__('employees::filament/resources/department.form.sections.general.fields.company-placeholder'))
                                             ->default(current_company_id())
                                             ->live()

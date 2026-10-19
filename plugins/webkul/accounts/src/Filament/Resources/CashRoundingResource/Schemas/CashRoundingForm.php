@@ -46,14 +46,12 @@ class CashRoundingForm
                                 Select::make('profit_account_id')
                                     ->label(__('Profit Account'))
                                     ->relationship('profitAccount', 'name')
-                                    ->searchable()
                                     ->preload()
                                     ->required(),
 
                                 Select::make('loss_account_id')
                                     ->label(__('Loss Account'))
                                     ->relationship('lossAccount', 'name')
-                                    ->searchable()
                                     ->preload()
                                     ->required(),
 

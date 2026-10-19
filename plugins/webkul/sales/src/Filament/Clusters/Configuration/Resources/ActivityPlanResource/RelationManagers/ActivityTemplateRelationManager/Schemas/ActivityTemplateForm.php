@@ -34,7 +34,6 @@ class ActivityTemplateForm
                                                     ->label(__('sales::filament/clusters/configurations/resources/activity-plan/relation-managers/activity-template.form.sections.activity-details.fields.activity-type'))
                                                     ->options(ActivityType::pluck('name', 'id'))
                                                     ->relationship('activityType', 'name')
-                                                    ->searchable()
                                                     ->required()
                                                     ->default(ActivityType::first()?->id)
                                                     ->createOptionForm(fn (Schema $schema) => ActivityTypeResource::form($schema))
@@ -66,7 +65,6 @@ class ActivityTemplateForm
                                             ->options(ActivityResponsibleType::options())
                                             ->default(ActivityResponsibleType::ON_DEMAND->value)
                                             ->required()
-                                            ->searchable()
                                             ->live()
                                             ->required()
                                             ->preload(),
@@ -74,7 +72,6 @@ class ActivityTemplateForm
                                             ->label(__('sales::filament/clusters/configurations/resources/activity-plan/relation-managers/activity-template.form.sections.assignment.fields.assignee'))
                                             ->options(fn () => User::pluck('name', 'id'))
                                             ->hidden(fn (Get $get) => $get('responsible_type') !== ActivityResponsibleType::OTHER->value)
-                                            ->searchable()
                                             ->preload(),
                                     ]),
                                 Section::make(__('sales::filament/clusters/configurations/resources/activity-plan/relation-managers/activity-template.form.sections.delay-information.title'))
@@ -87,13 +84,11 @@ class ActivityTemplateForm
                                             ->maxValue(99999999999),
                                         Select::make('delay_unit')
                                             ->label(__('sales::filament/clusters/configurations/resources/activity-plan/relation-managers/activity-template.form.sections.delay-information.fields.delay-unit'))
-                                            ->searchable()
                                             ->preload()
                                             ->default(ActivityDelayUnit::DAYS->value)
                                             ->options(ActivityDelayUnit::options()),
                                         Select::make('delay_from')
                                             ->label(__('sales::filament/clusters/configurations/resources/activity-plan/relation-managers/activity-template.form.sections.delay-information.fields.delay-from'))
-                                            ->searchable()
                                             ->preload()
                                             ->default(ActivityDelayInterval::BEFORE_PLAN_DATE->value)
                                             ->options(ActivityDelayInterval::options())

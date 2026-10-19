@@ -98,7 +98,6 @@ class OperationTypeForm
                                                     ->disableOptionWhen(function ($label) {
                                                         return str_contains($label, ' (Deleted)');
                                                     })
-                                                    ->searchable()
                                                     ->preload()
                                                     ->live()
                                                     ->default(fn (Get $get) => static::getDefaultWarehouseId($get('company_id'))),
@@ -119,7 +118,6 @@ class OperationTypeForm
                                                 Select::make('company_id')
                                                     ->label(__('inventories::filament/clusters/configurations/resources/operation-type.form.tabs.general.fields.company'))
                                                     ->relationship('company', 'name')
-                                                    ->searchable()
                                                     ->preload()
                                                     ->default(current_company_id())
                                                     ->live()
@@ -148,7 +146,6 @@ class OperationTypeForm
                                                     ->disableOptionWhen(function ($label) {
                                                         return str_contains($label, ' (Deleted)');
                                                     })
-                                                    ->searchable()
                                                     ->preload()
                                                     ->visible(fn (Get $get): bool => $get('type') != Enums\OperationType::DROPSHIP->value),
                                                 Select::make('create_backorder')
@@ -195,7 +192,6 @@ class OperationTypeForm
                                             ->disableOptionWhen(function ($label) {
                                                 return str_contains($label, ' (Deleted)');
                                             })
-                                            ->searchable()
                                             ->preload()
                                             ->required()
                                             ->live()
@@ -221,7 +217,6 @@ class OperationTypeForm
                                             ->disableOptionWhen(function ($label) {
                                                 return str_contains($label, ' (Deleted)');
                                             })
-                                            ->searchable()
                                             ->preload()
                                             ->required()
                                             ->default(fn (Get $get) => static::getDefaultDestinationLocationId(

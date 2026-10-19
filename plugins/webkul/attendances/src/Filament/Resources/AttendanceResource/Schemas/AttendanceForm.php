@@ -25,7 +25,6 @@ class AttendanceForm
                         Select::make('employee_id')
                             ->label(__('attendances::filament/resources/attendance.form.employee'))
                             ->relationship('employee', 'name')
-                            ->searchable()
                             ->preload()
                             ->required()
                             ->default(fn (): ?int => Employee::query()->where('user_id', Auth::id())->value('id')),
