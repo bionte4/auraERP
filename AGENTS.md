@@ -245,3 +245,10 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - IMPORTANT: Always use `search-docs` tool for version-specific Tailwind CSS documentation and updated code examples. Never rely on training data.
 - IMPORTANT: Activate `tailwindcss-development` every time you're working with a Tailwind CSS or styling-related task.
 </laravel-boost-guidelines>
+
+## Cursor Cloud specific instructions
+
+- PHP 8.3, Composer, and MySQL 8 are already installed. Node and npm are on the login-shell PATH. The admin UI is served at `http://127.0.0.1:8000` by `composer run dev` (PHP server, queue listener, Pail, and Vite) in the tmux session `erp-dev`.
+- MySQL listens on `127.0.0.1:3306` with user `root` and password `root`. The app database is `aureuserp`. Run Pest against `aureuserp_testing` so the dev database stays intact: `DB_DATABASE=aureuserp_testing php artisan test --compact`.
+- The seeded admin login is `admin@example.com` / `admin123`. `storage/installed` means `php artisan erp:install` already completed. `erp:install --force` drops every table.
+- Frontend production assets are `npm run build`. Day-to-day UI work uses the Vite process inside `composer run dev`.
