@@ -169,7 +169,7 @@ class UserForm
                                                                                 \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('allowed_companies_search'),
                                                                                 CheckboxList::make('allowed_companies')
                                             ->label(__('security::filament/resources/user.form.sections.multi-company.allowed-companies'))
-                                            ->relationship('allowedCompanies', 'name', fn (Builder $query) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query->withoutGlobalScope(AllowedCompanyScope::class), $get, 'allowed_companies', 'name'))
+                                            ->relationship('allowedCompanies', 'name', fn (Builder $query, Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query->withoutGlobalScope(AllowedCompanyScope::class), $get, 'allowed_companies', 'name'))
                                             
                                             ->columns(1),
                                         Select::make('default_company_id')

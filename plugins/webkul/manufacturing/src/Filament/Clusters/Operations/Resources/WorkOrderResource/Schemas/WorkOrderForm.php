@@ -187,7 +187,7 @@ class WorkOrderForm
                                     ->relationship(
                                         'blockedByWorkOrders',
                                         'name',
-                                        modifyQueryUsing: fn (Builder $query, ?WorkOrder $record) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query
+                                        modifyQueryUsing: fn (Builder $query, Get $get, ?WorkOrder $record) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query
                                             ->when($record, fn (Builder $relationQuery) => $relationQuery->whereKeyNot($record->getKey())), $get, 'blockedByWorkOrders', 'name'))
                                     ->getOptionLabelFromRecordUsing(fn (WorkOrder $record): string => $record->display_name)
                                     ->disabled(fn (?WorkOrder $record): bool => $record && ! in_array($record->state, [WorkOrderState::PENDING, WorkOrderState::WAITING], true))

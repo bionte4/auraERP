@@ -123,7 +123,7 @@ class TaxForm
                                                     ->when($selected, fn (Builder $query) => $query->orWhereIn($query->getModel()->getQualifiedKeyName(), $selected)));
                                             }
 
-                                            return $query;
+                                            return LivewireSearchableCheckboxList::applySearch($query, $get, 'childrenTaxes', 'name');
                                         },
                                     )
                                     ->required()

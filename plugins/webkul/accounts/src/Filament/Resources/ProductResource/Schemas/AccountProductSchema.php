@@ -35,7 +35,7 @@ class AccountProductSchema
                 ->relationship(
                     'productTaxes',
                     'name',
-                    modifyQueryUsing: fn ($query) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query->where('type_tax_use', TypeTaxUse::SALE), $get, 'accounts_product_taxes', 'name'))
+                    modifyQueryUsing: fn ($query, Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query->where('type_tax_use', TypeTaxUse::SALE), $get, 'accounts_product_taxes', 'name'))
                 ->live()
                 ->helperText(function (Get $get) {
                     $price = floatval($get('price'));
@@ -102,7 +102,7 @@ class AccountProductSchema
                 ->relationship(
                     'supplierTaxes',
                     'name',
-                    modifyQueryUsing: fn ($query) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query->where('type_tax_use', TypeTaxUse::PURCHASE), $get, 'accounts_product_supplier_taxes', 'name'))
+                    modifyQueryUsing: fn ($query, Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query->where('type_tax_use', TypeTaxUse::PURCHASE), $get, 'accounts_product_supplier_taxes', 'name'))
                 ->live()
                 
                 ->columns(2),

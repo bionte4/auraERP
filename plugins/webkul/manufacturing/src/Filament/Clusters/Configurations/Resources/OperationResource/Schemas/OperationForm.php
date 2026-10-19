@@ -90,6 +90,8 @@ class OperationForm
                                             }
 
                                             $query->where('product_id', $productId);
+
+                                            LivewireSearchableCheckboxList::applySearch($query, $get, 'attributeValues', 'id');
                                         }
                                     )
                                     ->getOptionLabelFromRecordUsing(fn (ProductAttributeValue $record): string => $record->attributeOption?->name ?? (string) $record->id)

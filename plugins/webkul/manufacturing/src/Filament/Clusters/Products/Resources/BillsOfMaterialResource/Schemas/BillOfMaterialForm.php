@@ -425,7 +425,12 @@ class BillOfMaterialForm
                         modifyQueryUsing: function (Builder $query, Get $get) {
                             $bomProductId = $get('../../product_id');
 
-                            return $query->where('product_id', $bomProductId);
+                            return LivewireSearchableCheckboxList::applySearch(
+                                $query->where('product_id', $bomProductId),
+                                $get,
+                                'attributeValues',
+                                'id',
+                            );
                         },
                     )
                     ->getOptionLabelFromRecordUsing(fn ($record): string => $record->attribute?->name && $record->attributeOption?->name ? "{$record->attribute->name}: {$record->attributeOption->name}" : ($record->attributeOption?->name ?? (string) $record->id))
@@ -613,6 +618,8 @@ class BillOfMaterialForm
                             }
 
                             $query->where('product_id', $productId);
+
+                            LivewireSearchableCheckboxList::applySearch($query, $get, 'attributeValues', 'id');
                         }
                     )
                     ->getOptionLabelFromRecordUsing(fn ($record): string => $record->attribute?->name && $record->attributeOption?->name ? "{$record->attribute->name}: {$record->attributeOption->name}" : ($record->attributeOption?->name ?? (string) $record->id))
