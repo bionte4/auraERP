@@ -24,6 +24,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Webkul\Chatter\Filament\Actions\ActivityTableAction;
+use Webkul\Partner\Models\Partner;
 use Webkul\Sale\Enums\OrderState;
 
 class QuotationsTable
@@ -164,7 +165,10 @@ class QuotationsTable
                                     ->label(__('sales::filament/clusters/orders/resources/quotation.table.filters.customer'))
                                     ->searchable()
                                     ->multiple()
-                                    ->preload(),
+                                    ->preload()
+                                    ->modifyRelationshipQueryUsing(
+                                        fn (Builder $query): Builder => Partner::filterExternalCustomersQuery($query),
+                                    ),
                             ),
                         RelationshipConstraint::make('journal')
                             ->label(__('sales::filament/clusters/orders/resources/quotation.table.filters.journal'))

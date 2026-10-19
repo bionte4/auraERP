@@ -27,6 +27,7 @@ use Illuminate\Database\Eloquent\Model;
 use Webkul\Account\Enums\MoveState;
 use Webkul\Account\Enums\PaymentState;
 use Webkul\Account\Filament\Exports\BillExporter;
+use Webkul\Account\Models\Partner;
 use Webkul\Chatter\Filament\Actions\ActivityTableAction;
 
 class BillsTable
@@ -240,7 +241,10 @@ class BillsTable
                                     ->titleAttribute('name')
                                     ->searchable()
                                     ->multiple()
-                                    ->preload(),
+                                    ->preload()
+                                    ->modifyRelationshipQueryUsing(
+                                        fn (Builder $query): Builder => Partner::filterExternalVendorsQuery($query),
+                                    ),
                             ),
                         RelationshipConstraint::make('journal')
                             ->label(__('accounts::filament/resources/bill.table.filters.journal'))

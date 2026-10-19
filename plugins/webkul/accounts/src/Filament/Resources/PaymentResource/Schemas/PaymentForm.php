@@ -91,7 +91,13 @@ class PaymentForm
                                             ->relationship(
                                                 'partner',
                                                 'name',
-                                                fn (Builder $query, Get $get) => $query->orderBy('id'),
+                                                function (Builder $query, Get $get, $state): Builder {
+                                                    $query = $query->orderBy('id');
+
+                                                    return $get('payment_type') === PaymentType::RECEIVE
+                                                        ? Partner::filterExternalCustomersQuery($query, $state)
+                                                        : Partner::filterExternalVendorsQuery($query, $state);
+                                                },
                                             )
                                             ->reactive()
                                             ->afterStateUpdated(function (Set $set, $state) {

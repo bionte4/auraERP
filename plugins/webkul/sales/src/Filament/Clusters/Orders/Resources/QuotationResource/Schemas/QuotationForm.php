@@ -94,8 +94,11 @@ class QuotationForm
                                             ->relationship(
                                                 'partner',
                                                 'name',
-                                                modifyQueryUsing: fn (Builder $query, $state) => $query->orderBy('id')->withTrashed()
-                                                    ->where(hide_deleted_unless_selected($state))
+                                                modifyQueryUsing: fn (Builder $query, $state) => Partner::filterExternalCustomersQuery(
+                                                    $query->orderBy('id')->withTrashed()
+                                                        ->where(hide_deleted_unless_selected($state)),
+                                                    $state,
+                                                )
                                             )
                                             ->preload()
                                             ->required()

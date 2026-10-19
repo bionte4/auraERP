@@ -27,6 +27,7 @@ use Illuminate\Database\Eloquent\Model;
 use Webkul\Account\Enums\MoveState;
 use Webkul\Account\Enums\PaymentState;
 use Webkul\Account\Filament\Exports\InvoiceExporter;
+use Webkul\Account\Models\Partner;
 use Webkul\Chatter\Filament\Actions\ActivityTableAction;
 
 class InvoicesTable
@@ -245,7 +246,10 @@ class InvoicesTable
                                     ->titleAttribute('name')
                                     ->searchable()
                                     ->multiple()
-                                    ->preload(),
+                                    ->preload()
+                                    ->modifyRelationshipQueryUsing(
+                                        fn (Builder $query): Builder => Partner::filterExternalCustomersQuery($query),
+                                    ),
                             ),
                         RelationshipConstraint::make('journal')
                             ->label(__('accounts::filament/resources/invoice.table.filters.journal'))

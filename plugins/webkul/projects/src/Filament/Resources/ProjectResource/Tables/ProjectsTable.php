@@ -29,6 +29,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 use Webkul\Chatter\Filament\Actions\ActivityTableAction;
+use Webkul\Partner\Models\Partner;
 use Webkul\Project\Enums\ProjectVisibility;
 use Webkul\Project\Filament\Resources\ProjectResource;
 use Webkul\Project\Filament\Resources\ProjectResource\Pages\ManageMilestones;
@@ -227,7 +228,10 @@ class ProjectsTable
                                     ->titleAttribute('name')
                                     ->searchable()
                                     ->multiple()
-                                    ->preload(),
+                                    ->preload()
+                                    ->modifyRelationshipQueryUsing(
+                                        fn (Builder $query): Builder => Partner::filterExternalCustomersQuery($query),
+                                    ),
                             )
                             ->icon('heroicon-o-user'),
                         RelationshipConstraint::make('user')

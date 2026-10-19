@@ -805,12 +805,12 @@ class PosTerminalPage extends Page
             return collect();
         }
 
-        return Partner::query()
-            ->withoutGlobalScopes()
-            ->whereNull('deleted_at')
-            ->orderBy('name')
+        return Partner::filterExternalCustomersQuery(
+            Partner::query()->withoutGlobalScopes()->whereNull('deleted_at'),
+        )
+            ->orderBy('partners_partners.name')
             ->limit(100)
-            ->get(['id', 'name', 'phone', 'mobile']);
+            ->get(['partners_partners.id', 'partners_partners.name', 'partners_partners.phone', 'partners_partners.mobile']);
     }
 
     public function getPaymentMethods(): Collection

@@ -314,45 +314,7 @@ class Project extends Model implements Sortable
 
     public static function filterExternalCustomersQuery(Builder $query, mixed $selectedId = null): Builder
     {
-        $hasRankColumn = Schema::hasColumn('partners_partners', 'customer_rank');
-
-        return $query->where(function (Builder $outer) use ($hasRankColumn, $selectedId): void {
-            if ($selectedId) {
-                $outer->orWhere('partners_partners.id', $selectedId);
-            }
-
-            if ($hasRankColumn) {
-                $outer->orWhere('partners_partners.customer_rank', '>', 0);
-            }
-
-            $outer->orWhere(function (Builder $clean): void {
-                $clean->where(function (Builder $sub): void {
-                    $sub->whereNull('partners_partners.sub_type')
-                        ->orWhereNotIn('partners_partners.sub_type', ['employee', 'invoice', 'delivery', 'other']);
-                });
-
-                if (Schema::hasTable('users') && Schema::hasColumn('users', 'partner_id')) {
-                    $clean->whereNotIn(
-                        'partners_partners.id',
-                        User::query()->whereNotNull('partner_id')->select('partner_id'),
-                    );
-                }
-
-                if (Schema::hasTable('employees_employees') && Schema::hasColumn('employees_employees', 'partner_id')) {
-                    $clean->whereNotIn(
-                        'partners_partners.id',
-                        Employee::withoutGlobalScopes()->whereNotNull('partner_id')->select('partner_id'),
-                    );
-                }
-
-                if (Schema::hasTable('companies') && Schema::hasColumn('companies', 'partner_id')) {
-                    $clean->whereNotIn(
-                        'partners_partners.id',
-                        Company::query()->whereNotNull('partner_id')->select('partner_id'),
-                    );
-                }
-            });
-        });
+        return Partner::filterExternalCustomersQuery($query, $selectedId);
     }
 
     /**

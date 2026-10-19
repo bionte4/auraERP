@@ -55,7 +55,14 @@ class SendByEmailAction extends Action
                     return $schema->components([
                                                 \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('partners_search'),
                                                 CheckboxList::make('partners')
-                            ->options(fn (\Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::filterOptions((array) (Partner::all()->pluck('name', 'id')), $get, 'partners'))
+                            ->options(fn (\Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::filterOptions(
+                                Partner::filterExternalCustomersQuery(Partner::query())
+                                    ->orderBy('partners_partners.name')
+                                    ->pluck('partners_partners.name', 'partners_partners.id')
+                                    ->all(),
+                                $get,
+                                'partners',
+                            ))
                             ->label(__('sales::filament/clusters/orders/resources/quotation/actions/send-by-email.form.fields.partners'))
                             
                             ->columns(2),

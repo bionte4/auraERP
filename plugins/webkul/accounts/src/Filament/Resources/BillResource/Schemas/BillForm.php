@@ -100,8 +100,11 @@ class BillForm
                                             ->relationship(
                                                 'partner',
                                                 'name',
-                                                fn (Builder $query, $state) => $query->orderBy('id')->withTrashed()
-                                                    ->where(hide_deleted_unless_selected($state)),
+                                                fn (Builder $query, $state) => Partner::filterExternalVendorsQuery(
+                                                    $query->orderBy('id')->withTrashed()
+                                                        ->where(hide_deleted_unless_selected($state)),
+                                                    $state,
+                                                ),
                                             )
                                             ->required()
                                             ->preload()

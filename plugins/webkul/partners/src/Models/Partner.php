@@ -4,6 +4,7 @@ namespace Webkul\Partner\Models;
 
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -12,6 +13,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Webkul\Chatter\Traits\HasChatter;
 use Webkul\Chatter\Traits\HasLogActivity;
@@ -177,5 +180,70 @@ class Partner extends Authenticatable implements FilamentUser
     public static function autoAssignsCompany(): bool
     {
         return false;
+    }
+
+    /**
+     * Limit partner selects to external customers/vendors (exclude employees, users, company self).
+     *
+     * @param  'customer'|'vendor'  $role
+     */
+    public static function filterExternalPartnersQuery(Builder $query, string $role = 'customer', mixed $selectedId = null): Builder
+    {
+        $rankColumn = $role === 'customer' ? 'customer_rank' : 'supplier_rank';
+        $hasRankColumn = Schema::hasColumn('partners_partners', $rankColumn);
+
+        return $query->where(function (Builder $outer) use ($rankColumn, $hasRankColumn, $selectedId): void {
+            if ($selectedId) {
+                $outer->orWhere('partners_partners.id', $selectedId);
+            }
+
+            if ($hasRankColumn) {
+                $outer->orWhere("partners_partners.{$rankColumn}", '>', 0);
+            }
+
+            $outer->orWhere(function (Builder $clean): void {
+                $clean->where(function (Builder $sub): void {
+                    $sub->whereNull('partners_partners.sub_type')
+                        ->orWhereNotIn('partners_partners.sub_type', ['employee', 'invoice', 'delivery', 'other']);
+                });
+
+                if (Schema::hasTable('users') && Schema::hasColumn('users', 'partner_id')) {
+                    $clean->whereNotIn(
+                        'partners_partners.id',
+                        User::query()->whereNotNull('partner_id')->select('partner_id'),
+                    );
+                }
+
+                if (Schema::hasTable('employees_employees') && Schema::hasColumn('employees_employees', 'partner_id')) {
+                    $clean->whereNotIn(
+                        'partners_partners.id',
+                        DB::table('employees_employees')->whereNotNull('partner_id')->select('partner_id'),
+                    );
+                }
+
+                if (Schema::hasTable('companies') && Schema::hasColumn('companies', 'partner_id')) {
+                    $clean->whereNotIn(
+                        'partners_partners.id',
+                        Company::query()->whereNotNull('partner_id')->select('partner_id'),
+                    );
+                }
+            });
+        });
+    }
+
+    /**
+     * @see self::filterExternalPartnersQuery()
+     */
+    public static function filterExternalCustomersQuery(Builder $query, mixed $selectedId = null): Builder
+    {
+        return self::filterExternalPartnersQuery($query, 'customer', $selectedId);
+    }
+
+    /**
+     * @see self::filterExternalPartnersQuery()
+     */
+    public static function filterExternalVendorsQuery(Builder $query, mixed $selectedId = null): Builder
+    {
+        return self::filterExternalPartnersQuery($query, 'vendor', $selectedId);
     }
 }

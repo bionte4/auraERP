@@ -64,7 +64,14 @@ class PrintAndSendAction extends Action
                 return $schema->components([
                                         \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('partners_search'),
                                         CheckboxList::make('partners')
-                        ->options(fn (\Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::filterOptions(Partner::query()->orderBy('name')->pluck('name', 'id')->all(), $get, 'partners'))
+                        ->options(fn (\Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::filterOptions(
+                            Partner::filterExternalCustomersQuery(Partner::query())
+                                ->orderBy('partners_partners.name')
+                                ->pluck('partners_partners.name', 'partners_partners.id')
+                                ->all(),
+                            $get,
+                            'partners',
+                        ))
                         ->label(__('accounts::filament/resources/invoice/actions/print-and-send.modal.form.partners'))
                         
                         ->columns(2),
