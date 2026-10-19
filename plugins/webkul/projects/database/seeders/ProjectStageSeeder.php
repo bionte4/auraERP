@@ -13,43 +13,38 @@ class ProjectStageSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('projects_project_stages')->delete();
-
         $user = User::first();
 
-        DB::table('projects_project_stages')->insert([
-            [
-                'name'       => 'To Do',
+        $stages = [
+            ['name' => 'To Do', 'sort' => 1],
+            ['name' => 'In Progress', 'sort' => 2],
+            ['name' => 'Done', 'sort' => 3],
+            ['name' => 'Cancelled', 'sort' => 4],
+        ];
+
+        foreach ($stages as $stage) {
+            $existing = DB::table('projects_project_stages')->where('name', $stage['name'])->first();
+
+            if ($existing) {
+                DB::table('projects_project_stages')
+                    ->where('id', $existing->id)
+                    ->update([
+                        'is_active'  => true,
+                        'sort'       => $stage['sort'],
+                        'updated_at' => now(),
+                    ]);
+
+                continue;
+            }
+
+            DB::table('projects_project_stages')->insert([
+                'name'       => $stage['name'],
                 'is_active'  => true,
-                'sort'       => 1,
+                'sort'       => $stage['sort'],
                 'creator_id' => $user?->id,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ],
-            [
-                'name'       => 'In Progress',
-                'is_active'  => true,
-                'sort'       => 2,
-                'creator_id' => $user?->id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name'       => 'Done',
-                'is_active'  => true,
-                'sort'       => 3,
-                'creator_id' => $user?->id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name'       => 'Cancelled',
-                'is_active'  => true,
-                'sort'       => 4,
-                'creator_id' => $user?->id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
+            ]);
+        }
     }
 }

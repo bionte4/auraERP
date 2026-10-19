@@ -3,8 +3,8 @@
 | Field | Nilai |
 | :--- | :--- |
 | **Produk** | auraERP — customisasi operasional Opsora |
-| **Versi dokumen** | 1.0 |
-| **Tanggal** | 2026-10-18 |
+| **Versi dokumen** | 1.1 |
+| **Tanggal** | 2026-10-19 |
 | **Status** | Baseline produk (fitur utama sudah live / di-deploy) |
 | **Pemilik produk** | Opsora / auraERP ops |
 | **Referensi operasional** | [WORKING_INSTRUCTION.md](../WORKING_INSTRUCTION.md) |
@@ -62,8 +62,8 @@ Dokumen ini menetapkan *apa yang harus benar* di produk. Cara menjalankan menu d
 | Direksi / IT Admin | **Admin** | Akses penuh, audit, backup, IP block, integrasi, instalasi plugin |
 | HRD | **HRD** | Karyawan, absensi sites, cuti, performance/evaluation, dashboard evaluasi, laporan ops mingguan |
 | Manajer Operasional | **Operation Manager** | Proyek, assign karyawan, timesheet/task, laporan ops + **laporan klien**, evaluasi L1/L2, approval cuti/absensi tim |
-| Finance | **Accounting** | Invoice/bill/payment, partners/products terkait, My Day anggaran |
-| Kasir toko | **Kasir** | POS terminal, sesi, order; absensi; tanpa user management |
+| Finance | **Accounting** | Invoice/bill/payment, partners/products terkait, My Day, Team Board, lihat Project Dashboard / proyek (view) |
+| Kasir toko | **Kasir** | POS terminal, sesi, order; absensi; My Day; lihat/create partner & lihat produk; tanpa user management |
 | Karyawan lapangan / staf | **Staff** | Absensi, cuti sendiri, task/timesheet, lihat evaluasi sendiri — tanpa dashboard agregat |
 
 **Scope data (orthogonal ke role):**
@@ -184,11 +184,14 @@ ID memakai prefiks modul. Prioritas: **P0** harus ada / sudah ada; **P1** pentin
 | Laporan Proyek Klien | ✓ | — | ✓ | — | — | — |
 | Assign Project Employees | ✓ | — | ✓ | — | — | — |
 | Widget aksi OM | ✓ | — | ✓ | — | — | — |
+| Project Dashboard (view) | ✓ | — | ✓ | ✓ | — | — |
+| Team Board | ✓ | — | ✓ | ✓ | — | ✓ |
+| My Day | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | POS Terminal | ✓ | — | — | — | ✓ | — |
 | Sales / Purchase / Inventory penuh | ✓ | — | — | sebagian* | — | — |
 | Absensi clock | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 
-\*Accounting: invoice/bill/payment/partner/product terkait — bukan OM domain.
+\*Accounting: invoice/bill/payment/partner/product terkait + view proyek; bukan domain OM Sales/Inventory.
 
 ---
 

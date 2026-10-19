@@ -2,8 +2,9 @@
 
 | Field | Nilai |
 | :--- | :--- |
-| **Versi** | 1.0 |
-| **Tanggal** | 2026-10-18 |
+| **Versi** | 1.1 |
+| **Tanggal** | 2026-10-19 |
+| **Revisi** | Koreksi FK logical vs DB, tambah `attendances_tracks`, lengkapi audit/blocked IP & evaluasi director |
 | **Sumber** | Migrasi plugin `plugins/webkul/*` (bukan dump DB penuh) |
 | **Schema detail** | [DATABASE-SCHEMA.md](./DATABASE-SCHEMA.md) |
 | **PRD** | [PRD-auraERP.md](./PRD-auraERP.md) |
@@ -83,7 +84,6 @@ flowchart TB
 erDiagram
   companies ||--o{ users : "default_company"
   companies ||--o{ employees_employees : has
-  companies ||--o{ teams : has
 
   users ||--o{ model_has_roles : ""
   roles ||--o{ model_has_roles : ""
@@ -94,7 +94,7 @@ erDiagram
 
   users ||--o{ user_team : ""
   teams ||--o{ user_team : ""
-  projects_projects ||--o| teams : "teams.project_id"
+  projects_projects ||--o| teams : "project_id logical link"
 
   users ||--o| employees_employees : "Related User (1:1)"
   employees_departments ||--o{ employees_employees : department
@@ -132,7 +132,7 @@ erDiagram
   teams {
     bigint id PK
     string name
-    bigint project_id FK "nullable link ke proyek"
+    bigint project_id "index only, bukan FK DB"
   }
 
   employees_employees {
@@ -159,6 +159,7 @@ erDiagram
 erDiagram
   employees_employees ||--o{ attendances_attendances : clocks
   employees_employees ||--o| attendances_face_profiles : "1:1 descriptor"
+  attendances_attendances ||--o{ attendances_tracks : "GPS track points"
   attendances_sites ||--o{ attendances_attendances : "check_in_site"
   attendances_sites ||--o{ attendances_attendances : "check_out_site"
 
@@ -197,12 +198,23 @@ erDiagram
     json descriptor
   }
 
+  attendances_tracks {
+    bigint id PK
+    bigint attendance_id FK
+    datetime recorded_at
+    decimal latitude
+    decimal longitude
+    int accuracy
+  }
+
   time_off_leaves {
     bigint id PK
     bigint employee_id FK
     bigint holiday_status_id FK
+    bigint manager_id FK
     bigint first_approver_id FK
     bigint second_approver_id FK
+    bigint employee_company_id FK
     string state
     timestamp request_date_from
     timestamp request_date_to
@@ -222,7 +234,8 @@ erDiagram
   employees_employees ||--o{ evaluations_evaluations : "dinilai"
   employees_employees ||--o{ evaluations_evaluations : "reviewer L1"
   employees_employees ||--o{ evaluations_evaluations : "gm_approver L2"
-  performance_plans ||--o{ evaluations_evaluations : "linked plan"
+  employees_employees ||--o{ evaluations_evaluations : "director_approver"
+  performance_plans ||--o{ evaluations_evaluations : "plan_id logical link"
   evaluations_evaluations ||--o{ evaluations_ratings : "poin D aspek"
 
   performance_plans {
@@ -248,7 +261,8 @@ erDiagram
     bigint employee_id FK
     bigint reviewer_id FK
     bigint gm_approver_id FK
-    bigint performance_plan_id FK
+    bigint director_approver_id FK
+    bigint performance_plan_id "logical link, bukan FK DB"
     string title
     string evaluation_type
     string status
@@ -257,6 +271,7 @@ erDiagram
     timestamp employee_signed_at
     timestamp reviewer_signed_at
     timestamp gm_signed_at
+    timestamp director_signed_at
   }
 
   evaluations_ratings {
@@ -412,9 +427,12 @@ erDiagram
     string description
     string actor_type
     bigint actor_id
+    string actor_label
     string subject_type
     bigint subject_id
+    string subject_label
     string ip_address
+    text user_agent
     string guard
     json properties
     timestamp created_at
@@ -422,13 +440,16 @@ erDiagram
 
   security_blocked_ips {
     bigint id PK
-    string ip_address
-    timestamp blocked_until
+    string ip_address UK
+    int failed_attempts
     string reason
+    string last_email
+    timestamp blocked_until
+    timestamps created_updated
   }
 ```
 
-*(Morph `actor` / `subject` biasanya menunjuk `users` atau model terkait peristiwa.)*
+*(Morph `actor` / `subject` biasanya menunjuk `users` atau model terkait peristiwa. `teams.project_id` dan `evaluations.performance_plan_id` adalah tautan logis ber-index/kolom, **bukan** foreign key constraint DB.)*
 
 ---
 

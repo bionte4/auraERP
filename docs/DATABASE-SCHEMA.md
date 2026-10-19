@@ -2,8 +2,9 @@
 
 | Field | Nilai |
 | :--- | :--- |
-| **Versi** | 1.0 |
-| **Tanggal** | 2026-10-18 |
+| **Versi** | 1.1 |
+| **Tanggal** | 2026-10-19 |
+| **Revisi** | `attendances_tracks`, blocked IP lengkap, clarifikasi logical link vs FK |
 | **DB target** | PostgreSQL (produksi VPS) |
 | **Sumber kebenaran** | Migrasi di `plugins/webkul/*/database/migrations` |
 | **ERD** | [ERD-auraERP.md](./ERD-auraERP.md) |
@@ -46,8 +47,8 @@ Konvensi:
 
 | Kolom | Keterangan |
 | :--- | :--- |
-| `teams.id`, `teams.name` | Nama Tim (sering = nama Proyek) |
-| `teams.project_id` | FK opsional → `projects_projects` |
+| `teams.id`, `teams.name` | Nama Tim (sering = nama Proyek); **tanpa** `company_id` |
+| `teams.project_id` | `unsignedBigInteger` + index → `projects_projects` (**logical link**, bukan FK constraint) |
 | `user_team` | Pivot `user_id` ↔ `team_id` |
 
 ### `security_audit_trails`
@@ -65,6 +66,15 @@ Konvensi:
 ### `security_blocked_ips`
 
 IP yang diblokir sementara akibat brute-force login (lihat WI §1.F).
+
+| Kolom | Keterangan |
+| :--- | :--- |
+| `ip_address` | string(45) **UNIQUE** |
+| `failed_attempts` | uint, default 0 |
+| `reason` | nullable |
+| `last_email` | email terakhir yang gagal dari IP ini |
+| `blocked_until` | timestamp indexed, nullable |
+| `created_at`, `updated_at` | timestamps |
 
 ---
 
@@ -144,6 +154,19 @@ Master terkait: `employees_departments`, `employees_job_positions`, `employees_w
 | `employee_id` | UNIQUE FK |
 | `descriptor` | JSON embedding wajah |
 
+### `attendances_tracks`
+
+Titik jejak GPS terkait satu sesi absensi.
+
+| Kolom | Keterangan |
+| :--- | :--- |
+| `attendance_id` | FK → `attendances_attendances` cascade |
+| `recorded_at` | datetime |
+| `latitude`, `longitude` | decimal(10,7) |
+| `accuracy` | uint nullable |
+| `company_id` | nullable index |
+| Index | (`attendance_id`, `recorded_at`) |
+
 ---
 
 ## 5. Time Off
@@ -156,14 +179,17 @@ Jenis cuti/izin (`holiday_status`).
 
 | Kolom | Keterangan |
 | :--- | :--- |
-| `employee_id` | FK karyawan | 
+| `employee_id` | FK karyawan |
 | `user_id` | User pemohon |
+| `manager_id` | FK employees (manager terkait) |
 | `holiday_status_id` | FK tipe |
 | `first_approver_id`, `second_approver_id` | FK employees (L1/L2) |
 | `state` | Status approval |
 | `request_date_from`, `request_date_to` | Periode |
 | `number_of_days`, `number_of_hours` | Durasi |
 | `department_id`, `company_id` | Konteks org |
+| `employee_company_id` | FK companies (company karyawan) |
+| `calendar_id` | FK calendars nullable |
 
 Tabel terkait: `time_off_leave_allocations`, accrual plans/levels (lihat plugin `time-off`).
 
@@ -204,7 +230,7 @@ Tabel terkait: `time_off_leave_allocations`, accrual plans/levels (lihat plugin 
 | `is_final_period` | bool |
 | Snapshot | `employee_nik`, `join_date`, `grade_level`, `division_name`, `department_name`, `job_title_snapshot`, `work_location_name` |
 | `period_start`, `period_end` | |
-| `performance_plan_id` | Link goal setting |
+| `performance_plan_id` | Link goal setting (**logical**, tanpa FK constraint DB) |
 | `goal_achievement_percentage` | decimal |
 | `competencies_met_count`, `competencies_total_count` | |
 | `status` | `draft` → `in_progress` → `completed` (aplikasi) |
@@ -317,6 +343,8 @@ Tag/favorit: `projects_tags`, `projects_project_tag`, `projects_task_tag`, `proj
 | `projects_project_employees` | Unique (`project_id`, `employee_id`) |
 | `projects_task_users` | Unique (`task_id`, `user_id`) |
 | `pos_registers.code`, `pos_sessions.name`, `pos_orders.name` | Unique |
+| `pos_payment_methods.code` | Unique |
+| `security_blocked_ips.ip_address` | Unique |
 
 ---
 
