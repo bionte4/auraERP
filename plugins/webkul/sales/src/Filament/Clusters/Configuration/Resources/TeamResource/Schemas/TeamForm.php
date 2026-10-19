@@ -4,13 +4,13 @@ namespace Webkul\Sale\Filament\Clusters\Configuration\Resources\TeamResource\Sch
 
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 
 class TeamForm
 {
@@ -53,12 +53,13 @@ class TeamForm
                                 ColorPicker::make('color')
                                     ->label(__('sales::filament/clusters/configurations/resources/team.form.sections.fields.fieldset.team-details.fields.color'))
                                     ->hexColor(),
-                                CheckboxList::make('sales_team_members')
-                                    ->relationship('members', 'name')
-                                    ->label(__('sales::filament/clusters/configurations/resources/team.form.sections.fields.fieldset.team-details.fields.members'))
-                                    ->searchable()
-                                    ->bulkToggleable()
-                                    ->columns(2),
+                                ...LivewireSearchableCheckboxList::make(
+                                    name: 'sales_team_members',
+                                    relationship: 'members',
+                                    titleAttribute: 'name',
+                                    label: __('sales::filament/clusters/configurations/resources/team.form.sections.fields.fieldset.team-details.fields.members'),
+                                    searchPlaceholder: __('Search members...'),
+                                ),
                             ])->columns(2),
                         Toggle::make('is_active')
                             ->inline(false)

@@ -2,6 +2,7 @@
 
 namespace Webkul\Manufacturing\Filament\Clusters\Products\Resources\BillsOfMaterialResource\Schemas;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use BackedEnum;
 use Closure;
 use Filament\Actions\Action;
@@ -415,7 +416,8 @@ class BillOfMaterialForm
                     ->default(fn (Get $get): ?int => Product::query()->withTrashed()->find($get('product_id'))?->uom_id)
                     ->preload()
                     ->required(),
-                CheckboxList::make('attributeValues')
+                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('attributeValues_search'),
+                                CheckboxList::make('attributeValues')
                     ->label(__('manufacturing::filament/clusters/products/resources/bill-of-material.form.tabs.components.columns.apply-on-variants'))
                     ->relationship(
                         name: 'attributeValues',
@@ -427,8 +429,7 @@ class BillOfMaterialForm
                         },
                     )
                     ->getOptionLabelFromRecordUsing(fn ($record): string => $record->attribute?->name && $record->attributeOption?->name ? "{$record->attribute->name}: {$record->attributeOption->name}" : ($record->attributeOption?->name ?? (string) $record->id))
-                    ->searchable()
-                    ->bulkToggleable()
+                    
                     ->columns(2),
                 Select::make('operation_id')
                     ->relationship('operation', 'name')
@@ -595,7 +596,8 @@ class BillOfMaterialForm
 
                         return Company::query()->find($companyId)?->name ?? '—';
                     }),
-                CheckboxList::make('attributeValues')
+                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('attributeValues_search'),
+                                CheckboxList::make('attributeValues')
                     ->label(__('manufacturing::filament/clusters/products/resources/bill-of-material.form.tabs.operations.columns.apply-on-variants'))
                     ->hidden()
                     ->relationship(
@@ -614,8 +616,7 @@ class BillOfMaterialForm
                         }
                     )
                     ->getOptionLabelFromRecordUsing(fn ($record): string => $record->attribute?->name && $record->attributeOption?->name ? "{$record->attribute->name}: {$record->attributeOption->name}" : ($record->attributeOption?->name ?? (string) $record->id))
-                    ->searchable()
-                    ->bulkToggleable()
+                    
                     ->columns(2),
                 TextEntry::make('display_attribute_values')
                     ->hiddenLabel()

@@ -2,6 +2,7 @@
 
 namespace Webkul\Recruitment\Filament\Clusters\Configurations\Resources\JobPositionResource\Schemas;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\RichEditor;
@@ -110,12 +111,13 @@ class JobPositionForm
                                                     ->modalIcon('heroicon-o-user')
                                                     ->modalHeading(__('recruitments::filament/clusters/configurations/resources/job-position.form.sections.employment-information.fields.recruiter-modal-title'));
                                             }),
-                                        CheckboxList::make('recruitments_job_position_interviewers')
+                                                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('recruitments_job_position_interviewers_search'),
+                                                                                CheckboxList::make('recruitments_job_position_interviewers')
                                             ->label(__('recruitments::filament/clusters/configurations/resources/job-position.form.sections.employment-information.fields.interviewers'))
-                                            ->relationship(name: 'interviewers', titleAttribute: 'name')
+                                            ->relationship(name: 'interviewers', titleAttribute: 'name',
+                                    modifyQueryUsing: fn (\Illuminate\Database\Eloquent\Builder $query, \Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query, $get, 'recruitments_job_position_interviewers', 'name'))
                                             ->live()
-                                            ->searchable()
-                                            ->bulkToggleable()
+                                            
                                             ->columns(2),
                                         Select::make('address_id')
                                             ->label(__('recruitments::filament/clusters/configurations/resources/job-position.form.sections.employment-information.fields.job-location'))
@@ -173,11 +175,12 @@ class JobPositionForm
                                             ->dehydrated(false),
                                         TextInput::make('no_of_hired_employee')
                                             ->disabled(),
-                                        CheckboxList::make('job_position_skills')
+                                                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('job_position_skills_search'),
+                                                                                CheckboxList::make('job_position_skills')
                                             ->label(__('recruitments::filament/clusters/configurations/resources/job-position.form.sections.workforce-planning.fields.expected-skills'))
-                                            ->relationship('skills', 'name')
-                                            ->searchable()
-                                            ->bulkToggleable()
+                                            ->relationship('skills', 'name',
+                                    fn (\Illuminate\Database\Eloquent\Builder $query, \Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query, $get, 'job_position_skills', 'name'))
+                                            
                                             ->columns(2),
                                         Select::make('employment_type_id')
                                             ->label(__('recruitments::filament/clusters/configurations/resources/job-position.form.sections.workforce-planning.fields.employment-type'))

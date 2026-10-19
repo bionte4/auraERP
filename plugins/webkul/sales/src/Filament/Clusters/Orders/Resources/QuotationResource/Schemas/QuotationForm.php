@@ -2,6 +2,7 @@
 
 namespace Webkul\Sale\Filament\Clusters\Orders\Resources\QuotationResource\Schemas;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
@@ -201,11 +202,12 @@ class QuotationForm
                                             ->label(__('sales::filament/clusters/orders/resources/quotation.form.tabs.other-information.fieldset.sales.fields.sales-person')),
                                         TextInput::make('client_order_ref')
                                             ->label(__('sales::filament/clusters/orders/resources/quotation.form.tabs.other-information.fieldset.sales.fields.customer-reference')),
-                                        CheckboxList::make('sales_order_tags')
+                                                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('sales_order_tags_search'),
+                                                                                CheckboxList::make('sales_order_tags')
                                             ->label(__('sales::filament/clusters/orders/resources/quotation.form.tabs.other-information.fieldset.sales.fields.tags'))
-                                            ->relationship('tags', 'name')
-                                            ->searchable()
-                                            ->bulkToggleable()
+                                            ->relationship('tags', 'name',
+                                    fn (\Illuminate\Database\Eloquent\Builder $query, \Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query, $get, 'sales_order_tags', 'name'))
+                                            
                                             ->columns(2),
                                     ]),
                                 Fieldset::make(__('sales::filament/clusters/orders/resources/quotation.form.tabs.other-information.fieldset.shipping.title'))
@@ -666,20 +668,19 @@ class QuotationForm
                     ->maxValue(100)
                     ->visible(fn (PriceSettings $settings) => $settings->enable_margin)
                     ->readonly(),
-                CheckboxList::make('taxes')
+                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('taxes_search'),
+                                CheckboxList::make('taxes')
                     ->label(__('sales::filament/clusters/orders/resources/quotation.form.tabs.order-line.repeater.products.fields.taxes'))
                     ->relationship(
                         'taxes',
                         'name',
-                        fn (Builder $query, Get $get) => $query
+                        fn (Builder $query, Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query
                             ->where('type_tax_use', TypeTaxUse::SALE)
-                            ->where(owned_by_company($get('../../company_id'))),
-                    )
+                            ->where(owned_by_company($get('../../company_id'))), $get, 'taxes', 'name'))
                     ->afterStateUpdated(fn (Get $get, Set $set) => self::calculateLineTotals($set, $get))
                     ->live()
                     ->disableOptionWhen(fn ($value): bool => $record?->locked || in_array($record?->state, [OrderState::CANCEL]))
-                    ->searchable()
-                    ->bulkToggleable()
+                    
                     ->columns(2),
                 TextInput::make('discount')
                     ->label(__('sales::filament/clusters/orders/resources/quotation.form.tabs.order-line.repeater.products.fields.discount-percentage'))

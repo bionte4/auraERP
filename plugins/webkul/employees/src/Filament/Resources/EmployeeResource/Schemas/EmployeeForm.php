@@ -2,6 +2,7 @@
 
 namespace Webkul\Employee\Filament\Resources\EmployeeResource\Schemas;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Filament\Actions\Action;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\DatePicker;
@@ -147,10 +148,11 @@ class EmployeeForm
                                     ->suffixIcon('heroicon-o-user')
                                     ->label(__('employees::filament/resources/employee.form.sections.fields.manager')),
                                 // CheckboxList — Select multiple/searchable forces Alpine and can render empty.
-                                CheckboxList::make('employees_employee_categories')
-                                    ->relationship('categories', 'name')
-                                    ->searchable()
-                                    ->bulkToggleable()
+                                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('employees_employee_categories_search'),
+                                                                CheckboxList::make('employees_employee_categories')
+                                    ->relationship('categories', 'name',
+                                    fn (\Illuminate\Database\Eloquent\Builder $query, \Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query, $get, 'employees_employee_categories', 'name'))
+                                    
                                     ->columns(2)
                                     ->label(__('employees::filament/resources/employee.form.sections.fields.employee-tags')),
                                 Select::make('coach_id')

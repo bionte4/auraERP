@@ -2,6 +2,7 @@
 
 namespace Webkul\Inventory\Filament\Clusters\Configurations\Resources\ProductCategoryResource\Schemas;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Schemas\Components\Fieldset;
@@ -24,11 +25,12 @@ class ProductCategoryForm
             ->schema([
                 Fieldset::make(__('inventories::filament/clusters/configurations/resources/product-category.form.sections.inventory.fieldsets.logistics.title'))
                     ->schema([
-                        CheckboxList::make('routes')
+                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('routes_search'),
+                                                CheckboxList::make('routes')
                             ->label(__('inventories::filament/clusters/configurations/resources/product-category.form.sections.inventory.fieldsets.logistics.fields.routes'))
-                            ->relationship('routes', 'name')
-                            ->searchable()
-                            ->bulkToggleable()
+                            ->relationship('routes', 'name',
+                                    fn (\Illuminate\Database\Eloquent\Builder $query, \Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query, $get, 'routes', 'name'))
+                            
                             ->columns(2),
                     ])
                     ->columns(1),

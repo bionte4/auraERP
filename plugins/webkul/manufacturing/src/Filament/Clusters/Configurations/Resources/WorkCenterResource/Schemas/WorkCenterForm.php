@@ -2,6 +2,7 @@
 
 namespace Webkul\Manufacturing\Filament\Clusters\Configurations\Resources\WorkCenterResource\Schemas;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\CheckboxList;
@@ -45,22 +46,22 @@ class WorkCenterForm
                                     ->maxLength(255)
                                     ->placeholder(__('manufacturing::filament/clusters/configurations/resources/work-center.form.sections.general.fields.code-placeholder')),
 
-                                CheckboxList::make('tags')
+                                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('tags_search'),
+                                                                CheckboxList::make('tags')
                                     ->label(__('manufacturing::filament/clusters/configurations/resources/work-center.form.sections.general.fields.tags'))
-                                    ->relationship('tags', 'name')
-                                    ->searchable()
-                                    ->bulkToggleable()
+                                    ->relationship('tags', 'name',
+                                    fn (\Illuminate\Database\Eloquent\Builder $query, \Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query, $get, 'tags', 'name'))
+                                    
                                     ->columns(2),
 
-                                CheckboxList::make('alternativeWorkCenters')
+                                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('alternativeWorkCenters_search'),
+                                                                CheckboxList::make('alternativeWorkCenters')
                                     ->label(__('manufacturing::filament/clusters/configurations/resources/work-center.form.sections.general.fields.alternative-work-centers'))
                                     ->relationship(
                                         'alternativeWorkCenters',
                                         'name',
-                                        modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(owned_by_company($get('company_id'))),
-                                    )
-                                    ->searchable()
-                                    ->bulkToggleable()
+                                        modifyQueryUsing: fn (Builder $query, Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query->where(owned_by_company($get('company_id'))), $get, 'alternativeWorkCenters', 'name'))
+                                    
                                     ->columns(2),
 
                                 Select::make('calendar_id')

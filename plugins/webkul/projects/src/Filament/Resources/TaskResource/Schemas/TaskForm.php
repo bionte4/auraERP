@@ -2,6 +2,7 @@
 
 namespace Webkul\Project\Filament\Resources\TaskResource\Schemas;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
@@ -58,11 +59,12 @@ class TaskForm
                                     ->options(TaskState::options())
                                     ->colors(TaskState::colors())
                                     ->icons(TaskState::icons()),
-                                CheckboxList::make('tags')
+                                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('tags_search'),
+                                                                CheckboxList::make('tags')
                                     ->label(__('projects::filament/resources/task.form.sections.general.fields.tags'))
-                                    ->relationship(name: 'tags', titleAttribute: 'name')
-                                    ->searchable()
-                                    ->bulkToggleable()
+                                    ->relationship(name: 'tags', titleAttribute: 'name',
+                                    modifyQueryUsing: fn (\Illuminate\Database\Eloquent\Builder $query, \Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query, $get, 'tags', 'name'))
+                                    
                                     ->columns(2),
                                 RichEditor::make('description')
                                     ->label(__('projects::filament/resources/task.form.sections.general.fields.description')),
@@ -140,11 +142,12 @@ class TaskForm
                                     ->preload()
                                     ->createOptionForm(fn (Schema $schema): Schema => PartnerResource::form($schema))
                                     ->editOptionForm(fn (Schema $schema): Schema => PartnerResource::form($schema)),
-                                CheckboxList::make('users')
+                                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('users_search'),
+                                                                CheckboxList::make('users')
                                     ->label(__('projects::filament/resources/task.form.sections.settings.fields.assignees'))
-                                    ->relationship('users', 'name')
-                                    ->searchable()
-                                    ->bulkToggleable()
+                                    ->relationship('users', 'name',
+                                    fn (\Illuminate\Database\Eloquent\Builder $query, \Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query, $get, 'users', 'name'))
+                                    
                                     ->columns(2),
                                 DateTimePicker::make('deadline')
                                     ->label(__('projects::filament/resources/task.form.sections.settings.fields.deadline'))

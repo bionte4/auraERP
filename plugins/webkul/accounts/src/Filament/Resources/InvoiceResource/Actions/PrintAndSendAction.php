@@ -2,6 +2,7 @@
 
 namespace Webkul\Account\Filament\Resources\InvoiceResource\Actions;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
@@ -61,11 +62,11 @@ class PrintAndSendAction extends Action
         $this->schema(
             function (Schema $schema) {
                 return $schema->components([
-                    CheckboxList::make('partners')
-                        ->options(Partner::all()->pluck('name', 'id'))
+                                        \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('partners_search'),
+                                        CheckboxList::make('partners')
+                        ->options(fn (\Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::filterOptions((array) (Partner::all()->pluck('name', 'id')), $get, 'partners'))
                         ->label(__('accounts::filament/resources/invoice/actions/print-and-send.modal.form.partners'))
-                        ->searchable()
-                        ->bulkToggleable()
+                        
                         ->columns(2),
                     TextInput::make('subject')
                         ->label(__('accounts::filament/resources/invoice/actions/print-and-send.modal.form.subject'))

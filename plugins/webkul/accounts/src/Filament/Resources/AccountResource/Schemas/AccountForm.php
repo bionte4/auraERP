@@ -2,6 +2,7 @@
 
 namespace Webkul\Account\Filament\Resources\AccountResource\Schemas;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
@@ -85,25 +86,28 @@ class AccountForm
                                     ->helperText(__('accounts::filament/resources/account.form.sections.fields.parent-account-helper'))
                                     ->preload()
                                     ,
-                                CheckboxList::make('invoices_account_tax')
-                                    ->relationship('taxes', 'name')
+                                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('invoices_account_tax_search'),
+                                                                CheckboxList::make('invoices_account_tax')
+                                    ->relationship('taxes', 'name',
+                                    fn (\Illuminate\Database\Eloquent\Builder $query, \Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query, $get, 'invoices_account_tax', 'name'))
                                     ->label(__('accounts::filament/resources/account.form.sections.fields.default-taxes'))
                                     ->hidden(fn (Get $get) => $get('account_type') === AccountType::OFF_BALANCE->value)
-                                    ->searchable()
-                                    ->bulkToggleable()
+                                    
                                     ->columns(2),
-                                CheckboxList::make('invoices_account_account_tags')
-                                    ->relationship('tags', 'name')
+                                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('invoices_account_account_tags_search'),
+                                                                CheckboxList::make('invoices_account_account_tags')
+                                    ->relationship('tags', 'name',
+                                    fn (\Illuminate\Database\Eloquent\Builder $query, \Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query, $get, 'invoices_account_account_tags', 'name'))
                                     ->label(__('accounts::filament/resources/account.form.sections.fields.tags'))
-                                    ->searchable()
-                                    ->bulkToggleable()
+                                    
                                     ->columns(2),
-                                CheckboxList::make('invoices_account_journals')
-                                    ->relationship('journals', 'name')
+                                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('invoices_account_journals_search'),
+                                                                CheckboxList::make('invoices_account_journals')
+                                    ->relationship('journals', 'name',
+                                    fn (\Illuminate\Database\Eloquent\Builder $query, \Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query, $get, 'invoices_account_journals', 'name'))
                                     ->label(__('accounts::filament/resources/account.form.sections.fields.journals'))
                                     ->helperText(__('accounts::filament/resources/account.form.sections.fields.journals-helper'))
-                                    ->searchable()
-                                    ->bulkToggleable()
+                                    
                                     ->columns(2),
                                 Select::make('currency_id')
                                     ->relationship(
@@ -114,12 +118,13 @@ class AccountForm
                                     ->preload()
                                     ->label(__('accounts::filament/resources/account.form.sections.fields.currency'))
                                     ,
-                                CheckboxList::make('companies')
+                                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('companies_search'),
+                                                                CheckboxList::make('companies')
                                     ->label(__('accounts::filament/resources/account.form.sections.fields.companies'))
-                                    ->relationship('companies', 'name')
+                                    ->relationship('companies', 'name',
+                                    fn (\Illuminate\Database\Eloquent\Builder $query, \Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query, $get, 'companies', 'name'))
                                     ->required()
-                                    ->searchable()
-                                    ->bulkToggleable()
+                                    
                                     ->columns(2),
                                 Toggle::make('deprecated')
                                     ->inline(false)

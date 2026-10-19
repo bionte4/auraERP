@@ -2,6 +2,7 @@
 
 namespace Webkul\Purchase\Filament\Admin\Clusters\Orders\Resources\OrderResource\Actions;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Exception;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
@@ -31,17 +32,16 @@ class SendPOEmailAction extends Action
         $this
             ->label(fn (Order $record) => __('purchases::filament/admin/clusters/orders/resources/order/actions/send-po-email.label'))
             ->schema(fn (Order $record) => [
-                CheckboxList::make('vendors')
+                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('vendors_search'),
+                                CheckboxList::make('vendors')
                     ->label(__('purchases::filament/admin/clusters/orders/resources/order/actions/send-po-email.form.fields.to'))
-                    ->options(fn () => Partner::get()->mapWithKeys(fn ($partner) => [
+                    ->options(fn (\Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::filterOptions((array) (Partner::get()->mapWithKeys(fn ($partner) => [
                         $partner->id => $partner->email
                             ? "{$partner->name} <{$partner->email}>"
                             : $partner->name,
-                    ])->toArray())
-
+                    ])->toArray()), $get, 'vendors'))
                     ->default([$record->partner_id])
-                    ->searchable()
-                    ->bulkToggleable()
+                    
                     ->columns(2),
 
                 TextInput::make('subject')

@@ -2,6 +2,7 @@
 
 namespace Webkul\Manufacturing\Filament\Clusters\Configurations\Resources\OperationResource\Schemas;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
@@ -69,7 +70,8 @@ class OperationForm
                                     ->createOptionForm(fn (Schema $schema): Schema => WorkCenterResource::form($schema))
                                     ->createOptionAction(fn (Action $action) => $action->modalWidth(Width::SevenExtraLarge)),
 
-                                CheckboxList::make('attributeValues')
+                                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('attributeValues_search'),
+                                                                CheckboxList::make('attributeValues')
                                     ->label(__('manufacturing::filament/clusters/configurations/resources/operation.form.sections.general.fields.apply-on-variants'))
                                     ->relationship(
                                         'attributeValues',
@@ -91,19 +93,17 @@ class OperationForm
                                         }
                                     )
                                     ->getOptionLabelFromRecordUsing(fn (ProductAttributeValue $record): string => $record->attributeOption?->name ?? (string) $record->id)
-                                    ->searchable()
-                                    ->bulkToggleable()
+                                    
                                     ->columns(2),
 
-                                CheckboxList::make('blockedByOperations')
+                                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('blockedByOperations_search'),
+                                                                CheckboxList::make('blockedByOperations')
                                     ->label(__('manufacturing::filament/clusters/configurations/resources/operation.form.sections.general.fields.blocked-by'))
                                     ->relationship(
                                         'blockedByOperations',
                                         'name',
-                                        modifyQueryUsing: fn (Get $get, Builder $query) => $query->where('id', '!=', $get('id'))->where('bill_of_material_id', $get('bill_of_material_id'))
-                                    )
-                                    ->searchable()
-                                    ->bulkToggleable()
+                                        modifyQueryUsing: fn (Get $get, Builder $query) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query->where('id', '!=', $get('id'))->where('bill_of_material_id', $get('bill_of_material_id')), $get, 'blockedByOperations', 'name'))
+                                    
                                     ->columns(2),
 
                                 TextEntry::make('company')

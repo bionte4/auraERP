@@ -2,6 +2,7 @@
 
 namespace Webkul\Inventory\Filament\Clusters\Operations\Resources\ScrapResource\Schemas;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\CheckboxList;
@@ -133,11 +134,12 @@ class ScrapForm
                                                         return $data;
                                                     });
                                             }),
-                                        CheckboxList::make('tags')
+                                                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('tags_search'),
+                                                                                CheckboxList::make('tags')
                                             ->label(__('inventories::filament/clusters/operations/resources/scrap.form.sections.general.fields.tags'))
-                                            ->relationship(name: 'tags', titleAttribute: 'name')
-                                            ->searchable()
-                                            ->bulkToggleable()
+                                            ->relationship(name: 'tags', titleAttribute: 'name',
+                                    modifyQueryUsing: fn (\Illuminate\Database\Eloquent\Builder $query, \Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query, $get, 'tags', 'name'))
+                                            
                                             ->columns(2),
                                     ]),
 

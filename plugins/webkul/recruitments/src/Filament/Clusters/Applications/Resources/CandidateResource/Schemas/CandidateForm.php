@@ -2,6 +2,7 @@
 
 namespace Webkul\Recruitment\Filament\Clusters\Applications\Resources\CandidateResource\Schemas;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\CheckboxList;
@@ -48,11 +49,12 @@ class CandidateForm
                                     ->relationship('degree', 'name')
                                     ->preload()
                                     ->label(__('recruitments::filament/clusters/applications/resources/candidate.form.sections.additional-details.fields.degree')),
-                                CheckboxList::make('recruitments_candidate_categories')
-                                    ->relationship('categories', 'name')
+                                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('recruitments_candidate_categories_search'),
+                                                                CheckboxList::make('recruitments_candidate_categories')
+                                    ->relationship('categories', 'name',
+                                    fn (\Illuminate\Database\Eloquent\Builder $query, \Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query, $get, 'recruitments_candidate_categories', 'name'))
                                     ->label(__('recruitments::filament/clusters/applications/resources/candidate.form.sections.additional-details.fields.tags'))
-                                    ->searchable()
-                                    ->bulkToggleable()
+                                    
                                     ->columns(2),
                                 Select::make('manager_id')
                                     ->relationship('manager', 'name')

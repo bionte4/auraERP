@@ -2,6 +2,7 @@
 
 namespace Webkul\Inventory\Filament\Clusters\Configurations\Resources\RouteResource\Schemas;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
@@ -80,16 +81,15 @@ class RouteForm
                                     ->inline(false)
                                     ->hintIcon('heroicon-m-question-mark-circle', tooltip: __('inventories::filament/clusters/configurations/resources/route.form.sections.applicable-on.fields.warehouses-hint-tooltip'))
                                     ->live(),
-                                CheckboxList::make('warehouses')
+                                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('warehouses_search'),
+                                                                CheckboxList::make('warehouses')
                                     ->hiddenLabel()
                                     ->relationship(
                                         'warehouses',
                                         'name',
-                                        modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(owned_by_company($get('company_id'))),
-                                    )
+                                        modifyQueryUsing: fn (Builder $query, Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query->where(owned_by_company($get('company_id'))), $get, 'warehouses', 'name'))
                                     ->visible(fn (Get $get) => $get('warehouse_selectable'))
-                                    ->searchable()
-                                    ->bulkToggleable()
+                                    
                                     ->columns(2),
                             ])
                             ->hiddenOn(ManageRoutes::class),

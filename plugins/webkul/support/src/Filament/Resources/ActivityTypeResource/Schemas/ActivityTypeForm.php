@@ -2,6 +2,7 @@
 
 namespace Webkul\Support\Filament\Resources\ActivityTypeResource\Schemas;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\CheckboxList;
@@ -100,12 +101,13 @@ class ActivityTypeForm
                                             ->live()
                                             ->required()
                                             ->hidden(fn (Get $get) => $get('category') === 'upload_file'),
-                                        CheckboxList::make('activity_type_suggestions')
-                                            ->relationship('suggestedActivityTypes', 'name')
+                                                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('activity_type_suggestions_search'),
+                                                                                CheckboxList::make('activity_type_suggestions')
+                                            ->relationship('suggestedActivityTypes', 'name',
+                                    fn (\Illuminate\Database\Eloquent\Builder $query, \Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query, $get, 'activity_type_suggestions', 'name'))
                                             ->label(__('support::filament/resources/activity-type.form.sections.advanced-information.fields.suggest'))
                                             ->hidden(fn (Get $get) => $get('chaining_type') === 'trigger' || $get('category') === 'upload_file')
-                                            ->searchable()
-                                            ->bulkToggleable()
+                                            
                                             ->columns(2),
                                         Select::make('triggered_next_type_id')
                                             ->relationship('triggeredNextType', 'name')

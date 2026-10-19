@@ -2,6 +2,7 @@
 
 namespace Webkul\Account\Filament\Resources\BillResource\Schemas;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
@@ -498,22 +499,21 @@ class BillForm
                     ->dehydrated()
                     ->disabled(fn ($record) => in_array($record?->parent_state, [MoveState::POSTED, MoveState::CANCEL]))
                     ->afterStateUpdated(fn (Set $set, Get $get) => self::calculateLineTotals($set, $get)),
-                CheckboxList::make('taxes')
+                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('taxes_search'),
+                                CheckboxList::make('taxes')
                     ->label(__('accounts::filament/resources/bill.form.tabs.invoice-lines.repeater.products.fields.taxes'))
                     ->relationship(
                         'taxes',
                         'name',
-                        modifyQueryUsing: fn (Builder $query, Get $get) => $query
+                        modifyQueryUsing: fn (Builder $query, Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query
                             ->where('type_tax_use', TypeTaxUse::PURCHASE)
-                            ->where(owned_by_company($get('../../company_id'))),
-                    )
+                            ->where(owned_by_company($get('../../company_id'))), $get, 'taxes', 'name'))
                     ->dehydrated()
                     ->disabled(fn ($record) => in_array($record?->parent_state, [MoveState::POSTED, MoveState::CANCEL]))
                     ->afterStateHydrated(fn (Get $get, Set $set) => self::calculateLineTotals($set, $get))
                     ->afterStateUpdated(fn (Get $get, Set $set) => self::calculateLineTotals($set, $get))
                     ->live()
-                    ->searchable()
-                    ->bulkToggleable()
+                    
                     ->columns(2),
                 TextInput::make('price_subtotal')
                     ->label(__('accounts::filament/resources/bill.form.tabs.invoice-lines.repeater.products.fields.sub-total'))

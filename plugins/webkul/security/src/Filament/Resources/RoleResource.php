@@ -11,8 +11,10 @@ use Filament\Forms\Components\Select;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
@@ -27,6 +29,7 @@ use Webkul\Security\Filament\Resources\RoleResource\Schemas\RoleForm;
 use Webkul\Security\Filament\Resources\RoleResource\Tables\RolesTable;
 use Webkul\Security\Models\Role;
 use Webkul\Support\Enums\NavigationGroup;
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 
 class RoleResource extends RolesRoleResource
 {
@@ -319,11 +322,15 @@ class RoleResource extends RolesRoleResource
         array|int|string|null $columns = null,
         array|int|string|null $columnSpan = null
     ): Component {
-        return CheckboxList::make($name)
+        $list = CheckboxList::make($name)
             ->hiddenLabel()
-            ->options(fn (): array => $options)
-            ->searchable($searchable)
-            ->bulkToggleable()
+            ->options(function (Get $get) use ($name, $options, $searchable): array {
+                if (! $searchable) {
+                    return $options;
+                }
+
+                return LivewireSearchableCheckboxList::filterOptions($options, $get, $name);
+            })
             ->afterStateHydrated(function (Component $component, string $operation, ?Model $record) use ($options): void {
                 static::setPermissionStateForRecordPermissions(
                     component: $component,
@@ -336,6 +343,15 @@ class RoleResource extends RolesRoleResource
             ->gridDirection('row')
             ->columns($columns ?? static::shield()->getCheckboxListColumns())
             ->columnSpan($columnSpan ?? static::shield()->getCheckboxListColumnSpan());
+
+        if (! $searchable) {
+            return $list;
+        }
+
+        return Group::make([
+            LivewireSearchableCheckboxList::searchInput($name.'_search', __('Search permissions...')),
+            $list,
+        ]);
     }
 
     public static function setPermissionStateForRecordPermissions(Component $component, string $operation, array $permissions, ?Model $record): void

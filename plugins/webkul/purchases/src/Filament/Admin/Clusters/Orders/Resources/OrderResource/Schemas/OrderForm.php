@@ -2,6 +2,7 @@
 
 namespace Webkul\Purchase\Filament\Admin\Clusters\Orders\Resources\OrderResource\Schemas;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
@@ -601,22 +602,21 @@ class OrderForm
                     })
                     ->disabled(fn (): bool => in_array($record?->state, [OrderState::DONE, OrderState::CANCELED])),
 
-                CheckboxList::make('taxes')
+                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('taxes_search'),
+                                CheckboxList::make('taxes')
                     ->label(__('purchases::filament/admin/clusters/orders/resources/order.form.tabs.products.repeater.products.fields.taxes'))
                     ->relationship(
                         'taxes',
                         'name',
-                        modifyQueryUsing: fn (Builder $query, Get $get) => $query
+                        modifyQueryUsing: fn (Builder $query, Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query
                             ->where('type_tax_use', TypeTaxUse::PURCHASE)
-                            ->where(owned_by_company($get('../../company_id'))),
-                    )
+                            ->where(owned_by_company($get('../../company_id'))), $get, 'taxes', 'name'))
                     ->afterStateUpdated(function (Get $get, Set $set, $state) {
                         self::calculateLineTotals($set, $get);
                     })
                     ->live()
                     ->disabled(fn (): bool => in_array($record?->state, [OrderState::DONE, OrderState::CANCELED]))
-                    ->searchable()
-                    ->bulkToggleable()
+                    
                     ->columns(2),
 
                 TextInput::make('discount')

@@ -2,6 +2,7 @@
 
 namespace Webkul\Recruitment\Filament\Clusters\Configurations\Resources\StageResource\Schemas;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\CheckboxList;
@@ -60,12 +61,12 @@ class StageForm
                                 ]),
                             Section::make(__('recruitments::filament/clusters/configurations/resources/stage.form.sections.additional-information.title'))
                                 ->schema([
-                                    CheckboxList::make('recruitments_job_positions')
-                                        ->relationship('jobs', 'name')
-
+                                                                        \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('recruitments_job_positions_search'),
+                                                                        CheckboxList::make('recruitments_job_positions')
+                                        ->relationship('jobs', 'name',
+                                    fn (\Illuminate\Database\Eloquent\Builder $query, \Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query, $get, 'recruitments_job_positions', 'name'))
                                         ->label(__('recruitments::filament/clusters/configurations/resources/stage.form.sections.additional-information.fields.job-positions'))
-                                        ->searchable()
-                                        ->bulkToggleable()
+                                        
                                         ->columns(2),
                                     Toggle::make('fold')
                                         ->label(__('recruitments::filament/clusters/configurations/resources/stage.form.sections.additional-information.fields.folded')),

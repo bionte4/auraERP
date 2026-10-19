@@ -2,6 +2,7 @@
 
 namespace Webkul\Account\Filament\Resources\ProductResource\Schemas;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\CheckboxList;
@@ -29,12 +30,12 @@ class AccountProductSchema
     public static function taxFields(): array
     {
         return [
-            CheckboxList::make('accounts_product_taxes')
+                        \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('accounts_product_taxes_search'),
+                        CheckboxList::make('accounts_product_taxes')
                 ->relationship(
                     'productTaxes',
                     'name',
-                    modifyQueryUsing: fn ($query) => $query->where('type_tax_use', TypeTaxUse::SALE),
-                )
+                    modifyQueryUsing: fn ($query) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query->where('type_tax_use', TypeTaxUse::SALE), $get, 'accounts_product_taxes', 'name'))
                 ->live()
                 ->helperText(function (Get $get) {
                     $price = floatval($get('price'));
@@ -93,19 +94,17 @@ class AccountProductSchema
 
                     return ! empty($parts) ? '(= '.implode(', ', $parts).')' : ' ';
                 })
-                ->searchable()
-                ->bulkToggleable()
+                
                 ->columns(2),
 
-            CheckboxList::make('accounts_product_supplier_taxes')
+                        \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('accounts_product_supplier_taxes_search'),
+                        CheckboxList::make('accounts_product_supplier_taxes')
                 ->relationship(
                     'supplierTaxes',
                     'name',
-                    modifyQueryUsing: fn ($query) => $query->where('type_tax_use', TypeTaxUse::PURCHASE),
-                )
+                    modifyQueryUsing: fn ($query) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query->where('type_tax_use', TypeTaxUse::PURCHASE), $get, 'accounts_product_supplier_taxes', 'name'))
                 ->live()
-                ->searchable()
-                ->bulkToggleable()
+                
                 ->columns(2),
         ];
     }

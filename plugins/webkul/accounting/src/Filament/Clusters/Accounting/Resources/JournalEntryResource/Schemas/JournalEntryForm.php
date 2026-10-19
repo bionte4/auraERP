@@ -2,6 +2,7 @@
 
 namespace Webkul\Accounting\Filament\Clusters\Accounting\Resources\JournalEntryResource\Schemas;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
@@ -288,23 +289,21 @@ class JournalEntryForm
                     ->wrapOptionLabels(false)
                     ->afterStateUpdated(fn (Set $set, Get $get) => self::currencyUpdated($set, $get))
                     ->disabled(fn ($record) => in_array($record?->parent_state, [MoveState::POSTED, MoveState::CANCEL])),
-                CheckboxList::make('taxes')
+                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('taxes_search'),
+                                CheckboxList::make('taxes')
                     ->label(__('accounting::filament/clusters/accounting/resources/journal-entry.form.tabs.lines.repeater.fields.taxes'))
                     ->relationship(
                         'taxes',
                         'name',
-                        modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(owned_by_company($get('../../company_id'))),
-                    )
+                        modifyQueryUsing: fn (Builder $query, Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query->where(owned_by_company($get('../../company_id'))), $get, 'taxes', 'name'))
                     ->getOptionLabelFromRecordUsing(function ($record): string {
                         return $record->name.' ('.$record->type_tax_use->getLabel().')';
                     })
-
                     ->dehydrated()
                     ->live()
                     ->afterStateUpdated(fn (Get $get, Set $set) => self::taxesUpdated($set, $get))
                     ->disabled(fn ($record) => in_array($record?->parent_state, [MoveState::POSTED, MoveState::CANCEL]))
-                    ->searchable()
-                    ->bulkToggleable()
+                    
                     ->columns(2),
                 TextInput::make('debit')
                     ->label(__('accounting::filament/clusters/accounting/resources/journal-entry.form.tabs.lines.repeater.fields.debit'))

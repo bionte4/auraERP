@@ -2,6 +2,7 @@
 
 namespace Webkul\Product\Filament\Resources\ProductResource\Pages;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -67,16 +68,15 @@ class ManageAttributes extends ManageRelatedRecords
                     ->afterStateUpdated(function ($state, Set $set) {
                         $set('options', []);
                     }),
-                CheckboxList::make('options')
+                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('options_search'),
+                                CheckboxList::make('options')
                     ->label(__('products::filament/resources/product/pages/manage-attributes.form.values'))
                     ->required()
                     ->relationship(
                         name: 'options',
                         titleAttribute: 'name',
-                        modifyQueryUsing: fn (Get $get, Builder $query) => $query->where('products_attribute_options.attribute_id', $get('attribute_id')),
-                    )
-                    ->searchable()
-                    ->bulkToggleable()
+                        modifyQueryUsing: fn (Get $get, Builder $query) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query->where('products_attribute_options.attribute_id', $get('attribute_id')), $get, 'options', 'name'))
+                    
                     ->columns(2),
             ])
             ->columns(1);

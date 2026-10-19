@@ -2,6 +2,7 @@
 
 namespace Webkul\Project\Filament\Pages;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use BackedEnum;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Actions\Action;
@@ -105,12 +106,15 @@ class AssignProjectEmployees extends Page implements HasForms
                             ->native()
                             ->required()
                             ->live(),
+                        LivewireSearchableCheckboxList::searchInput('employee_ids_search'),
                         CheckboxList::make('employee_ids')
                             ->label(__('projects::filament/pages/assign-project-employees.fields.employees'))
                             ->helperText(__('projects::filament/pages/assign-project-employees.fields.employees-helper'))
-                            ->options(fn (): array => $this->employeeOptions())
-                            ->searchable()
-                            ->bulkToggleable()
+                            ->options(fn (Get $get): array => LivewireSearchableCheckboxList::filterOptions(
+                                $this->employeeOptions(),
+                                $get,
+                                'employee_ids',
+                            ))
                             ->columns(2)
                             ->disabled(fn (Get $get): bool => blank($get('project_id')))
                             ->columnSpanFull(),

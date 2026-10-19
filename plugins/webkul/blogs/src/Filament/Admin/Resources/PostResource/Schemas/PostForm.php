@@ -2,6 +2,7 @@
 
 namespace Webkul\Blog\Filament\Admin\Resources\PostResource\Schemas;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
@@ -94,11 +95,12 @@ class PostForm
                                     })
                                     ->preload()
                                     ->required(),
-                                CheckboxList::make('tags')
+                                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('tags_search'),
+                                                                CheckboxList::make('tags')
                                     ->label(__('blogs::filament/admin/resources/post.form.sections.settings.fields.tags'))
-                                    ->relationship('tags', 'name')
-                                    ->searchable()
-                                    ->bulkToggleable()
+                                    ->relationship('tags', 'name',
+                                    fn (\Illuminate\Database\Eloquent\Builder $query, \Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query, $get, 'tags', 'name'))
+                                    
                                     ->columns(2),
                             ]),
                     ]),

@@ -3,9 +3,9 @@
 namespace Webkul\Maintenance\Filament\Clusters\Configurations\Resources\TeamResource\Schemas;
 
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 
 class TeamForm
 {
@@ -20,12 +20,13 @@ class TeamForm
                     ->autofocus()
                     ->unique(ignoreRecord: true),
 
-                CheckboxList::make('users')
-                    ->label(__('maintenance::filament/clusters/configurations/resources/team.form.users'))
-                    ->relationship('users', 'name')
-                    ->searchable()
-                    ->bulkToggleable()
-                    ->columns(2),
+                ...LivewireSearchableCheckboxList::make(
+                    name: 'users',
+                    relationship: 'users',
+                    titleAttribute: 'name',
+                    label: __('maintenance::filament/clusters/configurations/resources/team.form.users'),
+                    searchPlaceholder: __('Search members...'),
+                ),
 
                 Select::make('company_id')
                     ->label(__('maintenance::filament/clusters/configurations/resources/team.form.company'))

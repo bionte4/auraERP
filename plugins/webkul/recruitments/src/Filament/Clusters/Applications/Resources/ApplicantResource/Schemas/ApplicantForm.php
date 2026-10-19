@@ -2,6 +2,7 @@
 
 namespace Webkul\Recruitment\Filament\Clusters\Applications\Resources\ApplicantResource\Schemas;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\RichEditor;
@@ -240,15 +241,17 @@ class ApplicantForm
                                             ->live()
                                             ->reactive()
                                             ,
-                                        CheckboxList::make('recruitments_applicant_interviewers')
-                                            ->relationship('interviewer', 'name')
+                                                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('recruitments_applicant_interviewers_search'),
+                                                                                CheckboxList::make('recruitments_applicant_interviewers')
+                                            ->relationship('interviewer', 'name',
+                                    fn (\Illuminate\Database\Eloquent\Builder $query, \Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query, $get, 'recruitments_applicant_interviewers', 'name'))
                                             ->label(__('recruitments::filament/clusters/applications/resources/applicant.form.sections.general-information.fields.interviewer'))
                                             ->dehydrated(true)
                                             ->saveRelationshipsUsing(function () {})
-                                            ->searchable()
-                                            ->bulkToggleable()
+                                            
                                             ->columns(2),
-                                        CheckboxList::make('recruitments_applicant_applicant_categories')
+                                                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('recruitments_applicant_applicant_categories_search'),
+                                                                                CheckboxList::make('recruitments_applicant_applicant_categories')
                                             ->label(__('recruitments::filament/clusters/applications/resources/applicant.form.sections.general-information.fields.tags'))
                                             ->afterStateHydrated(function (Select $component, $state, $record) {
                                                 if (
@@ -258,9 +261,9 @@ class ApplicantForm
                                                     $component->state($record->candidate->categories->pluck('id')->toArray());
                                                 }
                                             })
-                                            ->relationship('categories', 'name')
-                                            ->searchable()
-                                            ->bulkToggleable()
+                                            ->relationship('categories', 'name',
+                                    fn (\Illuminate\Database\Eloquent\Builder $query, \Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query, $get, 'recruitments_applicant_applicant_categories', 'name'))
+                                            
                                             ->columns(2),
                                     ])
                                     ->columns(2),

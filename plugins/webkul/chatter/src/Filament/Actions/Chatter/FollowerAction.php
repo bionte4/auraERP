@@ -2,6 +2,7 @@
 
 namespace Webkul\Chatter\Filament\Actions\Chatter;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Filament\Actions\Action;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
@@ -71,14 +72,12 @@ class FollowerAction extends Action
             ->schema(function ($schema) {
                 return $schema
                     ->components([
-                        CheckboxList::make('partners')
+                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('partners_search'),
+                                                CheckboxList::make('partners')
                             ->label(__('chatter::filament/resources/actions/chatter/follower-action.setup.form.fields.recipients'))
-
                             ->live()
-
                             ->required()
-                            ->searchable()
-                            ->bulkToggleable()
+                            
                             ->columns(2),
                         Toggle::make('notify')
                             ->live()

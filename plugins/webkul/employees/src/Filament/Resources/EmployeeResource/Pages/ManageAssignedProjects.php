@@ -2,6 +2,7 @@
 
 namespace Webkul\Employee\Filament\Resources\EmployeeResource\Pages;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Filament\Actions\Action;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -10,6 +11,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Concerns\InteractsWithRecord;
 use Filament\Resources\Pages\Page;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Collection;
@@ -80,13 +82,15 @@ class ManageAssignedProjects extends Page implements HasForms
                 Section::make(__('employees::filament/resources/employee/pages/manage-assigned-projects.section.title'))
                     ->description(__('employees::filament/resources/employee/pages/manage-assigned-projects.section.description'))
                     ->schema([
-                        // CheckboxList — Select multiple/searchable forces Alpine and can render empty.
+                        LivewireSearchableCheckboxList::searchInput('project_ids_search'),
                         CheckboxList::make('project_ids')
                             ->label(__('employees::filament/resources/employee/pages/manage-assigned-projects.fields.projects'))
                             ->helperText(__('employees::filament/resources/employee/pages/manage-assigned-projects.fields.projects-helper'))
-                            ->options(fn (): array => Project::query()->orderBy('name')->pluck('name', 'id')->all())
-                            ->searchable()
-                            ->bulkToggleable()
+                            ->options(fn (Get $get): array => LivewireSearchableCheckboxList::filterOptions(
+                                Project::query()->orderBy('name')->pluck('name', 'id')->all(),
+                                $get,
+                                'project_ids',
+                            ))
                             ->columns(2)
                             ->columnSpanFull(),
                     ]),

@@ -2,6 +2,7 @@
 
 namespace Webkul\Partner\Filament\Resources\PartnerResource\Schemas;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Filament\Actions\Action;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
@@ -169,11 +170,12 @@ class PartnerForm
                                     ->unique('partners_titles'),
                             ])
                             ->visible(fn (Get $get): bool => in_array($get('account_type'), [AccountType::INDIVIDUAL, AccountType::INDIVIDUAL->value], true)),
-                        CheckboxList::make('tags')
+                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('tags_search'),
+                                                CheckboxList::make('tags')
                             ->label(__('partners::filament/resources/partner.form.sections.general.fields.tags'))
-                            ->relationship(name: 'tags', titleAttribute: 'name')
-                            ->searchable()
-                            ->bulkToggleable()
+                            ->relationship(name: 'tags', titleAttribute: 'name',
+                                    modifyQueryUsing: fn (\Illuminate\Database\Eloquent\Builder $query, \Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query, $get, 'tags', 'name'))
+                            
                             ->columns(2),
 
                         Fieldset::make('Address')

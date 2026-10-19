@@ -2,6 +2,7 @@
 
 namespace Webkul\Sale\Filament\Clusters\Orders\Resources\QuotationResource\Actions;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Closure;
 use Exception;
 use Filament\Actions\Action;
@@ -89,12 +90,12 @@ class CancelQuotationAction extends Action
             ->schema(
                 function (Schema $schema, $record) {
                     return $schema->components([
-                        CheckboxList::make('partners')
-                            ->options(Partner::all()->pluck('name', 'id'))
+                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('partners_search'),
+                                                CheckboxList::make('partners')
+                            ->options(fn (\Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::filterOptions((array) (Partner::all()->pluck('name', 'id')), $get, 'partners'))
                             ->default([$record->partner_id])
                             ->label(__('sales::filament/clusters/orders/resources/quotation/actions/cancel-quotation.form.fields.partner'))
-                            ->searchable()
-                            ->bulkToggleable()
+                            
                             ->columns(2),
                         TextInput::make('subject')
                             ->default(fn () => __('sales::filament/clusters/orders/resources/quotation/actions/cancel-quotation.form.fields.subject-default', [

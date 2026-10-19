@@ -2,6 +2,7 @@
 
 namespace Webkul\Inventory\Filament\Clusters\Configurations\Resources\PackagingResource\Schemas;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Schemas\Components\Utilities\Get;
@@ -46,16 +47,15 @@ class PackagingForm
             ->preload()
             ->visible(PackagingResource::getOperationSettings()->enable_packages);
 
+        $components[] = \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('routes_search');
         $components[] = CheckboxList::make('routes')
             ->label(__('inventories::filament/clusters/configurations/resources/packaging.form.routes'))
             ->relationship(
                 'routes',
                 'name',
-                fn (Builder $query, Get $get) => $query->where(owned_by_company($get('company_id'))),
-            )
+                fn (Builder $query, Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query->where(owned_by_company($get('company_id'))), $get, 'routes', 'name'))
             ->visible(PackagingResource::getWarehouseSettings()->enable_multi_steps_routes)
-            ->searchable()
-            ->bulkToggleable()
+            
             ->columns(2);
 
         foreach ($components as $index => $component) {

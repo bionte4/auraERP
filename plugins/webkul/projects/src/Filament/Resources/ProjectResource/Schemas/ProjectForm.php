@@ -2,6 +2,7 @@
 
 namespace Webkul\Project\Filament\Resources\ProjectResource\Schemas;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\RichEditor;
@@ -121,11 +122,12 @@ class ProjectForm
                                     ->helperText(__('projects::filament/resources/project.form.sections.additional.fields.allocated-hours-helper-text'))
                                     ->visible(ProjectResource::getTimeSettings()->enable_timesheets)
                                     ->rules(['nullable', 'numeric', 'min:0']),
-                                CheckboxList::make('tags')
+                                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('tags_search'),
+                                                                CheckboxList::make('tags')
                                     ->label(__('projects::filament/resources/project.form.sections.additional.fields.tags'))
-                                    ->relationship(name: 'tags', titleAttribute: 'name')
-                                    ->searchable()
-                                    ->bulkToggleable()
+                                    ->relationship(name: 'tags', titleAttribute: 'name',
+                                    modifyQueryUsing: fn (\Illuminate\Database\Eloquent\Builder $query, \Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query, $get, 'tags', 'name'))
+                                    
                                     ->columns(2),
                                 Select::make('company_id')
                                     ->relationship('company', 'name')

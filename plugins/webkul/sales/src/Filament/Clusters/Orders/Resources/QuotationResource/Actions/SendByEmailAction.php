@@ -2,6 +2,7 @@
 
 namespace Webkul\Sale\Filament\Clusters\Orders\Resources\QuotationResource\Actions;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
@@ -52,11 +53,11 @@ class SendByEmailAction extends Action
             ->schema(
                 function (Schema $schema) {
                     return $schema->components([
-                        CheckboxList::make('partners')
-                            ->options(Partner::all()->pluck('name', 'id'))
+                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('partners_search'),
+                                                CheckboxList::make('partners')
+                            ->options(fn (\Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::filterOptions((array) (Partner::all()->pluck('name', 'id')), $get, 'partners'))
                             ->label(__('sales::filament/clusters/orders/resources/quotation/actions/send-by-email.form.fields.partners'))
-                            ->searchable()
-                            ->bulkToggleable()
+                            
                             ->columns(2),
                         TextInput::make('subject')
                             ->label(__('sales::filament/clusters/orders/resources/quotation/actions/send-by-email.form.fields.subject'))

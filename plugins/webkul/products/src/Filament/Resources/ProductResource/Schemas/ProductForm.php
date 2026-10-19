@@ -2,6 +2,7 @@
 
 namespace Webkul\Product\Filament\Resources\ProductResource\Schemas;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\RichEditor;
@@ -71,11 +72,12 @@ class ProductForm
 
                 RichEditor::make('description')
                     ->label(__('products::filament/resources/product.form.sections.general.fields.description')),
-                CheckboxList::make('tags')
+                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('tags_search'),
+                                CheckboxList::make('tags')
                     ->label(__('products::filament/resources/product.form.sections.general.fields.tags'))
-                    ->relationship(name: 'tags', titleAttribute: 'name')
-                    ->searchable()
-                    ->bulkToggleable()
+                    ->relationship(name: 'tags', titleAttribute: 'name',
+                                    modifyQueryUsing: fn (\Illuminate\Database\Eloquent\Builder $query, \Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query, $get, 'tags', 'name'))
+                    
                     ->columns(2),
             ]);
     }

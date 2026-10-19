@@ -2,6 +2,7 @@
 
 namespace Webkul\TimeOff\Filament\Clusters\Configurations\Resources\LeaveTypeResource\Schemas;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
@@ -85,11 +86,12 @@ class LeaveTypeForm
                                 Section::make(__('time-off::filament/clusters/configurations/resources/leave-type.form.sections.configuration.title'))
                                     ->hiddenLabel()
                                     ->schema([
-                                        CheckboxList::make('time_off_user_leave_types')
+                                                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('time_off_user_leave_types_search'),
+                                                                                CheckboxList::make('time_off_user_leave_types')
                                             ->label(__('time-off::filament/clusters/configurations/resources/leave-type.form.sections.configuration.fields.notified-time-off-officers'))
-                                            ->relationship('notifiedTimeOffOfficers', 'name')
-                                            ->searchable()
-                                            ->bulkToggleable()
+                                            ->relationship('notifiedTimeOffOfficers', 'name',
+                                    fn (\Illuminate\Database\Eloquent\Builder $query, \Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query, $get, 'time_off_user_leave_types', 'name'))
+                                            
                                             ->columns(2),
                                         Select::make('request_unit')
                                             ->label(__('time-off::filament/clusters/configurations/resources/leave-type.form.sections.configuration.fields.take-time-off-in'))

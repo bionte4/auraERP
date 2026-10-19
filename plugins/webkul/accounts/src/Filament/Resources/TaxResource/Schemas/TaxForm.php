@@ -2,6 +2,7 @@
 
 namespace Webkul\Account\Filament\Resources\TaxResource\Schemas;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Closure;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\RichEditor;
@@ -103,7 +104,8 @@ class TaxForm
                                     ])
                                     ->visible(fn (Get $get): bool => TaxResource::normalizeAmountType($get('amount_type')) === AmountType::CODE->value)
                                     ->columnSpanFull(),
-                                CheckboxList::make('childrenTaxes')
+                                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('childrenTaxes_search'),
+                                                                CheckboxList::make('childrenTaxes')
                                     ->label(__('accounts::filament/resources/tax.form.sections.fields.children-taxes'))
                                     ->relationship(
                                         name: 'childrenTaxes',
@@ -148,8 +150,7 @@ class TaxForm
                                     ->visible(fn (Get $get): bool => TaxResource::normalizeAmountType($get('amount_type')) === AmountType::GROUP->value
                                         && TaxResource::normalizeTypeTaxUse($get('type_tax_use')) !== TypeTaxUse::NONE->value)
                                     ->columnSpanFull()
-                                    ->searchable()
-                                    ->bulkToggleable()
+                                    
                                     ->columns(2),
                             ])->columns(2),
                         Fieldset::make(__('accounts::filament/resources/tax.form.sections.field-set.advanced-options.title'))

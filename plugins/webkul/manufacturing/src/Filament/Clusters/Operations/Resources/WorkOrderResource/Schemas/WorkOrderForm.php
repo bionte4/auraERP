@@ -2,6 +2,7 @@
 
 namespace Webkul\Manufacturing\Filament\Clusters\Operations\Resources\WorkOrderResource\Schemas;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
@@ -180,18 +181,17 @@ class WorkOrderForm
                             ]),
                         Tab::make(__('manufacturing::filament/clusters/operations/resources/work-order.form.tabs.blocked-by.title'))
                             ->schema([
-                                CheckboxList::make('blockedByWorkOrders')
+                                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('blockedByWorkOrders_search'),
+                                                                CheckboxList::make('blockedByWorkOrders')
                                     ->label(__('manufacturing::filament/clusters/operations/resources/work-order.form.tabs.blocked-by.fields.work-orders'))
                                     ->relationship(
                                         'blockedByWorkOrders',
                                         'name',
-                                        modifyQueryUsing: fn (Builder $query, ?WorkOrder $record) => $query
-                                            ->when($record, fn (Builder $relationQuery) => $relationQuery->whereKeyNot($record->getKey()))
-                                    )
+                                        modifyQueryUsing: fn (Builder $query, ?WorkOrder $record) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query
+                                            ->when($record, fn (Builder $relationQuery) => $relationQuery->whereKeyNot($record->getKey())), $get, 'blockedByWorkOrders', 'name'))
                                     ->getOptionLabelFromRecordUsing(fn (WorkOrder $record): string => $record->display_name)
                                     ->disabled(fn (?WorkOrder $record): bool => $record && ! in_array($record->state, [WorkOrderState::PENDING, WorkOrderState::WAITING], true))
-                                    ->searchable()
-                                    ->bulkToggleable()
+                                    
                                     ->columns(2),
                             ]),
                     ]),

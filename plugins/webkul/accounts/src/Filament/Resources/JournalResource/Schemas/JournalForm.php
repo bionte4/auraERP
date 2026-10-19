@@ -2,6 +2,7 @@
 
 namespace Webkul\Account\Filament\Resources\JournalResource\Schemas;
 
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\CheckboxList;
@@ -293,15 +294,14 @@ class JournalForm
                                                     ->schema([
                                                         Group::make()
                                                             ->schema([
-                                                                CheckboxList::make('invoices_journal_accounts')
+                                                                                                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('invoices_journal_accounts_search'),
+                                                                                                                                CheckboxList::make('invoices_journal_accounts')
                                                                     ->relationship(
                                                                         'allowedAccounts',
                                                                         'name',
-                                                                        modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(owned_by_company($get('company_id'))),
-                                                                    )
+                                                                        modifyQueryUsing: fn (Builder $query, Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query->where(owned_by_company($get('company_id'))), $get, 'invoices_journal_accounts', 'name'))
                                                                     ->label(__('accounts::filament/resources/journal.form.tabs.advanced-settings.fields.allowed-accounts'))
-                                                                    ->searchable()
-                                                                    ->bulkToggleable()
+                                                                    
                                                                     ->columns(2),
                                                                 Toggle::make('auto_check_on_post')
                                                                     ->label(__('accounts::filament/resources/journal.form.tabs.advanced-settings.fields.auto-check-on-post')),
