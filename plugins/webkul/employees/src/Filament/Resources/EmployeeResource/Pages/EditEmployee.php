@@ -42,13 +42,7 @@ class EditEmployee extends EditRecord
         return ActivityPlan::employees()->pluck('name', 'id');
     }
 
-    protected function mutateFormDataBeforeFill(array $data): array
-    {
-        $partner = $this->record->partner;
-
-        return [
-            ...$data,
-            ...$partner ? $partner->toArray() : [],
-        ];
-    }
+    // Avatar / partner fields load via form relationships — do not merge
+    // partner->toArray() over the employee record (overwrites ids and selects).
 }
+

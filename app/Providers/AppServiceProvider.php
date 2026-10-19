@@ -28,6 +28,14 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
+        // Filament Alpine selects (x-load) use absolute asset() URLs. When the app is
+        // served on both auraerp.my.id and opsora.my.id, a mismatched APP_URL makes
+        // cross-origin module loads fail → empty dropdowns site-wide. Keep assets
+        // same-origin with the current request host.
+        if ((! app()->runningInConsole()) && filled(request()->getHost())) {
+            URL::forceRootUrl(request()->getSchemeAndHttpHost());
+        }
+
         on('dehydrate', function (Component $component): void {
             if (! Livewire::isLivewireRequest()) {
                 return;

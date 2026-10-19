@@ -341,6 +341,12 @@ export class UserManagementPage {
      * must be present in allowed companies or user creation fails validation.
      */
     private async selectAllowedCompany(company: string) {
+        const companyCheckbox = this.page.getByRole("checkbox", { name: new RegExp(`^${company}$`, "i") });
+        if (await companyCheckbox.count()) {
+            await companyCheckbox.first().check();
+            return;
+        }
+
         const allowedSelect = this.erpLocators.usersAllowedCompaniesSelect;
         if (await allowedSelect.count()) {
             if (await allowedSelect.first().evaluate((el) => el.tagName.toLowerCase() === "select")) {
@@ -363,6 +369,12 @@ export class UserManagementPage {
      * Company selection helper (supports native select and custom dropdown)
      */
     private async selectCompany(company: string, allowMissing = false) {
+        const nativeCompanySelect = this.page.locator('select').filter({ has: this.page.locator(`option:text-is("${company}")`) }).first();
+        if (await nativeCompanySelect.count()) {
+            await nativeCompanySelect.selectOption({ label: company });
+            return;
+        }
+
         const companySelect = this.erpLocators.usersCompanySelect;
         if (await companySelect.count()) {
             if (await companySelect.first().evaluate((el) => el.tagName.toLowerCase() === "select")) {

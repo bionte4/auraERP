@@ -39,13 +39,5 @@ class ViewEmployee extends ViewRecord
         return ActivityPlan::employees()->pluck('name', 'id');
     }
 
-    protected function mutateFormDataBeforeFill(array $data): array
-    {
-        $partner = $this->record->partner;
-
-        return [
-            ...$data,
-            ...$partner ? $partner->toArray() : [],
-        ];
-    }
+    // Partner fields load via form relationships — do not merge partner->toArray().
 }

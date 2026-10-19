@@ -19,7 +19,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Webkul\Security\Enums\PermissionType;
 use Webkul\Security\Filament\Resources\CompanyResource;
-use Webkul\Security\Filament\Resources\TeamResource;
 use Webkul\Security\Filament\Resources\UserResource;
 use Webkul\Security\Models\User;
 use Webkul\Support\Models\Company;
@@ -107,18 +106,18 @@ class UserForm
                                                     $set('teams', []);
                                                 }
                                             }),
-                                        Select::make('teams')
+                                        // CheckboxList — Select multiple/searchable forces Alpine and can render empty.
+                                        CheckboxList::make('teams')
                                             ->label(__('security::filament/resources/user.form.sections.permissions.fields.teams'))
                                             ->relationship(
                                                 name: 'teams',
                                                 titleAttribute: 'name'
                                             )
                                             ->live()
-                                            ->multiple()
-                                            ->preload()
                                             ->searchable()
-                                            ->required(fn (Get $get) => $get('resource_permission') == PermissionType::GROUP)
-                                            ->createOptionForm(fn (Schema $schema) => TeamResource::form($schema)),
+                                            ->bulkToggleable()
+                                            ->columns(2)
+                                            ->required(fn (Get $get) => $get('resource_permission') == PermissionType::GROUP),
                                     ])
                                     ->columns(2),
                             ])
@@ -156,8 +155,7 @@ class UserForm
                                                     ->all()
                                             )
                                             ->default(config('app.locale'))
-                                            ->native(false)
-                                            ->searchable(),
+                                            ->native(),
                                         Toggle::make('is_active')
                                             ->label(__('security::filament/resources/user.form.sections.lang-and-status.fields.status'))
                                             ->default(true),
@@ -165,12 +163,13 @@ class UserForm
                                     ->columns(1),
                                 Section::make(__('security::filament/resources/user.form.sections.multi-company.title'))
                                     ->schema([
-                                        Select::make('allowed_companies')
+                                        // CheckboxList — Select multiple/searchable forces Alpine and can render empty.
+                                        CheckboxList::make('allowed_companies')
                                             ->label(__('security::filament/resources/user.form.sections.multi-company.allowed-companies'))
                                             ->relationship('allowedCompanies', 'name', fn (Builder $query) => $query->withoutGlobalScope(AllowedCompanyScope::class))
-                                            ->multiple()
-                                            ->preload()
-                                            ->searchable(),
+                                            ->searchable()
+                                            ->bulkToggleable()
+                                            ->columns(1),
                                         Select::make('default_company_id')
                                             ->label(__('security::filament/resources/user.form.sections.multi-company.default-company'))
                                             ->relationship(
@@ -183,6 +182,7 @@ class UserForm
                                             })
                                             ->disableOptionWhen(fn ($label) => str_contains($label, ' (Deleted)'))
                                             ->required()
+                                            ->native()
                                             ->rule(fn (Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
                                                 $allowed = $get('allowed_companies') ?? [];
 
@@ -190,7 +190,6 @@ class UserForm
                                                     $fail(__('security::filament/resources/user.form.sections.multi-company.default-company-not-allowed'));
                                                 }
                                             })
-                                            ->searchable()
                                             ->createOptionForm(fn (Schema $schema) => CompanyResource::form($schema))
                                             ->createOptionAction(function (Action $action) {
                                                 $action
