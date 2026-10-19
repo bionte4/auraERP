@@ -2,9 +2,9 @@
 
 | Field | Nilai |
 | :--- | :--- |
-| **Versi** | 1.1 |
+| **Versi** | 1.2 |
 | **Tanggal** | 2026-10-19 |
-| **Revisi** | `attendances_tracks`, blocked IP lengkap, clarifikasi logical link vs FK |
+| **Revisi** | Clarifikasi `projects.user_id` = Manajer Proyek (assign di form, bukan Assign Employees) |
 | **DB target** | PostgreSQL (produksi VPS) |
 | **Sumber kebenaran** | Migrasi di `plugins/webkul/*/database/migrations` |
 | **ERD** | [ERD-auraERP.md](./ERD-auraERP.md) |
@@ -265,7 +265,7 @@ Stage pipeline proyek.
 | `name` | Index |
 | `partner_id` | Customer |
 | `company_id` | |
-| `user_id` | Manajer Proyek (users) |
+| `user_id` | **Manajer Proyek** (FK → `users`, nullable). Assign/ganti/kosongkan lewat form proyek field **Project Manager** — **bukan** layar Assign Employees |
 | `creator_id` | |
 | `stage_id` | |
 | `start_date`, `end_date` | Reminder 3/2/1 bulan |

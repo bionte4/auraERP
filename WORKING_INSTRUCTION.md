@@ -253,20 +253,33 @@ Buka menu **Employees → Performance Plans → Evaluations** (`/admin/evaluatio
    - Pilih **Customer**, **Start Date & End Date**, serta **Project Value (`Nilai Proyek Rp`)**.
    - Daftar seluruh proyek dan total nilai kontrak per Customer dapat dilihat langsung pada tab **Proyek** di halaman detail Customer.
 2. **Penugasan Karyawan ke Proyek (dua arah — Admin & Operation Manager):**
+   - **Bukan** untuk mengatur siapa **Manajer Proyek** — itu di langkah 3.
    - **Dari Proyek:** menu **Project → Tugaskan Karyawan (`Assign Employees`)** (`/admin/project/assign-employees`) → pilih **Proyek**, lalu pilih satu atau beberapa **Karyawan**, klik **Simpan Penugasan**.
    - **Dari Karyawan:** buka **Employees → Employees** → pilih karyawan → tab **Proyek Ditugaskan (`Assigned Projects`)** → pilih proyek → **Simpan Penugasan**.
+   - **Unassign karyawan:** di layar yang sama, **hilangkan centang** karyawan / proyek yang tidak lagi ditugaskan → **Simpan Penugasan**. Melepas karyawan dari proyek juga melepaskan mereka dari task terbuka proyek tersebut (lihat langkah 5).
    - Kedua cara memakai data penugasan yang sama, dan otomatis menambahkan karyawan yang punya partner/user terkait sebagai **pengikut (followers)** agar mendapat akses proyek.
    - **Prasyarat akses login:** Pastikan karyawan punya **Pengguna Terkait (`Related User`)**. Tanpa ini, penugasan tetap tersimpan, tetapi karyawan belum bisa login/mengakses proyek.
    - Layar Project Assign: permission `page_project_assign_project_employees`. Tab di Employee mengikuti izin update Employee (plugin Projects harus terpasang).
-3. **Penugasan lewat Manajer Proyek / Task (cara lama, tetap tersedia):**
-   - **Manajer Proyek (satu orang):** Pada form proyek, isi **Manajer Proyek (`Project Manager`)**.
-   - **Penugasan kerja harian:** **Project → Tasks** → isi **Penerima Tugas (`Assignees`)** (daftar **User**).
+3. **Assign / Unassign Manajer Proyek (`Project Manager`) — satu orang per proyek:**
+   - Field di form proyek: **Manajer Proyek (`Project Manager`)** → kolom DB `projects_projects.user_id` (relasi ke **User**, biasanya user dengan role **Operation Manager**).
+   - **Assign / ganti:**
+     1. Buka **Project → Projects** (`/admin/project/projects`) → Edit proyek.
+     2. Di bagian **Additional / tambahan**, pilih user pada **Manajer Proyek**.
+     3. **Save**. User tersebut otomatis masuk anggota Tim proyek (sinkron saat simpan proyek).
+   - **Unassign (lepaskan):**
+     1. Edit proyek yang sama.
+     2. **Kosongkan** field **Manajer Proyek** (clear), atau ganti ke user lain.
+     3. **Save**. Hanya boleh ada **satu** manajer; mengganti user = melepas manajer lama.
+   - **Cek cepat:** **Project → Dashboard** (`/admin/project`) → widget **Operation Manager — Proyek sebagai Manajer Proyek** (OM + jumlah proyek aktif sebagai manajer).
+   - **Bedakan:** Manajer Proyek ≠ daftar karyawan assign (langkah 2) ≠ **Assignees** di Task.
+4. **Penugasan kerja harian lewat Task:**
+   - **Project → Tasks** → isi **Penerima Tugas (`Assignees`)** (daftar **User**).
    - Hak akses juga dipengaruhi **Visibilitas (`Visibility`)** proyek.
-4. **Dashboard beban kerja Operation Manager (`Project → Dashboard`):**
+5. **Dashboard beban kerja Operation Manager (`Project → Dashboard`):**
    - Buka **Project → Dashboard** (`/admin/project`).
    - Widget **Item aksi OM** (scope OM/Admin/HRD): cuti pending, kontrak ≤ 30 hari, tugas terlambat, karyawan ditugaskan tanpa Related User.
    - Widget **Kehadiran hari ini**: hadir / terlambat / belum absen (scope).
-   - Widget **Operation Manager — Proyek sebagai Manajer Proyek** menampilkan OM + jumlah proyek aktif sebagai **Manajer Proyek**.
+   - Widget **Operation Manager — Proyek sebagai Manajer Proyek** menampilkan OM + jumlah proyek aktif sebagai **Manajer Proyek** (hasil assign di langkah 3).
    - **Dashboard → Hari Saya** (`/admin/my-day`) — kartu fokus harian per peran (Admin/HRD/OM/Staff/Kasir).
    - **Laporan Ops Mingguan** (`/admin/weekly-operations-report`) — metrik internal + beban jam/proyek per karyawan + unduh Excel. Permission: `page_project_weekly_operations_report` (**Admin / HRD / OM**; data mengikuti `OperationalScope`).
    - **Laporan Mingguan Proyek untuk Klien** (`/admin/customer-project-weekly-report`) — Excel siap klien: pilih **1 proyek**, rentang tanggal kustom, **preview di layar**, lalu unduh. Judul task overdue/masking diterapkan; jam kerja disembunyikan. Permission: `page_project_customer_project_weekly_report` (**Admin / OM**; **bukan** HRD).
@@ -275,10 +288,10 @@ Buka menu **Employees → Performance Plans → Evaluations** (`/admin/evaluatio
    - **Employee → Ringkasan 360** (`…/overview`) — proyek, kapasitas, cuti, aset, evaluasi, buat Related User 1-klik.
    - **Team Board**: mode **Kanban Proyek** (seret karyawan antar proyek) untuk Admin/OM.
    - Permission terkait (setelah `security:sync-rbac`): `page_support_my_day_dashboard`, `page_project_weekly_operations_report`, `page_project_customer_project_weekly_report`, `widget_project_attendance_presence_widget`, widget OM.
-5. **Link Tim ↔ Proyek eksplisit:** di **Settings → Teams** pilih **Proyek terkait**. Sinkron anggota & Team Board mengutamakan link ini; jika kosong, fallback cocok nama. Melepas karyawan dari proyek juga melepaskan mereka dari task terbuka proyek tersebut.
-6. **Reminder Berjenjang 3, 2, dan 1 Bulan Sebelum `End Date` Proyek:**
+6. **Link Tim ↔ Proyek eksplisit:** di **Settings → Teams** pilih **Proyek terkait**. Sinkron anggota & Team Board mengutamakan link ini; jika kosong, fallback cocok nama. Melepas karyawan dari proyek juga melepaskan mereka dari task terbuka proyek tersebut.
+7. **Reminder Berjenjang 3, 2, dan 1 Bulan Sebelum `End Date` Proyek:**
    - Sistem memberi badge peringatan dan notifikasi otomatis pada sisa waktu `61–90 hari` (**3 Bulan**), `31–60 hari` (**2 Bulan**), `0–30 hari` (**1 Bulan**), dan saat **Berakhir** (`php artisan projects:notify-expiring-projects`).
-7. **Bulk Import Proyek:**
+8. **Bulk Import Proyek:**
    - Klik **`Unduh Template`** (`template-import-projects.xlsx`) di halaman **Projects**, lalu unggah melalui tombol **`Impor Excel / CSV`**.
 
 ---

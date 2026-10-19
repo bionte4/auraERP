@@ -2,9 +2,9 @@
 
 | Field | Nilai |
 | :--- | :--- |
-| **Versi** | 1.1 |
+| **Versi** | 1.2 |
 | **Tanggal** | 2026-10-19 |
-| **Revisi** | Koreksi FK logical vs DB, tambah `attendances_tracks`, lengkapi audit/blocked IP & evaluasi director |
+| **Revisi** | Clarifikasi Manajer Proyek (`user_id`) vs pivot Assign Employees |
 | **Sumber** | Migrasi plugin `plugins/webkul/*` (bukan dump DB penuh) |
 | **Schema detail** | [DATABASE-SCHEMA.md](./DATABASE-SCHEMA.md) |
 | **PRD** | [PRD-auraERP.md](./PRD-auraERP.md) |
@@ -460,9 +460,9 @@ erDiagram
 | `users` ↔ `employees_employees` | 0..1 / 1 | Related User; wajib untuk login & akses proyek |
 | `employees.parent_id` | pohon | Approver L1; L2 = parent-of-parent / dept manager |
 | `projects.partner_id` | N:1 | Customer pemilik banyak proyek |
-| `projects_project_employees` | N:M | Assign Employees (sumber penugasan resmi) |
+| `projects_project_employees` | N:M | Assign Employees (anggota kerja proyek; unassign = hapus baris pivot) |
 | `teams.project_id` / nama Tim ≈ nama Proyek | 0..1 | Sinkron anggota Tim ↔ assign proyek |
-| `projects.user_id` | N:1 | Manajer Proyek (user) |
+| `projects.user_id` | N:1 | **Manajer Proyek** (1 user); set/clear di form proyek, terpisah dari pivot assign |
 | `evaluations.reviewer_id` / `gm_approver_id` | N:1 | Tanda tangan L1 / L2 |
 | `analytic_records.project_id` + `task_id` | N:1 | Timesheet jam kerja (internal; disembunyikan di laporan klien) |
 | `attendances_sites` | 1:N attendance | Geofence clock-in/out |

@@ -3,8 +3,9 @@
 | Field | Nilai |
 | :--- | :--- |
 | **Produk** | auraERP — customisasi operasional Opsora |
-| **Versi dokumen** | 1.1 |
+| **Versi dokumen** | 1.2 |
 | **Tanggal** | 2026-10-19 |
+| **Revisi** | Clarifikasi assign/unassign Manajer Proyek vs Assign Employees |
 | **Status** | Baseline produk (fitur utama sudah live / di-deploy) |
 | **Pemilik produk** | Opsora / auraERP ops |
 | **Referensi operasional** | [WORKING_INSTRUCTION.md](../WORKING_INSTRUCTION.md) |
@@ -135,10 +136,12 @@ ID memakai prefiks modul. Prioritas: **P0** harus ada / sudah ada; **P1** pentin
 | PRJ-01 | 1 Customer → N Projects; nilai proyek, start/end date | P0 | Done |
 | PRJ-02 | Assign Employees (checkbox multi-karyawan) + sinkron Livewire saat ganti proyek | P0 | Done |
 | PRJ-03 | Assign dua arah Proyek ↔ Karyawan; followers otomatis bila Related User ada | P0 | Done |
+| PRJ-03a | Unassign karyawan: hilangkan centang di Assign Employees / Assigned Projects → simpan; lepaskan juga dari task terbuka | P0 | Done |
 | PRJ-04 | Sinkron Tim ↔ Proyek (nama/link); backfill `projects:sync-team-memberships` | P0 | Done |
 | PRJ-05 | Reminder proyek 3/2/1 bulan sebelum end date | P0 | Done |
 | PRJ-06 | Dashboard OM: widget beban, aksi, kehadiran (scope) | P0 | Done |
 | PRJ-07 | Bulk import proyek Excel | P1 | Done |
+| PRJ-08 | **Manajer Proyek** (`projects.user_id`): assign/ganti/kosongkan di form proyek (1 user); beda dari Assign Employees | P0 | Done |
 
 ### 5.7 Laporan proyek — `RPT`
 
@@ -213,10 +216,22 @@ ID memakai prefiks modul. Prioritas: **P0** harus ada / sudah ada; **P1** pentin
 
 ### 8.1 Penugasan proyek
 
+**A. Manajer Proyek (1 orang / proyek)** — field form proyek `Project Manager` (`user_id`):
+
+```
+OM/Admin → Project → Projects → Edit proyek
+        → pilih User di Manajer Proyek → Save   (= assign / ganti)
+        → kosongkan Manajer Proyek → Save       (= unassign)
+        → widget Dashboard OM menampilkan hitungan proyek sebagai manajer
+```
+
+**B. Karyawan di proyek (N orang)** — Assign Employees / Assigned Projects:
+
 ```
 OM/Admin → pilih Proyek → pilih Karyawan (checkbox)
        → simpan → pivot assign + followers (jika Related User)
        → Tim proyek tersinkron (nama/link)
+Unassign: hilangkan centang → simpan (juga lepas dari task terbuka)
 ```
 
 ### 8.2 Laporan klien mingguan
@@ -262,10 +277,12 @@ git fetch/merge fork/master → composer install
 - [ ] Rentang tanggal kustom diterapkan ke deliverable yang ditampilkan
 - [ ] Output tidak menampilkan jam kerja; task sensitif ter-mask
 
-### 9.3 Assign karyawan
+### 9.3 Assign karyawan & Manajer Proyek
 
 - [ ] Checkbox mencerminkan anggota proyek saat ganti proyek
 - [ ] Simpan memperbarui anggota & tidak error 500 pada daftar besar
+- [ ] Unassign karyawan (hilangkan centang → simpan) melepas dari pivot & task terbuka
+- [ ] Assign/ganti/kosongkan **Manajer Proyek** di form proyek hanya mengubah `user_id` (1 orang); tidak memakai layar Assign Employees
 
 ### 9.4 Deploy VPS
 
@@ -315,6 +332,7 @@ git fetch/merge fork/master → composer install
 | Laporan klien | 1 proyek / unduhan; preview wajib; mask overdue/titles; hide hours; Excel |
 | Domain OM | Proyek + HR approval tim; **bukan** Sales/Purchase/Inventory penuh |
 | Domain HRD | People ops + eval + weekly ops internal; **bukan** customer weekly report |
+| Manajer Proyek | 1 user via `projects.user_id` di form proyek; **terpisah** dari pivot Assign Employees |
 
 ---
 
@@ -329,5 +347,6 @@ git fetch/merge fork/master → composer install
   - `/admin/performance-evaluation-dashboard`
   - `/admin/weekly-operations-report`
   - `/admin/customer-project-weekly-report`
-  - `/admin/project/assign-employees`
+  - `/admin/project/assign-employees` (anggota kerja)
+  - `/admin/project/projects/{id}/edit` (field **Manajer Proyek**)
   - `/admin/pos-terminal`
