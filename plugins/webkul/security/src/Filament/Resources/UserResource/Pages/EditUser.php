@@ -89,20 +89,6 @@ class EditUser extends EditRecord
         ];
     }
 
-    protected function mutateFormDataBeforeFill(array $data): array
-    {
-        $partner = $this->record?->partner;
-
-        if (! $partner) {
-            return $data;
-        }
-
-        return [
-            ...$data,
-            ...$partner->toArray(),
-        ];
-    }
-
     protected function mutateFormDataBeforeSave(array $data): array
     {
         if (! (Auth::id() === $this->record->id && array_key_exists('resource_permission', $data))) {

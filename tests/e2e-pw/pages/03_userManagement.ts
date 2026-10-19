@@ -316,9 +316,15 @@ export class UserManagementPage {
     }
 
     /**
-     * Role selection helper (supports native select and custom dropdown)
+     * Role selection helper (CheckboxList, native select, or custom dropdown)
      */
     private async selectRole(role: string) {
+        const roleCheckbox = this.page.getByRole("checkbox", { name: new RegExp(`^${role}$`, "i") });
+        if (await roleCheckbox.count()) {
+            await roleCheckbox.first().check();
+            return;
+        }
+
         const roleSelect = this.erpLocators.usersRoleSelect;
         if (await roleSelect.count()) {
             if (await roleSelect.first().evaluate((el) => el.tagName.toLowerCase() === "select")) {

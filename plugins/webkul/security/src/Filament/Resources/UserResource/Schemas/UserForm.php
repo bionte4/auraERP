@@ -4,6 +4,7 @@ namespace Webkul\Security\Filament\Resources\UserResource\Schemas;
 
 use Closure;
 use Filament\Actions\Action;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -67,12 +68,15 @@ class UserForm
 
                                 Section::make(__('security::filament/resources/user.form.sections.permissions.title'))
                                     ->schema([
-                                        Select::make('roles')
+                                        // CheckboxList — Select multiple/searchable forces Alpine and can render empty.
+                                        CheckboxList::make('roles')
                                             ->label(__('security::filament/resources/user.form.sections.permissions.fields.roles'))
                                             ->relationship('roles', 'name')
-                                            ->multiple()
                                             ->required()
-                                            ->preload()
+                                            ->searchable()
+                                            ->bulkToggleable()
+                                            ->columns(2)
+                                            ->columnSpanFull()
                                             ->rule(function (?User $record) {
                                                 return function (string $attribute, $value, Closure $fail) use ($record): void {
                                                     try {
@@ -85,26 +89,24 @@ class UserForm
                                                         }
                                                     }
                                                 };
-                                            })
-                                            ->searchable(),
+                                            }),
                                         Select::make('resource_permission')
                                             ->label(__('security::filament/resources/user.form.sections.permissions.fields.resource-permission'))
                                             ->live()
-                                            ->options(PermissionType::class)
+                                            ->options(PermissionType::options())
                                             ->required()
+                                            ->native()
                                             ->disabled(fn (?User $record): bool => filled($record) && Auth::id() === $record->id)
                                             ->dehydrated(fn (?User $record): bool => ! (filled($record) && Auth::id() === $record->id))
                                             ->helperText(fn (?User $record): ?string => filled($record) && Auth::id() === $record->id
                                                 ? __('security::filament/resources/user.form.sections.permissions.fields.resource-permission-self-change-disabled')
                                                 : null)
-                                            ->preload()
                                             ->default(PermissionType::GLOBAL->value)
                                             ->afterStateUpdated(function (Get $get, Set $set) {
                                                 if ($get('resource_permission') != PermissionType::GROUP) {
                                                     $set('teams', []);
                                                 }
-                                            })
-                                            ->searchable(),
+                                            }),
                                         Select::make('teams')
                                             ->label(__('security::filament/resources/user.form.sections.permissions.fields.teams'))
                                             ->relationship(
