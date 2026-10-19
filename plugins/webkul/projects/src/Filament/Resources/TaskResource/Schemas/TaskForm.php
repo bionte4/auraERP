@@ -138,7 +138,11 @@ class TaskForm
                                     ->visible(TaskResource::getTaskSettings()->enable_milestones),
                                 Select::make('partner_id')
                                     ->label(__('projects::filament/resources/task.form.sections.settings.fields.customer'))
-                                    ->relationship('partner', 'name')
+                                    ->relationship(
+                                        'partner',
+                                        'name',
+                                        modifyQueryUsing: fn (Builder $query, Get $get): Builder => Project::filterExternalCustomersQuery($query, $get('partner_id')),
+                                    )
                                     ->preload()
                                     ->createOptionForm(fn (Schema $schema): Schema => PartnerResource::form($schema))
                                     ->editOptionForm(fn (Schema $schema): Schema => PartnerResource::form($schema)),

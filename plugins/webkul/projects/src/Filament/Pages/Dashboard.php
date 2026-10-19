@@ -92,7 +92,24 @@ class Dashboard extends BaseDashboard
         $projectOptions = Project::query()->orderBy('name')->pluck('name', 'id')->all();
         $assigneeOptions = User::query()->orderBy('name')->pluck('name', 'id')->all();
         $tagOptions = Tag::query()->orderBy('name')->pluck('name', 'id')->all();
-        $partnerOptions = Partner::query()->orderBy('name')->pluck('name', 'id')->all();
+        // Same external-customer filter as Project form — raw Partner::all() includes
+        // employee/user partner rows (sub_type employee / linked partner_id).
+        // Limit to partners already used as project customers when any exist.
+        $projectPartnerIds = Project::query()
+            ->whereNotNull('partner_id')
+            ->distinct()
+            ->pluck('partner_id');
+
+        $partnerQuery = Project::filterExternalCustomersQuery(Partner::query());
+
+        if ($projectPartnerIds->isNotEmpty()) {
+            $partnerQuery->whereIn('partners_partners.id', $projectPartnerIds);
+        }
+
+        $partnerOptions = $partnerQuery
+            ->orderBy('partners_partners.name')
+            ->pluck('partners_partners.name', 'partners_partners.id')
+            ->all();
         $allLabel = __('projects::filament/pages/dashboard.filters-form.all');
 
         return $schema
