@@ -103,6 +103,7 @@ sudo -u www-data php artisan optimize:clear
 - Sync RBAC kapan saja: `sudo -u www-data php artisan security:sync-rbac`.
 
 ### I. Mengelola Role & Permission lewat UI (Roles)
+> Penjelasan arti angka **Permissions** dan matriks aturan tiap role: [docs/RBAC-PERMISSION-MATRIX.md](docs/RBAC-PERMISSION-MATRIX.md).
 - Buka **Pengaturan → Roles** (`/admin/shield/roles`, hanya Admin). Form Create/Edit Role menampilkan 3 section permission (bukan tab): **Resources** (terbuka; grup per plugin bisa di-expand, berisi checkbox per resource), **Pages**, dan **Widgets** (default ter-collapse). Toggle **Select All** mencentang semua permission yang tampil. Klik **Save**.
 - Menetapkan role ke user: **Pengaturan → Users** (`/admin/users`) → edit user → pilih role.
 - Aplikasi dilayani dua domain (`auraerp.my.id` & `opsora.my.id`): asset Filament (JS/CSS/font) **harus same-origin dengan domain yang dibuka**. `asset()` memprioritaskan `config('app.asset_url')` (fallback `APP_URL`) di atas `forceRootUrl`, jadi `AppServiceProvider` mematok keduanya (`forceRootUrl` + `useAssetOrigin`) ke host request. Bila asset termuat lintas domain, browser memblokirnya via CORS → checkbox list/tab Filament tidak terinisialisasi (centang tidak tampil, tab kosong, toast *"Error while loading page"*) walau data di database benar.
