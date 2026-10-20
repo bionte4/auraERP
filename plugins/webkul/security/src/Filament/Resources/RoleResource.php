@@ -97,6 +97,33 @@ class RoleResource extends RolesRoleResource
         ];
     }
 
+    /**
+     * Render the permission groups as plain sections instead of Shield's
+     * Tabs component. The tab wrapper did not render at all on the
+     * production panel (empty form below Name/Guard) while the underlying
+     * resource/page/widget schemas built correctly, so the form now uses
+     * the same builders inside always-rendered sections.
+     */
+    public static function getShieldFormComponents(): Component
+    {
+        return Group::make([
+            Section::make(__('filament-shield::filament-shield.resources'))
+                ->collapsible()
+                ->schema(static::getPluginResourceEntitiesSchema())
+                ->columnSpanFull(),
+            Section::make(__('filament-shield::filament-shield.pages'))
+                ->collapsible()
+                ->collapsed()
+                ->schema(static::getPluginPageEntitiesSchema())
+                ->columnSpanFull(),
+            Section::make(__('filament-shield::filament-shield.widgets'))
+                ->collapsible()
+                ->collapsed()
+                ->schema(static::getPluginWidgetEntitiesSchema())
+                ->columnSpanFull(),
+        ])->columnSpanFull();
+    }
+
     public static function getTabFormComponentForResources(): Component
     {
         return self::shield()->hasSimpleResourcePermissionView()
