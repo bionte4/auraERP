@@ -114,6 +114,12 @@ class ManageContracts extends ManageRelatedRecords
                     }),
                 TextColumn::make('source')
                     ->label(__('employees::filament/resources/employee/pages/manage-contracts.columns.source')),
+                TextColumn::make('notes')
+                    ->label(__('employees::filament/resources/employee/pages/manage-contracts.fields.notes'))
+                    ->placeholder('—')
+                    ->limit(50)
+                    ->tooltip(fn (EmployeeContract $record): ?string => $record->notes)
+                    ->wrap(),
             ])
             ->defaultSort('sequence')
             ->headerActions([
