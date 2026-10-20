@@ -134,6 +134,11 @@ sudo -u www-data php artisan optimize:clear
 4. Penugasan ini tersinkron dengan layar **Project → Tugaskan Karyawan** (data & followers yang sama). Lihat juga **§7**.
 
 ### E. Memantau Kontrak yang Akan Habis (Alert 30 Hari) & Approval Cuti Berjenjang (SLA 24 Jam)
+- **Dashboard Karyawan (`People Dashboard`):** Buka **Dashboard → Dashboard Karyawan** (`/admin/employees/dashboard`, **Admin/HRD** penuh, **OM** hanya scope timnya; permission `page_employee_people_dashboard` + 3 widget `widget_employee_*`). Filter atas: Departemen / Tipe Karyawan / Lokasi Kerja / Company.
+  - **KPI bisa diklik:** Karyawan Aktif, Karyawan Baru 30 hari, Kontrak Berakhir/Lewat (→ tab daftar terkait), Tanpa Related User, Tanpa Proyek.
+  - **Tabel Kontrak Mendekati / Melewati Tanggal Berakhir:** karyawan aktif lewat/≤3 bulan dari akhir kontrak, badge sisa hari, filter Expired/≤7/≤30/31–90 hari; **baris bisa diklik** ke Ringkasan 360 (+ aksi View/Edit).
+  - **Tabel Perlu Perhatian:** tanpa Related User / departemen / jabatan / atasan / email, atau tanpa proyek; **baris bisa diklik** ke Ringkasan 360.
+  - Daftar **Employees** tetap halaman direktori/CRUD — dashboard ini untuk monitoring, bukan pengganti daftar.
 - **Tab Filter Cepat Kontrak:** Klik tab **`Kontrak Segera Berakhir` (`Expiring Contracts`)** di daftar **Employees** untuk melihat karyawan dengan sisa kontrak `≤ 30 hari`.
 - **Approval Cuti/Izin Berjenjang & Eskalasi Otomatis 24 Jam (`Time Off`):**
   - Saat karyawan mengajukan izin/cuti di **Time Off → My Time Off**, sistem otomatis menetapkan **Approver Level 1 (Atasan Langsung)** dan **Approver Level 2 (Atasan dari Atasan / Kepala Dept)**.

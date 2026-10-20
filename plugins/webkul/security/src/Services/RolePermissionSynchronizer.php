@@ -86,6 +86,10 @@ class RolePermissionSynchronizer
                 'page_support_my_day_dashboard',
                 'page_evaluation_performance_evaluation_dashboard',
                 'widget_project_attendance_presence_widget',
+                'page_employee_people_dashboard',
+                'widget_employee_people_stats_widget',
+                'widget_employee_expiring_contracts_widget',
+                'widget_employee_people_attention_widget',
             ],
         ]));
         $rolesSynced[] = $hrdRole->name;
@@ -124,6 +128,10 @@ class RolePermissionSynchronizer
                 'widget_project_operation_manager_actions_widget',
                 'widget_project_attendance_presence_widget',
                 'widget_project_expiring_projects_widget',
+                'page_employee_people_dashboard',
+                'widget_employee_people_stats_widget',
+                'widget_employee_expiring_contracts_widget',
+                'widget_employee_people_attention_widget',
             ],
         ]));
         $rolesSynced[] = $operationManagerRole->name;
@@ -248,6 +256,10 @@ class RolePermissionSynchronizer
             'widget_project_operation_manager_actions_widget',
             'widget_project_attendance_presence_widget',
             'widget_project_expiring_projects_widget',
+            'page_employee_people_dashboard',
+            'widget_employee_people_stats_widget',
+            'widget_employee_expiring_contracts_widget',
+            'widget_employee_people_attention_widget',
             'page_integrations_manage_integrations',
             'page_support_welcome_dashboard',
             'page_support_my_day_dashboard',

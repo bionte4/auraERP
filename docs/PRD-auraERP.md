@@ -101,6 +101,7 @@ ID memakai prefiks modul. Prioritas: **P0** harus ada / sudah ada; **P1** pentin
 | EMP-03 | Bulk import karyawan via Excel template | P0 | Done |
 | EMP-04 | Penugasan proyek dari profil karyawan sinkron dengan Assign Employees | P0 | Done |
 | EMP-05 | Related User wajib agar karyawan bisa login & akses proyek | P0 | Done |
+| EMP-06 | **People Dashboard** (`/admin/employees/dashboard`): KPI klik, tabel kontrak mendekati/lewat tenggat, tabel perlu perhatian; Admin/HRD penuh, OM scope tim | P0 | Done |
 
 ### 5.3 Absensi — `ATT`
 
