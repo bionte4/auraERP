@@ -3,9 +3,9 @@
 | Field | Nilai |
 | :--- | :--- |
 | **Produk** | auraERP — customisasi operasional Opsora |
-| **Versi dokumen** | 1.2 |
-| **Tanggal** | 2026-10-19 |
-| **Revisi** | Clarifikasi assign/unassign Manajer Proyek vs Assign Employees |
+| **Versi dokumen** | 1.3 |
+| **Tanggal** | 2026-10-20 |
+| **Revisi** | UI Roles berbasis section permission (SEC-07), OM kelola karyawan terscope PM (EMP-07), sidebar expanded + badge navigasi |
 | **Status** | Baseline produk (fitur utama sudah live / di-deploy) |
 | **Pemilik produk** | Opsora / auraERP ops |
 | **Referensi operasional** | [WORKING_INSTRUCTION.md](../WORKING_INSTRUCTION.md) |
@@ -91,6 +91,7 @@ ID memakai prefiks modul. Prioritas: **P0** harus ada / sudah ada; **P1** pentin
 | SEC-04 | Rate limit login + auto-blokir IP setelah ambang kegagalan; Admin dapat unblock | P0 | Done |
 | SEC-05 | Resource Permission Global/Group/Individual diterapkan pada resource ber-policy | P0 | Done |
 | SEC-06 | Setelah sync RBAC, user harus logout/login agar cache Spatie segar | P0 | Operasional |
+| SEC-07 | UI pengelolaan Role (`/admin/shield/roles`) menampilkan section permission Resources/Pages/Widgets dengan checkbox per entitas; baseline role bawaan bersumber dari kode (`RolePermissionSynchronizer`) dan ter-reset saat sync, role custom tidak disentuh sync | P0 | Done |
 
 ### 5.2 Karyawan & organisasi — `EMP`
 

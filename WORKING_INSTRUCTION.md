@@ -102,6 +102,13 @@ sudo -u www-data php artisan optimize:clear
 - Untuk go-live tanpa demo: set `SECURITY_DEMO_ACCOUNTS_ALLOWED=false` di `.env` (login demo ditolak).
 - Sync RBAC kapan saja: `sudo -u www-data php artisan security:sync-rbac`.
 
+### I. Mengelola Role & Permission lewat UI (Roles)
+- Buka **Pengaturan → Roles** (`/admin/shield/roles`, hanya Admin). Form Create/Edit Role menampilkan 3 section permission (bukan tab): **Resources** (terbuka; grup per plugin bisa di-expand, berisi checkbox per resource), **Pages**, dan **Widgets** (default ter-collapse). Toggle **Select All** mencentang semua permission yang tampil. Klik **Save**.
+- Menetapkan role ke user: **Pengaturan → Users** (`/admin/users`) → edit user → pilih role.
+- **Aturan main penting:** baseline 6 role standar didefinisikan di kode (`RolePermissionSynchronizer`). Menjalankan `security:sync-rbac` akan **menyetel ulang** permission role bawaan ke baseline — perubahan manual lewat UI pada role bawaan akan hilang. Untuk mengubah aturan role bawaan, ubah kodenya lalu deploy/sync; role **baru/custom** buatan UI tidak disentuh synchronizer.
+- Bila suatu saat daftar permission di form Role kosong: generate dulu permission Shield lalu sync: `sudo -u www-data php artisan shield:generate --all --option=permissions --panel=admin` dilanjutkan `sudo -u www-data php artisan security:sync-rbac --shield`, lalu `optimize:clear` + hard refresh.
+- **Operation Manager & karyawan:** OM dapat tambah/edit/hapus (soft-delete per record saja, tanpa bulk/force-delete) karyawan, dengan scope: lihat = proyek yang ia ikuti + diri sendiri + bawahan langsung + karyawan buatannya; edit/hapus hanya di proyek di mana ia **Project Manager** (+ karyawan buatannya). Di luar scope, record tidak terlihat (akses URL langsung = 404/403).
+
 *(Untuk menyinkronkan ulang seluruh Role & Permission kapan saja: `sudo -u www-data php artisan security:sync-rbac`)*
 
 ---
