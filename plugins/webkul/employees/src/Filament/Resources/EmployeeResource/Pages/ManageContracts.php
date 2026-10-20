@@ -68,7 +68,8 @@ class ManageContracts extends ManageRelatedRecords
                     ->label(__('employees::filament/resources/employee/pages/manage-contracts.fields.status'))
                     ->options(static::statusOptions())
                     ->default(EmployeeContract::STATUS_ACTIVE)
-                    ->required(),
+                    ->required()
+                    ->helperText(__('employees::filament/resources/employee/pages/manage-contracts.fields.status-helper-text')),
                 Textarea::make('notes')
                     ->label(__('employees::filament/resources/employee/pages/manage-contracts.fields.notes'))
                     ->columnSpanFull(),
