@@ -30,6 +30,7 @@ return [
                 'employment-type'        => 'Employment Type',
                 'join-date'              => 'Join Date',
                 'contract-end-date'      => 'Contract End Date',
+                'contract-sequence'  => 'Current Contract',
                 'contract-end-date-help' => 'Leave blank for permanent employees. An alert triggers 30 days before this date.',
             ],
         ],

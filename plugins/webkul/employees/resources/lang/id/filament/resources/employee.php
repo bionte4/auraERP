@@ -30,6 +30,7 @@ return [
                 'employment-type'        => 'Tipe Karyawan',
                 'join-date'              => 'Tanggal Masuk (Join Date)',
                 'contract-end-date'      => 'Tanggal Berakhir Kontrak',
+                'contract-sequence'  => 'Kontrak Berjalan',
                 'contract-end-date-help' => 'Kosongkan untuk karyawan tetap (Permanent). Peringatan otomatis muncul 30 hari sebelum tanggal ini.',
             ],
         ],

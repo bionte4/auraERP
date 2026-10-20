@@ -15,6 +15,7 @@ use Webkul\Employee\Filament\Resources\EmployeeResource\Pages\CreateEmployee;
 use Webkul\Employee\Filament\Resources\EmployeeResource\Pages\EditEmployee;
 use Webkul\Employee\Filament\Resources\EmployeeResource\Pages\ListEmployees;
 use Webkul\Employee\Filament\Resources\EmployeeResource\Pages\ManageAssignedProjects;
+use Webkul\Employee\Filament\Resources\EmployeeResource\Pages\ManageContracts;
 use Webkul\Employee\Filament\Resources\EmployeeResource\Pages\ManageOverview;
 use Webkul\Employee\Filament\Resources\EmployeeResource\Pages\ManageResume;
 use Webkul\Employee\Filament\Resources\EmployeeResource\Pages\ManageSkill;
@@ -93,6 +94,10 @@ class EmployeeResource extends Resource
     {
         $query = parent::getEloquentQuery();
 
+        if (\Illuminate\Support\Facades\Schema::hasTable('employees_employee_contracts')) {
+            $query->withCount('contracts')->withMax('contracts', 'sequence');
+        }
+
         $scopeClass = 'Webkul\\Project\\Services\\OperationalScope';
 
         if (! auth()->check() || ! class_exists($scopeClass)) {
@@ -157,6 +162,7 @@ class EmployeeResource extends Resource
             ManageSkill::class,
             ManageResume::class,
             ManageAssignedProjects::class,
+            ManageContracts::class,
         ]);
     }
 
@@ -192,6 +198,7 @@ class EmployeeResource extends Resource
             'skills'            => ManageSkill::route('/{record}/skills'),
             'resumes'           => ManageResume::route('/{record}/resumes'),
             'assigned-projects' => ManageAssignedProjects::route('/{record}/assigned-projects'),
+            'contracts'         => ManageContracts::route('/{record}/contracts'),
         ];
     }
 }

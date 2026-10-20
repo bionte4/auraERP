@@ -220,6 +220,30 @@ class Employee extends Model
         return $this->belongsTo(EmploymentType::class, 'employment_type_id');
     }
 
+    public function contracts(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(EmployeeContract::class, 'employee_id')->orderBy('sequence');
+    }
+
+    public function currentContract(): ?EmployeeContract
+    {
+        return $this->contracts()
+            ->where('status', EmployeeContract::STATUS_ACTIVE)
+            ->orderByDesc('sequence')
+            ->first();
+    }
+
+    /**
+     * Total accumulated months across all PKWT (fixed-term) contracts.
+     * Indonesian labour law (PP 35/2021) caps PKWT at 60 months total.
+     */
+    public function cumulativePkwtMonths(): int
+    {
+        return (int) $this->contracts
+            ->filter(fn (EmployeeContract $contract): bool => $contract->isPkwt())
+            ->sum(fn (EmployeeContract $contract): int => $contract->durationInMonths());
+    }
+
     public function daysUntilContractEnds(): ?int
     {
         if (! $this->contract_end_date) {

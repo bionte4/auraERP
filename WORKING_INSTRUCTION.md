@@ -147,7 +147,15 @@ sudo -u www-data php artisan optimize:clear
 3. Pilih satu atau beberapa **Proyek**, lalu klik **Simpan Penugasan**.
 4. Penugasan ini tersinkron dengan layar **Project → Tugaskan Karyawan** (data & followers yang sama). Lihat juga **§7**.
 
-### E. Memantau Kontrak yang Akan Habis (Alert 30 Hari) & Approval Cuti Berjenjang (SLA 24 Jam)
+### E. Riwayat Kontrak Karyawan (Kontrak ke-1, ke-2, dst.)
+1. Buka profil karyawan → tab **Riwayat Kontrak** (`/{record}/contracts`). Setiap baris adalah satu kontrak: tipe (PKWT/PKWTT/Outsource/Outtask), nomor kontrak, periode, durasi (bulan), status, dan sumber pencatatan.
+2. **Kontrak Baru**: tombol *Kontrak Baru* untuk kontrak pertama/baru. **Perpanjang Kontrak**: tombol *Perpanjang Kontrak* — tanggal mulai terisi otomatis sehari setelah kontrak terakhir berakhir; simpan sebagai **Aktif**.
+3. Saat kontrak baru berstatus Aktif, kontrak aktif sebelumnya otomatis berubah status menjadi **Diperpanjang**, dan tanggal berakhir + tipe berjalan di profil karyawan tersinkron dari kontrak aktif terbaru.
+4. Daftar karyawan menampilkan badge **Kontrak ke-N** (kontrak terakhir) di samping tipe karyawan.
+5. Akumulasi masa PKWT dihitung dari seluruh kontrak bertipe PKWT/Contract — dasar pemantauan batas maksimal PKWT **60 bulan** (PP 35/2021); alert ambang batas & estimasi uang kompensasi menyusul di fase berikutnya.
+6. Data awal: jalankan `php artisan employees:backfill-contracts` **satu kali** setelah deploy — sistem membuat *Kontrak ke-1* dari Tanggal Bergabung & tanggal berakhir berjalan untuk karyawan yang belum punya riwayat (tidak menggandakan bila dijalankan ulang). Riwayat historis sebelum sistem dipakai dapat dilengkapi manual lewat *Kontrak Baru* (sesuaikan tanggal & statusnya).
+
+### F. Memantau Kontrak yang Akan Habis (Alert 30 Hari) & Approval Cuti Berjenjang (SLA 24 Jam)
 - **Dashboard Karyawan (`People Dashboard`):** Buka **Dashboard → Dashboard Karyawan** (`/admin/employees/dashboard`, **Admin/HRD** penuh, **OM** hanya scope timnya; permission `page_employee_people_dashboard` + 3 widget `widget_employee_*`). Filter atas: Departemen / Tipe Karyawan / Lokasi Kerja / Company.
   - **KPI bisa diklik:** Karyawan Aktif, Karyawan Baru 30 hari, Kontrak Berakhir/Lewat (→ tab daftar terkait), Tanpa Related User, Tanpa Proyek.
   - **Tabel Kontrak Mendekati / Melewati Tanggal Berakhir:** karyawan aktif lewat/≤3 bulan dari akhir kontrak, badge sisa hari, filter Expired/≤7/≤30/31–90 hari; **baris bisa diklik** ke Ringkasan 360 (+ aksi View/Edit).

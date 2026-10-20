@@ -5,6 +5,7 @@ namespace Webkul\Employee;
 use Filament\Panel;
 use Illuminate\Support\Facades\Schedule;
 use Webkul\Chatter\Services\ChatterCleanupService;
+use Webkul\Employee\Console\Commands\BackfillEmployeeContractsCommand;
 use Webkul\Employee\Console\Commands\NotifyExpiringContractsCommand;
 use Webkul\Employee\Models\Department;
 use Webkul\Employee\Models\Employee;
@@ -44,9 +45,13 @@ class EmployeeServiceProvider extends PackageServiceProvider
                 '2026_08_09_000000_create_employees_employee_resume_attachments_table',
                 '2026_10_14_180000_add_contract_dates_and_employment_type_to_employees_table',
                 '2026_10_16_161111_add_placement_coordinates_to_employees_work_locations_table',
+                '2026_10_20_140000_create_employees_employee_contracts_table',
             ])
             ->runsMigrations()
-            ->hasCommand(NotifyExpiringContractsCommand::class)
+            ->hasCommands([
+                NotifyExpiringContractsCommand::class,
+                BackfillEmployeeContractsCommand::class,
+            ])
             ->hasSeeder('Webkul\\Employee\\Database\Seeders\\DatabaseSeeder')
             ->hasInstallCommand(function (InstallCommand $command) {
                 $command

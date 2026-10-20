@@ -83,6 +83,14 @@ class EmployeesTable
                         ])
                             ->visible(fn (Employee $record): bool => filled($record->employment_type_id)),
                         Stack::make([
+                            TextColumn::make('contracts_max_sequence')
+                                ->badge()
+                                ->color('primary')
+                                ->label(__('employees::filament/resources/employee.table.columns.contract-sequence'))
+                                ->formatStateUsing(fn ($state): string => $state ? __('employees::models/employee-contract.label', ['sequence' => $state]) : ''),
+                        ])
+                            ->visible(fn (Employee $record): bool => ($record->contracts_count ?? 0) > 0),
+                        Stack::make([
                             TextColumn::make('contract_end_date')
                                 ->badge()
                                 ->icon('heroicon-m-calendar-days')
