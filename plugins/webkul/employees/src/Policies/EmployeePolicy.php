@@ -36,6 +36,29 @@ class EmployeePolicy
     }
 
     /**
+     * Scoped users (e.g. Operation Manager) may only mutate employees on
+     * projects they manage as Project Manager (plus employees they created
+     * themselves). Membership in a project is view-only. Admin/HRD keep
+     * the regular scoped-permission behaviour.
+     */
+    protected function canMutateInOperationalScope(User $user, Employee $employee): bool
+    {
+        $scopeClass = 'Webkul\\Project\\Services\\OperationalScope';
+
+        if (! class_exists($scopeClass)) {
+            return $this->hasAccess($user, $employee, 'coach');
+        }
+
+        $scope = app($scopeClass);
+
+        if ($scope->isUnscoped($user)) {
+            return $this->hasAccess($user, $employee, 'coach');
+        }
+
+        return $scope->editableEmployeeIds($user)->contains((int) $employee->id);
+    }
+
+    /**
      * Determine whether the user can update the model.
      */
     public function update(User $user, Employee $employee): bool
@@ -44,7 +67,7 @@ class EmployeePolicy
             return false;
         }
 
-        return $this->hasAccess($user, $employee, 'coach');
+        return $this->canMutateInOperationalScope($user, $employee);
     }
 
     /**
@@ -56,7 +79,7 @@ class EmployeePolicy
             return false;
         }
 
-        return $this->hasAccess($user, $employee, 'coach');
+        return $this->canMutateInOperationalScope($user, $employee);
     }
 
     /**
@@ -76,7 +99,7 @@ class EmployeePolicy
             return false;
         }
 
-        return $this->hasAccess($user, $employee, 'coach');
+        return $this->canMutateInOperationalScope($user, $employee);
     }
 
     /**
@@ -96,7 +119,7 @@ class EmployeePolicy
             return false;
         }
 
-        return $this->hasAccess($user, $employee, 'coach');
+        return $this->canMutateInOperationalScope($user, $employee);
     }
 
     /**

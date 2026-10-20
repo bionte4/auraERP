@@ -99,6 +99,69 @@ class OperationalScope
     }
 
     /**
+     * Project IDs where the user is the Project Manager (projects.user_id),
+     * excluding projects they are merely a team member of.
+     *
+     * @return array<int, int>
+     */
+    public function managedProjectIds(?User $user = null): array
+    {
+        $user ??= auth()->user();
+
+        if (! $user instanceof User || ! Schema::hasTable('projects_projects')) {
+            return [];
+        }
+
+        return Project::query()
+            ->withoutGlobalScopes()
+            ->where('user_id', $user->id)
+            ->pluck('id')
+            ->map(fn ($id): int => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Employee IDs a scoped user may edit/delete: only employees assigned
+     * to projects they manage as Project Manager, plus employees they
+     * created themselves (editable before first assignment). Broader than
+     * this (member projects, direct reports, self) is view-only.
+     *
+     * @return Collection<int, int>
+     */
+    public function editableEmployeeIds(?User $user = null): Collection
+    {
+        $user ??= auth()->user();
+
+        if (! $user instanceof User || ! Schema::hasTable('employees_employees')) {
+            return collect();
+        }
+
+        $ids = collect();
+
+        $managedProjectIds = $this->managedProjectIds($user);
+
+        if ($managedProjectIds !== [] && Schema::hasTable('projects_project_employees')) {
+            $ids = $ids->merge(
+                DB::table('projects_project_employees')
+                    ->whereIn('project_id', $managedProjectIds)
+                    ->pluck('employee_id')
+                    ->map(fn ($id): int => (int) $id)
+            );
+        }
+
+        $ids = $ids->merge(
+            Employee::query()
+                ->where('creator_id', $user->id)
+                ->pluck('id')
+                ->map(fn ($id): int => (int) $id)
+        );
+
+        return $ids->unique()->values();
+    }
+
+    /**
      * Employee IDs a scoped (non Admin/HRD) user may manage (CRUD):
      * employees assigned to their projects, themselves, their direct
      * reports, and employees they created themselves (so a just-created

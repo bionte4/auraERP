@@ -102,7 +102,7 @@ ID memakai prefiks modul. Prioritas: **P0** harus ada / sudah ada; **P1** pentin
 | EMP-04 | Penugasan proyek dari profil karyawan sinkron dengan Assign Employees | P0 | Done |
 | EMP-05 | Related User wajib agar karyawan bisa login & akses proyek | P0 | Done |
 | EMP-06 | **People Dashboard** (`/admin/employees/dashboard`): KPI klik, tabel kontrak mendekati/lewat tenggat, tabel perlu perhatian; Admin/HRD penuh, OM scope tim | P0 | Done |
-| EMP-07 | **OM kelola karyawan proyeknya**: Operation Manager dapat tambah/edit/hapus (soft-delete per record saja, tanpa bulk/force-delete) karyawan, tetapi record karyawan terscope ke proyek yang ia tangani (+ diri sendiri, bawahan langsung, karyawan buatannya); Admin/HRD tanpa scope | P0 | Done |
+| EMP-07 | **OM kelola karyawan proyeknya**: Operation Manager dapat tambah/edit/hapus (soft-delete per record saja, tanpa bulk/force-delete) karyawan, tetapi record karyawan terscope: lihat = proyek yang ia tangani (+ diri sendiri, bawahan langsung, karyawan buatannya), edit/hapus hanya proyek di mana ia Project Manager (+ karyawan buatannya); Admin/HRD tanpa scope | P0 | Done |
 
 ### 5.3 Absensi — `ATT`
 
