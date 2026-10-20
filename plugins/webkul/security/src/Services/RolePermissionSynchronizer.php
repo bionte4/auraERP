@@ -123,6 +123,7 @@ class RolePermissionSynchronizer
                 'widget_project_operation_manager_workload_widget',
                 'widget_project_operation_manager_actions_widget',
                 'widget_project_attendance_presence_widget',
+                'widget_project_expiring_projects_widget',
             ],
         ]));
         $rolesSynced[] = $operationManagerRole->name;
@@ -246,6 +247,7 @@ class RolePermissionSynchronizer
             'widget_project_operation_manager_workload_widget',
             'widget_project_operation_manager_actions_widget',
             'widget_project_attendance_presence_widget',
+            'widget_project_expiring_projects_widget',
             'page_integrations_manage_integrations',
             'page_support_welcome_dashboard',
             'page_support_my_day_dashboard',

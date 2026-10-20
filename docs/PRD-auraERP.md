@@ -142,6 +142,7 @@ ID memakai prefiks modul. Prioritas: **P0** harus ada / sudah ada; **P1** pentin
 | PRJ-06 | Dashboard OM: widget beban, aksi, kehadiran (scope) | P0 | Done |
 | PRJ-07 | Bulk import proyek Excel | P1 | Done |
 | PRJ-08 | **Manajer Proyek** (`projects.user_id`): assign/ganti/kosongkan di form proyek (1 user); beda dari Assign Employees | P0 | Done |
+| PRJ-09 | Widget dashboard **Proyek Mendekati / Melewati Tenggat**: proyek aktif expired/≤3 bulan, badge sisa hari, progress + task overdue, baris bisa diklik ke View/Edit | P0 | Done |
 
 ### 5.7 Laporan proyek — `RPT`
 

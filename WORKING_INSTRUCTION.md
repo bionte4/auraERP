@@ -278,6 +278,7 @@ Buka menu **Employees → Performance Plans → Evaluations** (`/admin/evaluatio
 5. **Dashboard beban kerja Operation Manager (`Project → Dashboard`):**
    - Buka **Project → Dashboard** (`/admin/project`).
    - Widget **Item aksi OM** (scope OM/Admin/HRD): cuti pending, kontrak ≤ 30 hari, tugas terlambat, karyawan ditugaskan tanpa Related User.
+   - Widget **Proyek Mendekati / Melewati Tenggat** (Admin/OM, permission `widget_project_expiring_projects_widget`): proyek aktif yang sudah lewat `end_date` atau berakhir dalam 3 bulan, urut paling mendesak. Kolom proyek/customer/PM/tanggal berakhir/badge sisa hari/progress tugas/tugas terlambat; **baris & nama proyek bisa diklik** ke View (ada juga aksi View/Edit), filter rentang Expired/≤30/31–60/61–90 hari, mengikuti filter atas Project & Customer.
    - Widget **Kehadiran hari ini**: hadir / terlambat / belum absen (scope).
    - Widget **Operation Manager — Proyek sebagai Manajer Proyek** menampilkan OM + jumlah proyek aktif sebagai **Manajer Proyek** (hasil assign di langkah 3).
    - **Dashboard → Hari Saya** (`/admin/my-day`) — kartu fokus harian per peran (Admin/HRD/OM/Staff/Kasir).
