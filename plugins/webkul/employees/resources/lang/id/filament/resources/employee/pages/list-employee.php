@@ -23,6 +23,10 @@ return [
                 'title' => 'Import karyawan selesai',
                 'body'  => 'Berhasil menambahkan :created karyawan baru, memperbarui :updated karyawan, dan melewati :skipped baris kosong.',
             ],
+                'unknown-types' => [
+                    'title' => 'Tipe karyawan tidak dikenal dilewati',
+                    'body'  => 'Nama tipe karyawan berikut dari file belum ada dan dikosongkan: :types. Buat dulu di Configurations → Employment Types, lalu impor ulang atau isi manual.',
+                ],
         ],
 
         'create' => [

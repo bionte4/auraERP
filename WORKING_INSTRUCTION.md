@@ -131,6 +131,7 @@ sudo -u www-data php artisan optimize:clear
 ### B. Mengisi Tipe Karyawan & Masa Kontrak
 1. Masuk ke tab **Work Information (Informasi Kerja)** → bagian **Organization Details (Detail Organisasi)**:
    - **Employment Type (Tipe Karyawan):** Pilih dari master (`Permanent`, `Contract` / PKWT, `Konsultan`, `Freelance`, dll.). Status **Outsource / Outtask** dikenali aplikasi dari nama/kode tipe, job title, atau jenis evaluasi (bukan selalu tipe seed default).
+   - **Aturan kebersihan master (wajib):** Dropdown tipe **tidak lagi punya tombol "+"** — tipe baru hanya dibuat lewat **Employees → Configurations → Employment Types** oleh Admin/HRD dengan satu ejaan baku. Sistem menolak nama duplikat walau beda huruf besar/kecil/spasi. Bulk import juga **tidak membuat tipe baru diam-diam**: nama tipe di Excel yang belum ada akan dikosongkan dan dilaporkan dalam notifikasi peringatan setelah import — buat dulu tipenya di Configurations, lalu impor ulang atau isi manual.
    - **Start Join Date (Tanggal Mulai Bergabung):** Pilih tanggal mulai bekerja.
    - **End Contract Date (Tanggal Berakhir Kontrak):** Isi tanggal berakhir kontrak (kosongkan untuk *Permanent*).
 2. Klik **Save Changes**.

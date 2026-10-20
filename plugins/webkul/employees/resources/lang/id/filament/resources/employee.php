@@ -28,6 +28,7 @@ return [
                 'coach'                  => 'Pembimbing',
                 'employee-tags'          => 'Tag Karyawan',
                 'employment-type'        => 'Tipe Karyawan',
+                'employment-type-helper-text' => 'Dikelola hanya lewat Employees → Configurations → Employment Types agar daftar tetap bersih.',
                 'join-date'              => 'Tanggal Masuk (Join Date)',
                 'contract-end-date'      => 'Tanggal Berakhir Kontrak',
                 'contract-sequence'  => 'Kontrak Berjalan',

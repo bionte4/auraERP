@@ -47,10 +47,46 @@ class EmploymentType extends Model implements Sortable
         parent::boot();
 
         static::creating(function ($employmentType) {
+            $employmentType->name = is_string($employmentType->name) ? trim((string) preg_replace('/\s+/', ' ', $employmentType->name)) : $employmentType->name;
             $employmentType->code ??= $employmentType->name;
 
             $employmentType->creator_id ??= Auth::id();
+
+            static::guardAgainstDuplicateName($employmentType);
         });
+
+        static::updating(function ($employmentType) {
+            if ($employmentType->isDirty('name')) {
+                $employmentType->name = trim((string) preg_replace('/\s+/', ' ', (string) $employmentType->name));
+
+                static::guardAgainstDuplicateName($employmentType);
+            }
+        });
+    }
+
+    /**
+     * Employment types are shared master data: names must stay unique
+     * regardless of letter case or extra spaces, otherwise imports and
+     * dropdowns end up with near-duplicate variants.
+     */
+    protected static function guardAgainstDuplicateName(self $employmentType): void
+    {
+        $normalized = mb_strtolower(trim((string) preg_replace('/\s+/', ' ', (string) $employmentType->name)));
+
+        if ($normalized === '') {
+            return;
+        }
+
+        $duplicate = static::query()
+            ->whereRaw('LOWER(name) = ?', [$normalized])
+            ->when($employmentType->exists, fn ($query) => $query->whereKeyNot($employmentType->getKey()))
+            ->exists();
+
+        if ($duplicate) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'name' => __('employees::models/employment-type.duplicate-name'),
+            ]);
+        }
     }
 
     protected static function newFactory(): EmploymentTypeFactory

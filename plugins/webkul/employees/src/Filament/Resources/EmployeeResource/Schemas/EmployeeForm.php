@@ -26,7 +26,6 @@ use Webkul\Employee\Enums\DistanceUnit;
 use Webkul\Employee\Enums\Gender;
 use Webkul\Employee\Enums\MaritalStatus;
 use Webkul\Employee\Filament\Clusters\Configurations\Resources\DepartureReasonResource;
-use Webkul\Employee\Filament\Clusters\Configurations\Resources\EmploymentTypeResource;
 use Webkul\Employee\Filament\Clusters\Configurations\Resources\JobPositionResource;
 use Webkul\Employee\Filament\Clusters\Configurations\Resources\WorkLocationResource;
 use Webkul\Employee\Filament\Resources\DepartmentResource;
@@ -167,7 +166,7 @@ class EmployeeForm
                                     ->relationship('employmentType', 'name')
                                     ->preload()
                                     ->label(__('employees::filament/resources/employee.form.sections.fields.employment-type'))
-                                    ->createOptionForm(fn (Schema $schema) => EmploymentTypeResource::form($schema)),
+                                    ->helperText(__('employees::filament/resources/employee.form.sections.fields.employment-type-helper-text')),
                                 DatePicker::make('join_date')
                                     ->label(__('employees::filament/resources/employee.form.sections.fields.join-date'))
                                     ->native(false)

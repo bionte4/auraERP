@@ -18,6 +18,13 @@ use Webkul\Employee\Models\EmploymentType;
 class EmployeeBulkImportService
 {
     /**
+     * Employment type names from the last import that did not match any
+     * existing master record (employees were imported without a type).
+     *
+     * @var array<int, string>
+     */
+    protected array $unknownEmploymentTypes = [];
+    /**
      * @return array<int, string>
      */
     public function headings(): array
@@ -255,6 +262,11 @@ class EmployeeBulkImportService
         return (int) $dept->id;
     }
 
+    /**
+     * Employment types are master data managed via Configurations only.
+     * Imports never create new types silently: unknown names are collected
+     * in unknownEmploymentTypes() and the employee is imported without a type.
+     */
     protected function resolveEmploymentType(mixed $name, ?int $userId): ?int
     {
         $clean = $this->nullIfEmpty($name);
@@ -263,18 +275,29 @@ class EmployeeBulkImportService
             return null;
         }
 
+        $normalized = mb_strtolower((string) preg_replace('/\s+/', ' ', trim($clean)));
+
         $type = EmploymentType::query()
-            ->whereRaw('LOWER(name) = ?', [mb_strtolower($clean)])
+            ->whereRaw('LOWER(name) = ?', [$normalized])
+            ->orWhereRaw('LOWER(code) = ?', [$normalized])
             ->first();
 
         if (! $type) {
-            $type = EmploymentType::query()->create([
-                'name'       => $clean,
-                'is_active'  => true,
-                'creator_id' => $userId,
-            ]);
+            if (! in_array($clean, $this->unknownEmploymentTypes, true)) {
+                $this->unknownEmploymentTypes[] = $clean;
+            }
+
+            return null;
         }
 
         return (int) $type->id;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function unknownEmploymentTypes(): array
+    {
+        return $this->unknownEmploymentTypes;
     }
 }

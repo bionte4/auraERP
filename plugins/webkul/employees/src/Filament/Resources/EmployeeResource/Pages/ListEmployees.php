@@ -76,7 +76,8 @@ class ListEmployees extends ListRecords
                     $relativePath = (string) ($data['file'] ?? '');
                     $fullPath = Storage::disk('local')->path($relativePath);
 
-                    $result = app(EmployeeBulkImportService::class)->importFromPath($fullPath);
+                    $importService = app(EmployeeBulkImportService::class);
+                    $result = $importService->importFromPath($fullPath);
 
                     Storage::disk('local')->delete($relativePath);
 
@@ -85,6 +86,17 @@ class ListEmployees extends ListRecords
                         ->title(__('employees::filament/resources/employee/pages/list-employee.header-actions.import.notification.title'))
                         ->body(__('employees::filament/resources/employee/pages/list-employee.header-actions.import.notification.body', $result))
                         ->send();
+
+                    $unknownTypes = $importService->unknownEmploymentTypes();
+
+                    if ($unknownTypes !== []) {
+                        Notification::make()
+                            ->warning()
+                            ->title(__('employees::filament/resources/employee/pages/list-employee.header-actions.import.unknown-types.title'))
+                            ->body(__('employees::filament/resources/employee/pages/list-employee.header-actions.import.unknown-types.body', ['types' => implode(', ', $unknownTypes)]))
+                            ->persistent()
+                            ->send();
+                    }
                 }),
 
             CreateAction::make()

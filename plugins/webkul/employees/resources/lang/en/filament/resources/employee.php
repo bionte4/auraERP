@@ -28,6 +28,7 @@ return [
                 'coach'                  => 'Coach',
                 'employee-tags'          => 'Employee Tags',
                 'employment-type'        => 'Employment Type',
+                'employment-type-helper-text' => 'Managed via Employees → Configurations → Employment Types only, to keep the list clean.',
                 'join-date'              => 'Join Date',
                 'contract-end-date'      => 'Contract End Date',
                 'contract-sequence'  => 'Current Contract',

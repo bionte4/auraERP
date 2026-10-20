@@ -23,6 +23,10 @@ return [
                 'title' => 'Employee import completed',
                 'body'  => 'Created :created new employee(s), updated :updated existing employee(s), skipped :skipped empty row(s).',
             ],
+                'unknown-types' => [
+                    'title' => 'Unknown employment types skipped',
+                    'body'  => 'These employment type names from the file do not exist yet and were left empty: :types. Create them first in Configurations → Employment Types, then re-import or set them manually.',
+                ],
         ],
 
         'create' => [
