@@ -97,4 +97,50 @@ class OperationalScope
             ->unique()
             ->values();
     }
+
+    /**
+     * Employee IDs a scoped (non Admin/HRD) user may manage (CRUD):
+     * employees assigned to their projects, themselves, their direct
+     * reports, and employees they created themselves (so a just-created
+     * employee stays reachable before it is assigned to a project).
+     *
+     * Callers must check isUnscoped() first: for unscoped users this
+     * returns an empty collection meaning "no restriction", not "nobody".
+     *
+     * @return Collection<int, int>
+     */
+    public function manageableEmployeeIds(?User $user = null): Collection
+    {
+        $user ??= auth()->user();
+
+        if (! $user instanceof User || ! Schema::hasTable('employees_employees')) {
+            return collect();
+        }
+
+        $ids = $this->employeeIdsInScope($user);
+
+        $ownEmployeeId = Employee::query()
+            ->where('user_id', $user->id)
+            ->value('id');
+
+        if ($ownEmployeeId) {
+            $ids->push((int) $ownEmployeeId);
+
+            $ids = $ids->merge(
+                Employee::query()
+                    ->where('parent_id', $ownEmployeeId)
+                    ->pluck('id')
+                    ->map(fn ($id): int => (int) $id)
+            );
+        }
+
+        $ids = $ids->merge(
+            Employee::query()
+                ->where('creator_id', $user->id)
+                ->pluck('id')
+                ->map(fn ($id): int => (int) $id)
+        );
+
+        return $ids->unique()->values();
+    }
 }

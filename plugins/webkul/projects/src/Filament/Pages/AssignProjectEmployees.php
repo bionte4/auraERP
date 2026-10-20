@@ -22,6 +22,7 @@ use Webkul\Employee\Models\Employee;
 use Webkul\Employee\Services\EmployeeUserProvisioner;
 use Webkul\PluginManager\Package;
 use Webkul\Project\Models\Project;
+use Webkul\Project\Services\OperationalScope;
 use Webkul\Project\Services\ProjectEmployeeAssigner;
 use Webkul\Support\Enums\NavigationGroup;
 use Webkul\Support\Filament\NavigationBadge;
@@ -121,7 +122,9 @@ class AssignProjectEmployees extends Page implements HasForms
                         // fail to initialize on this custom page (empty non-clickable boxes).
                         Select::make('project_id')
                             ->label(__('projects::filament/pages/assign-project-employees.fields.project'))
-                            ->options(fn (): array => Project::query()->orderBy('name')->pluck('name', 'id')->all())
+                            ->options(fn (): array => Project::query()
+                                ->when($this->scopedProjectIds() !== null, fn ($query) => $query->whereIn('id', $this->scopedProjectIds()))
+                                ->orderBy('name')->pluck('name', 'id')->all())
                             ->native()
                             ->required()
                             ->live(),
@@ -141,6 +144,27 @@ class AssignProjectEmployees extends Page implements HasForms
                     ->columns(1),
             ])
             ->statePath('data');
+    }
+
+    /**
+     * Project IDs a scoped user (e.g. Operation Manager) may assign
+     * employees to, or null when unscoped (Admin/HRD).
+     *
+     * @return array<int, int>|null
+     */
+    protected function scopedProjectIds(): ?array
+    {
+        if (! auth()->check()) {
+            return null;
+        }
+
+        $scope = app(OperationalScope::class);
+
+        if ($scope->isUnscoped()) {
+            return null;
+        }
+
+        return $scope->projectIds();
     }
 
     protected function getHeaderActions(): array
@@ -228,6 +252,18 @@ class AssignProjectEmployees extends Page implements HasForms
         }
 
         $project = Project::query()->findOrFail($projectId);
+
+        $scopedProjectIds = $this->scopedProjectIds();
+
+        if ($scopedProjectIds !== null && ! in_array((int) $project->id, $scopedProjectIds, true)) {
+            Notification::make()
+                ->danger()
+                ->title(__('projects::filament/pages/assign-project-employees.notifications.missing-project.title'))
+                ->send();
+
+            return;
+        }
+
         $employeeIds = array_values(array_filter(
             Arr::wrap($state['employee_ids'] ?? ($this->data['employee_ids'] ?? [])),
             fn (mixed $id): bool => filled($id),

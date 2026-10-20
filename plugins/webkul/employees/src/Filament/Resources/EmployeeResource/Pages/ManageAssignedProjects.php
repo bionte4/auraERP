@@ -14,10 +14,12 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema as SchemaFacade;
 use Webkul\Employee\Filament\Resources\EmployeeResource;
 use Webkul\Employee\Models\Employee;
+use Webkul\Project\Services\OperationalScope;
 use Webkul\PluginManager\Package;
 use Webkul\Project\Models\Project;
 use Webkul\Project\Services\ProjectEmployeeAssigner;
@@ -75,8 +77,36 @@ class ManageAssignedProjects extends Page implements HasForms
         ]);
     }
 
+    /**
+     * Project IDs a scoped user (e.g. Operation Manager) may assign to,
+     * or null when the current user is unscoped (Admin/HRD).
+     *
+     * @return array<int, int>|null
+     */
+    protected function scopedProjectIds(): ?array
+    {
+        if (! auth()->check() || ! class_exists(OperationalScope::class)) {
+            return null;
+        }
+
+        $scope = app(OperationalScope::class);
+
+        if ($scope->isUnscoped()) {
+            return null;
+        }
+
+        return $scope->projectIds();
+    }
+
     public function form(Schema $schema): Schema
     {
+        $scopedProjectIds = $this->scopedProjectIds();
+        $assignedProjectIds = $this->getRecord()
+            ->projects()
+            ->pluck('projects_projects.id')
+            ->map(fn ($id): int => (int) $id)
+            ->all();
+
         return $schema
             ->components([
                 Section::make(__('employees::filament/resources/employee/pages/manage-assigned-projects.section.title'))
@@ -87,7 +117,12 @@ class ManageAssignedProjects extends Page implements HasForms
                             ->label(__('employees::filament/resources/employee/pages/manage-assigned-projects.fields.projects'))
                             ->helperText(__('employees::filament/resources/employee/pages/manage-assigned-projects.fields.projects-helper'))
                             ->options(fn (Get $get): array => LivewireSearchableCheckboxList::filterOptions(
-                                Project::query()->orderBy('name')->pluck('name', 'id')->all(),
+                                Project::query()
+                                    ->when(
+                                        $scopedProjectIds !== null,
+                                        fn ($query) => $query->whereIn('id', array_values(array_unique([...$scopedProjectIds, ...$assignedProjectIds]))),
+                                    )
+                                    ->orderBy('name')->pluck('name', 'id')->all(),
                                 $get,
                                 'project_ids',
                             ))
@@ -115,9 +150,29 @@ class ManageAssignedProjects extends Page implements HasForms
         $employee = $this->getRecord();
         $state = $this->form->getState();
 
+        $projectIds = $state['project_ids'] ?? [];
+
+        // Scoped users only see their own projects in the list; keep any
+        // existing assignments outside their scope untouched on save.
+        $scopedProjectIds = $this->scopedProjectIds();
+
+        if ($scopedProjectIds !== null) {
+            $existingProjectIds = $employee->projects()
+                ->pluck('projects_projects.id')
+                ->map(fn ($id): int => (int) $id)
+                ->all();
+
+            $preserved = array_diff($existingProjectIds, $scopedProjectIds);
+
+            $projectIds = array_values(array_unique([
+                ...array_map('intval', Arr::wrap($projectIds)),
+                ...$preserved,
+            ]));
+        }
+
         $result = app(ProjectEmployeeAssigner::class)->syncProjectsForEmployee(
             $employee,
-            $state['project_ids'] ?? [],
+            $projectIds,
         );
 
         $notification = Notification::make()

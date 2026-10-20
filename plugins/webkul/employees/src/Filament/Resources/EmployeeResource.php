@@ -9,6 +9,7 @@ use Filament\Resources\RelationManagers\RelationGroup;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Webkul\Employee\Filament\Resources\EmployeeResource\Pages\CreateEmployee;
 use Webkul\Employee\Filament\Resources\EmployeeResource\Pages\EditEmployee;
@@ -80,6 +81,37 @@ class EmployeeResource extends Resource
             ->count()) > 0;
 
         return $hasExpired ? 'danger' : 'warning';
+    }
+
+    /**
+     * Scoped users (e.g. Operation Manager) only see/manage employees in
+     * their operational scope: employees on their projects, themselves,
+     * their direct reports, and employees they created. Admin/HRD and
+     * console contexts stay unscoped.
+     */
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        $scopeClass = 'Webkul\\Project\\Services\\OperationalScope';
+
+        if (! auth()->check() || ! class_exists($scopeClass)) {
+            return $query;
+        }
+
+        $scope = app($scopeClass);
+
+        if ($scope->isUnscoped()) {
+            return $query;
+        }
+
+        $employeeIds = $scope->manageableEmployeeIds()->all();
+
+        if ($employeeIds === []) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query->whereIn('employees_employees.id', $employeeIds);
     }
 
     public static function getGloballySearchableAttributes(): array
