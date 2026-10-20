@@ -4,7 +4,7 @@ Dokumen ini menjelaskan arti angka **Permissions** pada daftar **Pengaturan → 
 
 | Field | Nilai |
 | :--- | :--- |
-| **Versi dokumen** | 1.0 |
+| **Versi dokumen** | 1.1 |
 | **Tanggal** | 2026-10-20 |
 | **Status** | Live (sesuai hasil sync di production) |
 
@@ -90,6 +90,7 @@ Memiliki permission `view/update` tidak otomatis berarti bisa mengakses semua re
 | Kebutuhan | Cara |
 | :--- | :--- |
 | Jumlah permission per role | Daftar **Pengaturan → Roles**, kolom **Permissions** |
+| Ringkasan lintas role tanpa scroll panjang | **Pengaturan → Ringkasan Role** (`/admin/role-summary`, khusus Admin): kartu per role, matriks `tercentang/total` per grup plugin, klik item untuk nama permission, pencarian permission |
 | Rincian centang per resource/halaman/widget | **Roles → Edit**, section Resources / Pages / Widgets |
 | Nama permission persis (teks) | Perintah tinker di §1 |
 | Role terpakai oleh siapa | Modal Delete menampilkan jumlah user; atau cek via **Users** |
