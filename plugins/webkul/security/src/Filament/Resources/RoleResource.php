@@ -19,6 +19,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Webkul\Security\Filament\Resources\RoleResource\Pages\CreateRole;
@@ -413,5 +414,82 @@ class RoleResource extends RolesRoleResource
     public static function isProtectedRoleRecord(?Model $record): bool
     {
         return $record instanceof Role && $record->isSystemRole();
+    }
+
+    /**
+     * Baseline roles managed by `security:sync-rbac` (guard "web").
+     * Deleting one would only be undone by the next sync while stranding
+     * its assigned users, so baseline roles can be edited, not deleted.
+     *
+     * @var array<int, string>
+     */
+    protected static array $baselineRoleNames = [
+        'admin',
+        'hrd',
+        'operation manager',
+        'accounting',
+        'kasir',
+        'staff',
+    ];
+
+    public static function isBaselineRoleRecord(?Model $record): bool
+    {
+        if (! $record instanceof Role || $record->guard_name !== 'web') {
+            return false;
+        }
+
+        return in_array(Str::lower(trim((string) $record->name)), static::$baselineRoleNames, true);
+    }
+
+    /**
+     * Number of users assigned to a role. Counted via the pivot table
+     * because the Spatie `users()` relation throws for guards without a
+     * registered auth provider model (e.g. leftover "sanctum" roles).
+     */
+    public static function assignedUserCount(Role $role): int
+    {
+        $table = config('permission.table_names.model_has_roles', 'model_has_roles');
+
+        return (int) DB::table($table)
+            ->where('role_id', $role->id)
+            ->count();
+    }
+
+    /**
+     * Why a role may not be deleted right now, as [title, body] for a
+     * danger notification, or null when deletion is safe.
+     *
+     * @return array{title: string, body: string}|null
+     */
+    public static function getDeletionBlockNotification(?Model $record): ?array
+    {
+        if (! $record instanceof Role) {
+            return null;
+        }
+
+        if (static::isProtectedRoleRecord($record)) {
+            return [
+                'title' => __('security::filament/resources/role.notification.system-role-delete.title'),
+                'body'  => __('security::filament/resources/role.notification.system-role-delete.body'),
+            ];
+        }
+
+        if (static::isBaselineRoleRecord($record)) {
+            return [
+                'title' => __('security::filament/resources/role.notification.baseline-role-delete.title'),
+                'body'  => __('security::filament/resources/role.notification.baseline-role-delete.body'),
+            ];
+        }
+
+        $assignedUsers = static::assignedUserCount($record);
+
+        if ($assignedUsers > 0) {
+            return [
+                'title' => __('security::filament/resources/role.notification.role-in-use-delete.title'),
+                'body'  => __('security::filament/resources/role.notification.role-in-use-delete.body', ['count' => $assignedUsers]),
+            ];
+        }
+
+        return null;
     }
 }

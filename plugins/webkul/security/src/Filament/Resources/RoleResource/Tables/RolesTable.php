@@ -37,12 +37,20 @@ class RolesTable
             ->recordActions([
                 EditAction::make(),
                 DeleteAction::make()
+                    ->modalHeading(fn (Model $record): string => __('security::filament/resources/role.notification.delete-role.title', ['name' => $record->name]))
+                    ->modalDescription(fn (Model $record): string => __('security::filament/resources/role.notification.delete-role.description', [
+                        'guard'       => $record->guard_name,
+                        'permissions' => $record->permissions()->count(),
+                        'users'       => RoleResource::assignedUserCount($record),
+                    ]))
                     ->before(function (DeleteAction $action, Model $record): void {
-                        if (RoleResource::isProtectedRoleRecord($record)) {
+                        $block = RoleResource::getDeletionBlockNotification($record);
+
+                        if ($block !== null) {
                             Notification::make()
                                 ->danger()
-                                ->title(__('security::filament/resources/role.notification.system-role-delete.title'))
-                                ->body(__('security::filament/resources/role.notification.system-role-delete.body'))
+                                ->title($block['title'])
+                                ->body($block['body'])
                                 ->send();
 
                             $action->cancel();
@@ -55,7 +63,7 @@ class RolesTable
                     ->authorizeIndividualRecords('delete')
                     ->action(function (DeleteBulkAction $action, Collection $records): void {
                         $deletableRecords = $records->reject(
-                            fn (Model $record): bool => RoleResource::isProtectedRoleRecord($record)
+                            fn (Model $record): bool => RoleResource::getDeletionBlockNotification($record) !== null
                         );
 
                         if ($deletableRecords->isEmpty()) {
