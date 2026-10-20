@@ -28,9 +28,28 @@ class RoleSummary extends Page
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-list';
 
-    public ?int $selectedRoleId = null;
+    /** @var array<int, int> */
+    public array $selectedRoleIds = [];
 
     public string $search = '';
+
+    public bool $onlyDifferences = false;
+
+    /**
+     * Display order for well-known baseline roles (lower first); any other
+     * role sorts after these, alphabetically.
+     *
+     * @var array<string, int>
+     */
+    protected static array $roleOrder = [
+        'admin'             => 0,
+        'hrd'               => 1,
+        'operation manager' => 2,
+        'accounting'        => 3,
+        'kasir'             => 4,
+        'team leader'       => 5,
+        'staff'             => 6,
+    ];
 
     public function mount(): void
     {
@@ -64,7 +83,18 @@ class RoleSummary extends Page
 
     public function selectRole(?int $roleId): void
     {
-        $this->selectedRoleId = $this->selectedRoleId === $roleId ? null : $roleId;
+        if ($roleId === null) {
+            return;
+        }
+
+        $this->selectedRoleIds = in_array($roleId, $this->selectedRoleIds, true)
+            ? array_values(array_diff($this->selectedRoleIds, [$roleId]))
+            : [...$this->selectedRoleIds, $roleId];
+    }
+
+    public function clearSelection(): void
+    {
+        $this->selectedRoleIds = [];
     }
 
     /**
@@ -74,9 +104,13 @@ class RoleSummary extends Page
     {
         return once(fn (): Collection => Role::query()
             ->with('permissions')
-            ->orderBy('guard_name')
-            ->orderBy('name')
-            ->get());
+            ->get()
+            ->sortBy(fn (Role $role): array => [
+                $role->guard_name === 'web' ? 0 : 1,
+                static::$roleOrder[mb_strtolower($role->name)] ?? 50,
+                mb_strtolower($role->name),
+            ])
+            ->values());
     }
 
     /**
@@ -103,28 +137,79 @@ class RoleSummary extends Page
     public function roleCards(): array
     {
         $categories = $this->categoryPermissionNames();
-        $poolTotal = RoleResource::getAllFormPermissions()->count();
+        $mapped = array_flip([
+            ...$categories['resources'],
+            ...$categories['pages'],
+            ...$categories['widgets'],
+        ]);
+
+        // The pool is what actually exists in the database for the guard,
+        // so a role total can never exceed it.
+        $poolTotals = once(fn (): array => \Spatie\Permission\Models\Permission::query()
+            ->selectRaw('guard_name, count(*) as total')
+            ->groupBy('guard_name')
+            ->pluck('total', 'guard_name')
+            ->map(fn ($total): int => (int) $total)
+            ->all());
 
         return $this->roles()
-            ->map(function (Role $role) use ($categories, $poolTotal): array {
+            ->map(function (Role $role) use ($categories, $mapped, $poolTotals): array {
                 $names = $role->permissions->pluck('name')->all();
                 $nameSet = array_flip($names);
 
                 $countIn = fn (array $pool): int => count(array_filter($pool, fn (string $name): bool => isset($nameSet[$name])));
 
+                $poolTotal = $poolTotals[$role->guard_name] ?? count($names);
+                $total = count($names);
+
                 return [
-                    'id'        => $role->id,
-                    'name'      => $role->name,
-                    'guard'     => $role->guard_name,
-                    'total'     => count($names),
-                    'poolTotal' => $poolTotal,
-                    'users'     => RoleResource::assignedUserCount($role),
-                    'resources' => $countIn($categories['resources']),
-                    'pages'     => $countIn($categories['pages']),
-                    'widgets'   => $countIn($categories['widgets']),
+                    'id'         => $role->id,
+                    'name'       => $role->name,
+                    'guard'      => $role->guard_name,
+                    'total'      => $total,
+                    'poolTotal'  => $poolTotal,
+                    'percentage' => $poolTotal > 0 ? (int) round($total / $poolTotal * 100) : 0,
+                    'users'      => RoleResource::assignedUserCount($role),
+                    'userNames'  => static::assignedUserNames($role),
+                    'baseline'   => RoleResource::isBaselineRoleRecord($role),
+                    'editUrl'    => static::roleEditUrl($role),
+                    'resources'  => $countIn($categories['resources']),
+                    'pages'      => $countIn($categories['pages']),
+                    'widgets'    => $countIn($categories['widgets']),
+                    // Permissions not mapped to any resource/page/widget
+                    // (e.g. API or legacy permissions) so totals always add up.
+                    'other'      => count(array_filter($names, fn (string $name): bool => ! isset($mapped[$name]))),
                 ];
             })
             ->all();
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    protected static function assignedUserNames(Role $role): array
+    {
+        $table = config('permission.table_names.model_has_roles', 'model_has_roles');
+        $userModel = config('auth.providers.users.model') ?: \Webkul\Security\Models\User::class;
+        $usersTable = (new $userModel)->getTable();
+
+        return \Illuminate\Support\Facades\DB::table($table)
+            ->join($usersTable, $usersTable.'.id', '=', $table.'.model_id')
+            ->where($table.'.role_id', $role->id)
+            ->where($table.'.model_type', $userModel)
+            ->orderBy($usersTable.'.name')
+            ->pluck($usersTable.'.name')
+            ->map(fn ($name): string => (string) $name)
+            ->all();
+    }
+
+    protected static function roleEditUrl(Role $role): ?string
+    {
+        try {
+            return RoleResource::getUrl('edit', ['record' => $role->id]);
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     /**
@@ -170,6 +255,19 @@ class RoleSummary extends Page
                         'count' => count($granted),
                         'names' => $granted,
                     ];
+                }
+
+                if ($this->onlyDifferences && count($grants) > 1) {
+                    $sets = array_map(function (array $grant): string {
+                        $names = $grant['names'];
+                        sort($names);
+
+                        return implode('|', $names);
+                    }, array_values($grants));
+
+                    if (count(array_unique($sets)) === 1) {
+                        continue;
+                    }
                 }
 
                 $rows[] = [
@@ -238,11 +336,11 @@ class RoleSummary extends Page
      */
     public function visibleRoles(): Collection
     {
-        if ($this->selectedRoleId === null) {
+        if ($this->selectedRoleIds === []) {
             return $this->roles();
         }
 
-        return $this->roles()->filter(fn (Role $role): bool => $role->id === $this->selectedRoleId)->values();
+        return $this->roles()->filter(fn (Role $role): bool => in_array($role->id, $this->selectedRoleIds, true))->values();
     }
 
     /**

@@ -43,39 +43,90 @@
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             @foreach ($cards as $card)
-                <button
-                    type="button"
-                    wire:click="selectRole({{ $card['id'] }})"
-                    class="rounded-xl border p-5 text-left shadow-sm transition hover:border-primary-400 {{ $selectedRoleId === $card['id'] ? 'border-primary-500 bg-primary-50 ring-1 ring-primary-500 dark:border-primary-400 dark:bg-primary-400/10' : 'border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900' }}"
-                >
-                    <div class="flex items-center justify-between gap-2">
-                        <span class="text-sm font-semibold text-gray-950 dark:text-white">{{ $card['name'] }}</span>
-                        <span class="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-300">{{ $card['guard'] }}</span>
-                    </div>
+                @php $isSelected = in_array($card['id'], $selectedRoleIds, true); @endphp
+                <div class="rounded-xl border p-5 shadow-sm transition {{ $isSelected ? 'border-primary-500 bg-primary-50 ring-1 ring-primary-500 dark:border-primary-400 dark:bg-primary-400/10' : 'border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900' }}">
+                    <button type="button" wire:click="selectRole({{ $card['id'] }})" class="block w-full text-left">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-sm font-semibold text-gray-950 dark:text-white">{{ $card['name'] }}</span>
+                            <span class="flex items-center gap-1">
+                                <span class="rounded-full px-2 py-0.5 text-[11px] font-medium {{ $card['baseline'] ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300' : 'bg-amber-100 text-amber-700 dark:bg-amber-400/10 dark:text-amber-300' }}">
+                                    {{ $card['baseline'] ? __('security::filament/pages/role-summary.card.baseline') : __('security::filament/pages/role-summary.card.custom') }}
+                                </span>
+                                <span class="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-300">{{ $card['guard'] }}</span>
+                            </span>
+                        </div>
 
-                    <div class="mt-3 text-2xl font-bold text-gray-950 dark:text-white">
-                        {{ $card['total'] }}<span class="text-sm font-medium text-gray-500"> / {{ $card['poolTotal'] }}</span>
-                    </div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400">
-                        {{ __('security::filament/pages/role-summary.card.permissions') }} · {{ $card['users'] }} {{ __('security::filament/pages/role-summary.card.users') }}
-                    </div>
+                        <div class="mt-3 text-2xl font-bold text-gray-950 dark:text-white">
+                            {{ $card['total'] }}<span class="text-sm font-medium text-gray-500"> / {{ $card['poolTotal'] }}</span>
+                            <span class="text-sm font-medium text-gray-500">({{ $card['percentage'] }}%)</span>
+                        </div>
 
-                    <dl class="mt-4 grid grid-cols-3 gap-2 text-center">
-                        <div class="rounded-lg bg-gray-50 px-2 py-2 dark:bg-gray-800">
-                            <dt class="text-[11px] uppercase tracking-wide text-gray-500">{{ __('security::filament/pages/role-summary.card.resources') }}</dt>
+                        <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
+                            <div class="h-full rounded-full bg-primary-500" style="width: {{ $card['percentage'] }}%"></div>
+                        </div>
+
+                        <div class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                            {{ __('security::filament/pages/role-summary.card.permissions') }} · {{ $card['users'] }} {{ __('security::filament/pages/role-summary.card.users') }}
+                        </div>
+                    </button>
+
+                    <dl class="mt-4 grid grid-cols-4 gap-2 text-center">
+                        <div class="rounded-lg bg-gray-50 px-1 py-2 dark:bg-gray-800">
+                            <dt class="text-[10px] uppercase tracking-wide text-gray-500">{{ __('security::filament/pages/role-summary.card.resources') }}</dt>
                             <dd class="text-sm font-semibold text-gray-900 dark:text-white">{{ $card['resources'] }}</dd>
                         </div>
-                        <div class="rounded-lg bg-gray-50 px-2 py-2 dark:bg-gray-800">
-                            <dt class="text-[11px] uppercase tracking-wide text-gray-500">{{ __('security::filament/pages/role-summary.card.pages') }}</dt>
+                        <div class="rounded-lg bg-gray-50 px-1 py-2 dark:bg-gray-800">
+                            <dt class="text-[10px] uppercase tracking-wide text-gray-500">{{ __('security::filament/pages/role-summary.card.pages') }}</dt>
                             <dd class="text-sm font-semibold text-gray-900 dark:text-white">{{ $card['pages'] }}</dd>
                         </div>
-                        <div class="rounded-lg bg-gray-50 px-2 py-2 dark:bg-gray-800">
-                            <dt class="text-[11px] uppercase tracking-wide text-gray-500">{{ __('security::filament/pages/role-summary.card.widgets') }}</dt>
+                        <div class="rounded-lg bg-gray-50 px-1 py-2 dark:bg-gray-800">
+                            <dt class="text-[10px] uppercase tracking-wide text-gray-500">{{ __('security::filament/pages/role-summary.card.widgets') }}</dt>
                             <dd class="text-sm font-semibold text-gray-900 dark:text-white">{{ $card['widgets'] }}</dd>
                         </div>
+                        <div class="rounded-lg bg-gray-50 px-1 py-2 dark:bg-gray-800" title="{{ __('security::filament/pages/role-summary.card.other-hint') }}">
+                            <dt class="text-[10px] uppercase tracking-wide text-gray-500">{{ __('security::filament/pages/role-summary.card.other') }}</dt>
+                            <dd class="text-sm font-semibold text-gray-900 dark:text-white">{{ $card['other'] }}</dd>
+                        </div>
                     </dl>
-                </button>
+
+                    @if ($card['userNames'] !== [])
+                        <details class="mt-3">
+                            <summary class="cursor-pointer text-xs font-medium text-primary-600 hover:underline dark:text-primary-400">
+                                {{ __('security::filament/pages/role-summary.card.show-users') }} ({{ $card['users'] }})
+                            </summary>
+                            <ul class="mt-1 list-inside list-disc text-xs text-gray-600 dark:text-gray-300">
+                                @foreach ($card['userNames'] as $userName)
+                                    <li>{{ $userName }}</li>
+                                @endforeach
+                            </ul>
+                        </details>
+                    @endif
+
+                    @if ($card['editUrl'])
+                        <a href="{{ $card['editUrl'] }}" class="mt-3 inline-block text-xs font-medium text-primary-600 hover:underline dark:text-primary-400">
+                            {{ __('security::filament/pages/role-summary.card.edit') }} →
+                        </a>
+                    @endif
+                </div>
             @endforeach
+        </div>
+
+        <div class="flex flex-wrap items-center gap-4 rounded-xl border border-gray-200 bg-white px-5 py-3 shadow-sm dark:border-gray-700 dark:bg-gray-900">
+            @if ($selectedRoleIds !== [])
+                <span class="text-sm text-gray-700 dark:text-gray-200">
+                    {{ __('security::filament/pages/role-summary.compare.selected', ['count' => count($selectedRoleIds)]) }}
+                </span>
+                <button type="button" wire:click="clearSelection" class="text-sm font-medium text-primary-600 hover:underline dark:text-primary-400">
+                    {{ __('security::filament/pages/role-summary.compare.clear') }}
+                </button>
+            @else
+                <span class="text-sm text-gray-500 dark:text-gray-400">{{ __('security::filament/pages/role-summary.compare.hint') }}</span>
+            @endif
+
+            <label class="ml-auto flex cursor-pointer items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
+                <input type="checkbox" wire:model.live="onlyDifferences" class="rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-800">
+                {{ __('security::filament/pages/role-summary.compare.only-differences') }}
+            </label>
         </div>
 
         @forelse ($matrix as $category => $groups)
@@ -87,16 +138,20 @@
                 </div>
 
                 @foreach ($groups as $group => $rows)
-                    <div class="px-5 py-4">
-                        <h4 class="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ $group }}</h4>
+                    <div class="px-5 py-4" x-data="{ open: {{ trim($search) !== '' ? 'true' : 'false' }} }">
+                        <button type="button" x-on:click="open = ! open" class="mb-3 flex w-full items-center gap-2 text-left">
+                            <svg class="h-4 w-4 text-gray-400 transition-transform" x-bind:class="open ? 'rotate-90' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+                            <span class="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ $group }}</span>
+                            <span class="text-xs text-gray-400">({{ count($rows) }})</span>
+                        </button>
 
-                        <div class="overflow-x-auto">
+                        <div class="max-h-[32rem] overflow-auto" x-show="open" x-cloak>
                             <table class="w-full min-w-[640px] text-sm">
                                 <thead>
                                     <tr class="text-left text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                                        <th class="pb-2 pr-4 font-medium">{{ __('security::filament/pages/role-summary.table.item') }}</th>
+                                        <th class="sticky top-0 z-10 bg-white pb-2 pr-4 font-medium dark:bg-gray-900">{{ __('security::filament/pages/role-summary.table.item') }}</th>
                                         @foreach ($visibleRoles as $role)
-                                            <th class="pb-2 pr-4 font-medium">{{ $role->name }}</th>
+                                            <th class="sticky top-0 z-10 bg-white pb-2 pr-4 font-medium dark:bg-gray-900">{{ $role->name }}</th>
                                         @endforeach
                                     </tr>
                                 </thead>
