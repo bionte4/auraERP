@@ -214,10 +214,50 @@ class RolePermissionSynchronizer
         ]));
         $rolesSynced[] = $staffRole->name;
 
+        // 7. Team Leader — Staff self-service + read access to their own
+        // project's team (employees/departments). Record-level restriction
+        // to the single led project is enforced by OperationalScope and
+        // the Project/Task resource queries, not by permissions alone.
+        $teamLeaderRole = Role::query()->firstOrCreate(
+            ['name' => 'Team Leader', 'guard_name' => $guard],
+            ['is_default' => false]
+        );
+        $teamLeaderRole->syncPermissions($this->permissionsMatching($allPermissions, [
+            'exact' => [
+                'page_attendance_clock_page',
+                'page_support_my_day_dashboard',
+                'page_support_team_board',
+                'page_project_dashboard',
+                'view_any_attendance_attendance',
+                'create_attendance_attendance',
+                'view_any_time_off_my::time::off',
+                'view_time_off_my::time::off',
+                'create_time_off_my::time::off',
+                'update_time_off_my::time::off',
+                'delete_time_off_my::time::off',
+                'view_any_time_off_my::allocation',
+                'view_time_off_my::allocation',
+                'view_any_project_project',
+                'view_project_project',
+                'view_any_project_task',
+                'view_project_task',
+                'update_project_task',
+                'view_any_project_timesheet',
+                'view_project_timesheet',
+                'create_project_timesheet',
+                'update_project_timesheet',
+                'view_any_employee_employee',
+                'view_employee_employee',
+                'view_any_employee_department',
+                'view_employee_department',
+            ],
+        ]));
+        $rolesSynced[] = $teamLeaderRole->name;
+
         // Hard revoke admin-only security features from every non-Admin role.
         $adminOnlyPermissions = $allPermissions->whereIn('name', AdminAccess::adminOnlyPermissionNames());
 
-        foreach ([$hrdRole, $operationManagerRole, $accountingRole, $kasirRole, $staffRole] as $nonAdminRole) {
+        foreach ([$hrdRole, $operationManagerRole, $accountingRole, $kasirRole, $staffRole, $teamLeaderRole] as $nonAdminRole) {
             if ($adminOnlyPermissions->isNotEmpty()) {
                 $nonAdminRole->revokePermissionTo($adminOnlyPermissions);
             }

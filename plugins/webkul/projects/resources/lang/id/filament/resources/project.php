@@ -8,6 +8,9 @@ return [
 
     'global-search' => [
         'project-manager' => 'Manajer Proyek',
+                    'team-leader'                  => 'Team Leader',
+                    'team-leader-helper-text'      => 'Karyawan yang memimpin tim proyek ini. Satu team leader hanya dapat memimpin satu proyek aktif dan otomatis menjadi anggota proyek.',
+                    'team-leader-unique'           => 'Karyawan ini sudah memimpin proyek aktif lain.',
         'customer'        => 'Pelanggan',
     ],
 

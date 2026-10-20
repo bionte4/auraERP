@@ -31,6 +31,11 @@ class OperationalScope
             return [];
         }
 
+        // A Team Leader only ever sees the one project they lead.
+        if ($this->isTeamLeaderOnly($user)) {
+            return $this->teamLeaderProjectIds($user);
+        }
+
         $ids = collect();
 
         $ids = $ids->merge(
@@ -55,6 +60,59 @@ class OperationalScope
         }
 
         return $ids->map(fn ($id): int => (int) $id)->unique()->values()->all();
+    }
+
+    /**
+     * Project IDs where the user (via their employee record) is Team Leader.
+     *
+     * @return array<int, int>
+     */
+    public function teamLeaderProjectIds(?User $user = null): array
+    {
+        $user ??= auth()->user();
+
+        if (! $user instanceof User
+            || ! Schema::hasTable('projects_projects')
+            || ! Schema::hasColumn('projects_projects', 'team_leader_employee_id')
+            || ! Schema::hasTable('employees_employees')) {
+            return [];
+        }
+
+        $employeeId = Employee::query()
+            ->where('user_id', $user->id)
+            ->value('id');
+
+        if (! $employeeId) {
+            return [];
+        }
+
+        return Project::query()
+            ->withoutGlobalScopes()
+            ->where('team_leader_employee_id', $employeeId)
+            ->pluck('id')
+            ->map(fn ($id): int => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * True when the user is a Team Leader without a broader operational
+     * role (Admin/HRD/Operation Manager keep their wider scope).
+     */
+    public function isTeamLeaderOnly(?User $user = null): bool
+    {
+        $user ??= auth()->user();
+
+        if (! $user instanceof User || ! method_exists($user, 'hasRole')) {
+            return false;
+        }
+
+        if (! $user->hasRole('Team Leader') || $user->hasRole('Operation Manager')) {
+            return false;
+        }
+
+        return ! $this->isUnscoped($user);
     }
 
     public function isUnscoped(?User $user = null): bool

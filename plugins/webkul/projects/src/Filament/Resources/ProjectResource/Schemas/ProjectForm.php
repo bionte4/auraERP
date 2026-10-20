@@ -62,6 +62,11 @@ class ProjectForm
                                     ->relationship('user', 'name')
                                     ->preload()
                                     ->createOptionForm(fn (Schema $schema) => UserResource::form($schema)),
+                                Select::make('team_leader_employee_id')
+                                    ->label(__('projects::filament/resources/project.form.sections.additional.fields.team-leader'))
+                                    ->relationship('teamLeader', 'name')
+                                    ->preload()
+                                    ->helperText(__('projects::filament/resources/project.form.sections.additional.fields.team-leader-helper-text')),
                                 Select::make('partner_id')
                                     ->label(__('projects::filament/resources/project.form.sections.additional.fields.customer'))
                                     ->relationship(

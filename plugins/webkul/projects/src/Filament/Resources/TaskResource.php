@@ -65,6 +65,28 @@ class TaskResource extends Resource
         ];
     }
 
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        // Team Leaders only see tasks of the single project they lead.
+        $user = auth()->user();
+
+        if ($user && class_exists(\Webkul\Project\Services\OperationalScope::class)) {
+            $scope = app(\Webkul\Project\Services\OperationalScope::class);
+
+            if ($scope->isTeamLeaderOnly($user)) {
+                $projectIds = $scope->teamLeaderProjectIds($user);
+
+                $projectIds === []
+                    ? $query->whereRaw('1 = 0')
+                    : $query->whereIn($query->getModel()->getTable().'.project_id', $projectIds);
+            }
+        }
+
+        return $query;
+    }
+
     public static function form(Schema $schema): Schema
     {
         return TaskForm::configure($schema, static::getCustomFormFields());

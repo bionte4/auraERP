@@ -35,7 +35,7 @@ it('can delete roles on the sanctum guard', function (): void {
 });
 
 it('blocks deleting roles that still have users assigned', function (): void {
-    $role = Role::query()->firstOrCreate(['name' => 'Team Leader', 'guard_name' => 'web']);
+    $role = Role::query()->firstOrCreate(['name' => 'Project Coordinator', 'guard_name' => 'web']);
 
     expect(RoleResource::getDeletionBlockNotification($role))->toBeNull();
 

@@ -430,6 +430,7 @@ class RoleResource extends RolesRoleResource
         'accounting',
         'kasir',
         'staff',
+        'team leader',
     ];
 
     public static function isBaselineRoleRecord(?Model $record): bool

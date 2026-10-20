@@ -85,7 +85,7 @@ ID memakai prefiks modul. Prioritas: **P0** harus ada / sudah ada; **P1** pentin
 
 | ID | Requirement | Prioritas | Status |
 | :--- | :--- | :--- | :--- |
-| SEC-01 | Sistem menyediakan 6 role standar: Admin, HRD, Operation Manager, Accounting, Kasir, Staff | P0 | Done |
+| SEC-01 | Sistem menyediakan 7 role standar: Admin, HRD, Operation Manager, Accounting, Kasir, Staff, Team Leader | P0 | Done |
 | SEC-02 | `php artisan security:sync-rbac` menyinkronkan baseline; non-Admin memakai **sync** (stale grant hilang); Admin mendapat semua permission | P0 | Done |
 | SEC-03 | Fitur admin-only (Audit Trail, Backup DB, IP Diblokir) tidak dapat diakses non-Admin (role + policy) | P0 | Done |
 | SEC-04 | Rate limit login + auto-blokir IP setelah ambang kegagalan; Admin dapat unblock | P0 | Done |
@@ -145,6 +145,8 @@ ID memakai prefiks modul. Prioritas: **P0** harus ada / sudah ada; **P1** pentin
 | PRJ-06 | Dashboard OM: widget beban, aksi, kehadiran (scope) | P0 | Done |
 | PRJ-07 | Bulk import proyek Excel | P1 | Done |
 | PRJ-08 | **Manajer Proyek** (`projects.user_id`): assign/ganti/kosongkan di form proyek (1 user); beda dari Assign Employees | P0 | Done |
+| PRJ-10 | **Team Leader proyek** (`projects_projects.team_leader_employee_id`, berbasis karyawan): satu karyawan memimpin maksimal **satu proyek aktif** (validasi model + partial unique index); leader otomatis anggota proyek; role baseline **Team Leader** hanya melihat proyek/task/timesheet proyek pimpinannya (`OperationalScope` + scoping resource) dan tidak dapat mengelola karyawan | P0 | Done |
+| PRJ-11 | Tab **Struktur Organisasi** pada detail proyek: tampil hierarki Project Manager → Team Leader → Anggota Tim (read-only) | P1 | Done |
 | PRJ-09 | Widget dashboard **Proyek Mendekati / Melewati Tenggat**: proyek aktif expired/≤3 bulan, badge sisa hari, progress + task overdue, baris bisa diklik ke View/Edit | P0 | Done |
 
 ### 5.7 Laporan proyek — `RPT`

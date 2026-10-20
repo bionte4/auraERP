@@ -72,6 +72,7 @@ class Project extends Model implements Sortable
         'partner_id',
         'company_id',
         'user_id',
+        'team_leader_employee_id',
         'creator_id',
     ];
 
@@ -138,6 +139,11 @@ class Project extends Model implements Sortable
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function teamLeader(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class, 'team_leader_employee_id');
     }
 
     public function stage(): BelongsTo
@@ -352,10 +358,35 @@ class Project extends Model implements Sortable
             $project->creator_id ??= Auth::id();
         });
 
+        static::saving(function (self $project): void {
+            // One team leader may only lead one active project at a time.
+            if ($project->team_leader_employee_id && $project->is_active && $project->isDirty('team_leader_employee_id', 'is_active')) {
+                $conflict = static::query()
+                    ->where('team_leader_employee_id', $project->team_leader_employee_id)
+                    ->where('is_active', true)
+                    ->when($project->exists, fn ($query) => $query->whereKeyNot($project->getKey()))
+                    ->exists();
+
+                if ($conflict) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'team_leader_employee_id' => __('projects::filament/resources/project.form.sections.additional.fields.team-leader-unique'),
+                    ]);
+                }
+            }
+        });
+
         static::saved(function (self $project): void {
             try {
                 app(TeamMembershipSynchronizer::class)->syncForProject($project);
             } catch (Throwable) {
+            }
+
+            // The team leader is always a member of the project they lead.
+            if ($project->team_leader_employee_id && Schema::hasTable('projects_project_employees')) {
+                try {
+                    $project->employees()->syncWithoutDetaching([$project->team_leader_employee_id]);
+                } catch (Throwable) {
+                }
             }
 
             if (! $project->end_date || ! $project->is_active || $project->expiryReminderStage() === null) {

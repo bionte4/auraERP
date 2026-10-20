@@ -8,6 +8,9 @@ return [
 
     'global-search' => [
         'project-manager' => 'Project Manager',
+                    'team-leader'                  => 'Team Leader',
+                    'team-leader-helper-text'      => 'The employee leading the team of this project. A team leader can only lead one active project and is automatically added as a project member.',
+                    'team-leader-unique'           => 'This employee already leads another active project.',
         'customer'        => 'Customer',
     ],
 

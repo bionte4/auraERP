@@ -4,7 +4,7 @@ Dokumen ini menjelaskan arti angka **Permissions** pada daftar **Pengaturan → 
 
 | Field | Nilai |
 | :--- | :--- |
-| **Versi dokumen** | 1.1 |
+| **Versi dokumen** | 1.2 |
 | **Tanggal** | 2026-10-20 |
 | **Status** | Live (sesuai hasil sync di production) |
 
@@ -59,6 +59,7 @@ Hasil snapshot production (2026-10-20, pool 1.366):
 | **HRD** | 343 | `contains`: employee, attendance, performance, evaluation, time_off, recruitment | Domain SDM penuh: karyawan, absensi, cuti, evaluasi, rekrutmen + People Dashboard. Tanpa widget OM dan tanpa laporan proyek klien. |
 | **Operation Manager** | 198 | `contains`: project_project, project_task, project_timesheet, timesheet, partner_partner, performance, evaluation, time_off, attendance + daftar `exact` | Delivery proyek & approval tim: proyek/task/timesheet, dashboard proyek & OM, laporan mingguan (internal + klien), evaluasi, People Dashboard (terscope). Karyawan: lihat + `create/update/delete` per record (lihat pembatasan scope di §4). Tanpa modul Sales/Purchase/Inventory penuh, tanpa akuntansi. |
 | **Kasir** | 32 | `contains`: `_pos_` + `exact` | Terminal POS, clock absensi, My Day; lihat produk & mitra (+ buat mitra). |
+| **Team Leader** | ±25 | `exact` saja | Self-service seperti Staff + lihat karyawan & departemen + Project Dashboard. Leader **satu proyek aktif**: proyek/task/timesheet yang terlihat dibatasi ke proyek yang ia pimpin (`projects_projects.team_leader_employee_id`) lewat lapisan scope §4 — bukan sekadar permission. |
 | **Staff** | 22 | `exact` saja | Self-service: clock absensi, ajukan/kelola cuti sendiri (My Time Off & My Allocation), lihat evaluasi diri, lihat proyek & task, isi/update timesheet, update task. Tanpa dashboard evaluasi perusahaan dan tanpa data HR orang lain. |
 | **Karyawan** *(custom)* | 12 | Diatur manual via UI | Role buatan di luar baseline — **tidak diubah oleh sync**. Isinya tanggung jawab Admin; pertimbangkan konsolidasi ke **Staff** agar tidak ada dua role sefungsi. |
 
@@ -73,7 +74,8 @@ Memiliki permission `view/update` tidak otomatis berarti bisa mengakses semua re
 | **Resource Permission (Global / Group / Individual)** | Pada resource ber-policy: Global = semua record; Group = record milik tim/subordinat; Individual = record sendiri. Diterapkan antara lain lewat `EmployeePolicy` + trait `HasScopedPermissions`. |
 | **OperationalScope (OM)** | Untuk Operation Manager: daftar & profil karyawan dibatasi ke karyawan pada proyek yang ia ikuti + diri sendiri + bawahan langsung + karyawan yang ia buat. **Edit/hapus lebih sempit lagi**: hanya karyawan pada proyek di mana ia **Project Manager** (`projects_projects.user_id`) + karyawan buatannya. Di luar scope: record tidak terlihat (URL langsung = 404/403). |
 | **Pembatasan hapus OM** | OM hanya `delete` per record (soft-delete). `delete_any`, `force_delete*`, `restore*` untuk karyawan **tidak diberikan** — pemulihan & penghapusan permanen tetap wewenang Admin/HRD. |
-| **Penghapusan role berpelindung** | Role baseline (Admin, HRD, Operation Manager, Accounting, Kasir, Staff guard `web`) **tidak bisa dihapus** dari UI; role yang masih dipakai user juga ditolak untuk dihapus. Modal konfirmasi menampilkan guard, jumlah permission, dan jumlah user terkait. |
+| **Team Leader scope** | User ber-role Team Leader (tanpa role OM/Admin/HRD) hanya melihat **satu proyek yang ia pimpin**: daftar proyek, task, timesheet, widget operasional, dan data karyawan terscope ke proyek tersebut (`OperationalScope::teamLeaderProjectIds`). Satu karyawan hanya boleh memimpin **satu proyek aktif** — ditegakkan validasi model + partial unique index Postgres. Team Leader otomatis menjadi anggota proyeknya. Struktur pimpinan proyek terlihat di tab **Struktur Organisasi** pada detail proyek (PM → Team Leader → Anggota). |
+| **Penghapusan role berpelindung** | Role baseline (Admin, HRD, Operation Manager, Accounting, Kasir, Staff, Team Leader guard `web`) **tidak bisa dihapus** dari UI; role yang masih dipakai user juga ditolak untuk dihapus. Modal konfirmasi menampilkan guard, jumlah permission, dan jumlah user terkait. |
 
 ## 5. Tata kelola perubahan
 

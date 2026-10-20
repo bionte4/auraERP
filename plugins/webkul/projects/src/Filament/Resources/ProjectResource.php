@@ -14,6 +14,7 @@ use Webkul\Project\Filament\Resources\ProjectResource\Pages\CreateProject;
 use Webkul\Project\Filament\Resources\ProjectResource\Pages\EditProject;
 use Webkul\Project\Filament\Resources\ProjectResource\Pages\ListProjects;
 use Webkul\Project\Filament\Resources\ProjectResource\Pages\ManageMilestones;
+use Webkul\Project\Filament\Resources\ProjectResource\Pages\ManageOrgStructure;
 use Webkul\Project\Filament\Resources\ProjectResource\Pages\ManageTasks;
 use Webkul\Project\Filament\Resources\ProjectResource\Pages\ViewProject;
 use Webkul\Project\Filament\Resources\ProjectResource\RelationManagers\MilestonesRelationManager;
@@ -99,6 +100,28 @@ class ProjectResource extends Resource
         return ProjectsTable::configure($table, static::getCustomTableColumns(), static::getTableQueryBuilderConstraints());
     }
 
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        // Team Leaders only see the single project they lead.
+        $user = auth()->user();
+
+        if ($user && static::getModel() && class_exists(\Webkul\Project\Services\OperationalScope::class)) {
+            $scope = app(\Webkul\Project\Services\OperationalScope::class);
+
+            if ($scope->isTeamLeaderOnly($user)) {
+                $projectIds = $scope->teamLeaderProjectIds($user);
+
+                $projectIds === []
+                    ? $query->whereRaw('1 = 0')
+                    : $query->whereIn($query->getModel()->getTable().'.id', $projectIds);
+            }
+        }
+
+        return $query;
+    }
+
     public static function infolist(Schema $schema): Schema
     {
         return ProjectInfolist::configure($schema, static::getCustomInfolistEntries());
@@ -121,6 +144,7 @@ class ProjectResource extends Resource
             EditProject::class,
             ManageTasks::class,
             ManageMilestones::class,
+            ManageOrgStructure::class,
         ]);
     }
 
@@ -148,6 +172,7 @@ class ProjectResource extends Resource
             'view'       => ViewProject::route('/{record}'),
             'milestones' => ManageMilestones::route('/{record}/milestones'),
             'tasks'      => ManageTasks::route('/{record}/tasks'),
+            'org-structure' => ManageOrgStructure::route('/{record}/org-structure'),
         ];
     }
 }
