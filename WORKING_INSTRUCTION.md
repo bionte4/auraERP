@@ -141,6 +141,35 @@ sudo -u www-data php artisan optimize:clear
 2. Klik tombol **`Unduh Template` (`Download Template`)** di pojok kanan atas untuk mengunduh file `template-import-employees.xlsx`.
 3. Isi kolom: `name`, `work_email`, `work_phone`, `mobile_phone`, `job_title`, `department`, `employment_type`, `join_date`, `contract_end_date`, `identification_id`.
 4. Klik tombol **`Impor Excel / CSV` (`Import Excel / CSV`)**, unggah file yang sudah diisi, lalu klik **Submit**.
+5. **Perilaku import = menambah DAN mengganti, kuncinya `work_email`:**
+
+   | Kondisi baris | Perilaku |
+   | :--- | :--- |
+   | Email sama dengan karyawan aktif yang ada (tidak peka huruf besar/kecil) | **UPDATE**: field yang terisi di file menimpa data lama (nama, telepon, jabatan, departemen, tipe, tanggal bergabung & berakhir kontrak); sel kosong **tidak** menghapus data lama |
+   | Email kosong / tidak ditemukan | **CREATE baru** — walau nama sama, menjadi karyawan baru (risiko duplikat bila email tidak konsisten) |
+   | Nama kosong | Dilewati (`skipped`) |
+   | Tipe karyawan tidak dikenal | Tidak dibuat otomatis — tipe dikosongkan dan dilaporkan pada notifikasi peringatan setelah import (lihat §2.B) |
+   | Departemen tidak dikenal | Dibuat otomatis dengan nama sesuai file |
+
+   Hasil import (jumlah `created` / `updated` / `skipped`) tampil pada notifikasi. Untuk update massal (mis. perpanjang tanggal kontrak banyak karyawan), pastikan email di file **persis sama** dengan di sistem agar data menimpa, bukan menggandakan.
+
+### C2. Membersihkan Master Employment Type
+Daftar Employment Type di semua dropdown (form karyawan, Riwayat Kontrak, Job Position) berasal dari satu master: **Employees → Configurations → Employment Types**. Urutan pembersihan yang aman:
+
+1. **Audit pemakaian dulu** (server) — tipe yang dihapus akan mengosongkan tipe pada karyawan/kontrak/job position yang memakainya (tidak error, tetapi data hilang):
+
+   ```bash
+   cd /var/www/auraerp && sudo -u www-data env HOME=/tmp php artisan tinker --execute='$types = \Illuminate\Support\Facades\DB::table("employees_employment_types")->orderBy("name")->get(); foreach ($types as $t) { $e = \Illuminate\Support\Facades\DB::table("employees_employees")->where("employment_type_id", $t->id)->whereNull("deleted_at")->count(); $c = \Illuminate\Support\Facades\DB::table("employees_employee_contracts")->where("employment_type_id", $t->id)->count(); $j = \Illuminate\Support\Facades\DB::table("employees_job_positions")->where("employment_type_id", $t->id)->count(); echo "{$t->id} | {$t->name} | karyawan: {$e} | kontrak: {$c} | job position: {$j}\n"; }'
+   ```
+
+2. **Pemakai 0 di semua kolom → hapus langsung** di Configurations → Employment Types (kandidat warisan seeder: `Apprenticeship, Interim, Intern, Seasonal, Statutory, Student, Temporary, Thesis`).
+3. **Duplikat yang masih terpakai** (mis. `contract hc` vs `Contract-HC`, `Employee`/`Full-Time` vs `Permanent`): pilih satu nama tujuan, alihkan pemakainya via tinker (ganti `ID_SUMBER` & `ID_TUJUAN` sesuai hasil audit), baru hapus tipe sumbernya di Configurations:
+
+   ```bash
+   sudo -u www-data env HOME=/tmp php artisan tinker --execute='\Illuminate\Support\Facades\DB::table("employees_employees")->where("employment_type_id", ID_SUMBER)->update(["employment_type_id" => ID_TUJUAN]); \Illuminate\Support\Facades\DB::table("employees_employee_contracts")->where("employment_type_id", ID_SUMBER)->update(["employment_type_id" => ID_TUJUAN]); \Illuminate\Support\Facades\DB::table("employees_job_positions")->where("employment_type_id", ID_SUMBER)->update(["employment_type_id" => ID_TUJUAN]); echo "dialihkan";'
+   ```
+
+4. **Target akhir yang disarankan:** `Permanent` (tujuan gabungan `Employee`/`Full-Time`), `Contract`, `Contract-HC`, `Contract - Non HC` (pertahankan bila HC/Non-HC memang pembeda bisnis), `OutTask Project`, `Outsource` (buat baru bila belum ada), `Konsultan`, `Freelance` — dari ±20 nama menjadi ±8. Pencegahan duplikat baru sudah diatur sistem (lihat §2.B).
 
 ### D. Menugaskan Proyek dari Profil Karyawan (`Assigned Projects`)
 1. Buka **Employees → Employees** → pilih karyawan → pastikan **Pengguna Terkait (`Related User`)** sudah diisi bila karyawan perlu login/akses proyek.
