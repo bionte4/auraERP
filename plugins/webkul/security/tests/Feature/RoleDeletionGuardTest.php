@@ -23,6 +23,17 @@ it('blocks deleting baseline web roles but allows unused duplicates', function (
         ->and(RoleResource::getDeletionBlockNotification($staffSanctum))->toBeNull();
 });
 
+it('can delete roles on the sanctum guard', function (): void {
+    // Regression: Spatie's deleting listener resolves the user model per
+    // guard; without an auth "sanctum" guard this crashed with
+    // "Class name must be a valid object or a string".
+    $role = Role::query()->firstOrCreate(['name' => 'Legacy Sanctum Role', 'guard_name' => 'sanctum']);
+
+    $role->delete();
+
+    expect(Role::query()->whereKey($role->id)->exists())->toBeFalse();
+});
+
 it('blocks deleting roles that still have users assigned', function (): void {
     $role = Role::query()->firstOrCreate(['name' => 'Team Leader', 'guard_name' => 'web']);
 

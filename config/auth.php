@@ -44,6 +44,15 @@ return [
             'provider' => 'users',
         ],
 
+        // Required so Spatie can resolve the user model for roles and
+        // permissions created with the "sanctum" guard; without it,
+        // deleting such a role/permission crashes in Spatie's deleting
+        // listener ($model->users()->detach()).
+        'sanctum' => [
+            'driver'   => 'sanctum',
+            'provider' => 'users',
+        ],
+
         'customer' => [
             'driver'   => 'session',
             'provider' => 'customers',
