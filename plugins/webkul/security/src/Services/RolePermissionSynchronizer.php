@@ -114,12 +114,13 @@ class RolePermissionSynchronizer
             'exact' => [
                 'view_any_employee_employee',
                 'view_employee_employee',
-                // OM may fully manage employees, but EmployeeResource scopes
+                // OM may manage employees, but EmployeeResource scopes
                 // records to their projects (+ self/reports/created-by).
+                // Delete is single-record soft-delete only: no bulk delete
+                // and no force-delete (permanent removal stays Admin/HRD).
                 'create_employee_employee',
                 'update_employee_employee',
                 'delete_employee_employee',
-                'delete_any_employee_employee',
                 'view_any_employee_department',
                 'view_employee_department',
                 'page_project_dashboard',

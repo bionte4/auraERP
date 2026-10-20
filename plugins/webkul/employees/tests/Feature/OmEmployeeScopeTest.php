@@ -85,10 +85,18 @@ it('grants operation manager employee create, update and delete permissions', fu
         'create_employee_employee',
         'update_employee_employee',
         'delete_employee_employee',
-        'delete_any_employee_employee',
     ] as $permission) {
         expect(Permission::query()->where('name', $permission)->exists())->toBeTrue();
         expect($omRole->hasPermissionTo($permission))->toBeTrue();
+    }
+
+    // Deletion is soft-delete per record only: no bulk or permanent delete.
+    foreach ([
+        'delete_any_employee_employee',
+        'force_delete_employee_employee',
+        'force_delete_any_employee_employee',
+    ] as $permission) {
+        expect($omRole->hasPermissionTo($permission))->toBeFalse();
     }
 
     $staffRole = Role::query()->where('name', 'Staff')->firstOrFail();
