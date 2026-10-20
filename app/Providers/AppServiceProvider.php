@@ -32,8 +32,14 @@ class AppServiceProvider extends ServiceProvider
         // served on both auraerp.my.id and opsora.my.id, a mismatched APP_URL makes
         // cross-origin module loads fail → empty dropdowns site-wide. Keep assets
         // same-origin with the current request host.
+        // Note: asset() prefers config('app.asset_url') over the forced root URL,
+        // and that config falls back to APP_URL — so the asset root must be
+        // pinned to the request host as well, otherwise JS/CSS/fonts are still
+        // served from the APP_URL domain and blocked by CORS (checkbox lists
+        // and tabs then never initialise on the other domain).
         if ((! app()->runningInConsole()) && filled(request()->getHost())) {
             URL::forceRootUrl(request()->getSchemeAndHttpHost());
+            URL::useAssetOrigin(request()->getSchemeAndHttpHost());
         }
 
         on('dehydrate', function (Component $component): void {
