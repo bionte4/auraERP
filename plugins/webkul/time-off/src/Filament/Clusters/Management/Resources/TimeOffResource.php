@@ -8,6 +8,8 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Webkul\Field\Filament\Traits\HasCustomFields;
+use Webkul\Support\Filament\NavigationBadge;
+use Webkul\TimeOff\Enums\State;
 use Webkul\TimeOff\Filament\Clusters\Management;
 use Webkul\TimeOff\Filament\Clusters\Management\Resources\TimeOffResource\Pages\CreateTimeOff;
 use Webkul\TimeOff\Filament\Clusters\Management\Resources\TimeOffResource\Pages\EditTimeOff;
@@ -39,6 +41,23 @@ class TimeOffResource extends Resource
     public static function getNavigationLabel(): string
     {
         return __('time-off::filament/clusters/management/resources/time-off.navigation.title');
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return NavigationBadge::count('time-off-pending-approvals', fn (): int => Leave::query()
+            ->whereIn('state', [State::CONFIRM->value, State::VALIDATE_ONE->value])
+            ->count());
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return __('time-off::filament/clusters/management/resources/time-off.navigation.badge-tooltip');
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
     }
 
     public static function getGloballySearchableAttributes(): array

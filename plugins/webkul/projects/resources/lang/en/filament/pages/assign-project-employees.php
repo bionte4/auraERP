@@ -3,6 +3,7 @@
 return [
     'navigation' => [
         'title' => 'Assign Employees',
+        'badge-tooltip' => 'Active employees without a Related User',
     ],
 
     'title'       => 'Assign Employees to Project',

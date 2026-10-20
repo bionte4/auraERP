@@ -25,6 +25,7 @@ use Webkul\Project\Models\Project;
 use Webkul\Project\Settings\TaskSettings;
 use Webkul\Project\Settings\TimeSettings;
 use Webkul\Support\Enums\NavigationGroup;
+use Webkul\Support\Filament\NavigationBadge;
 
 class ProjectResource extends Resource
 {
@@ -48,6 +49,31 @@ class ProjectResource extends Resource
     public static function getNavigationGroup(): string|\UnitEnum
     {
         return NavigationGroup::Project;
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return NavigationBadge::count('projects-expiring', fn (): int => Project::query()
+            ->where('is_active', true)
+            ->whereNotNull('end_date')
+            ->whereDate('end_date', '<=', now()->addDays(90)->toDateString())
+            ->count());
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return __('projects::filament/resources/project.navigation.badge-tooltip');
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $hasExpired = NavigationBadge::value('projects-expired', fn (): int => Project::query()
+            ->where('is_active', true)
+            ->whereNotNull('end_date')
+            ->whereDate('end_date', '<', now()->toDateString())
+            ->count()) > 0;
+
+        return $hasExpired ? 'danger' : 'warning';
     }
 
     public static function getGloballySearchableAttributes(): array

@@ -3,6 +3,7 @@
 return [
     'navigation' => [
         'title' => 'Proyek',
+        'badge-tooltip' => 'Proyek aktif yang sudah lewat tenggat atau berakhir dalam 90 hari',
     ],
 
     'global-search' => [

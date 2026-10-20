@@ -55,7 +55,9 @@ class AdminPanelProvider extends PanelProvider
                 'gray'    => Color::Slate,
             ])
             ->unsavedChangesAlerts()
-            ->sidebarCollapsibleOnDesktop()
+            // Sidebar stays expanded with labels on desktop (no icon-only
+            // rail): labels + navigation badges must remain readable.
+            // Mobile keeps the off-canvas drawer behaviour by default.
             ->sidebarWidth('15.5rem')
             ->renderHook(
                 PanelsRenderHook::TOPBAR_START,

@@ -26,6 +26,7 @@ use Webkul\Employee\Filament\Resources\EmployeeResource\Tables\EmployeesTable;
 use Webkul\Employee\Models\Employee;
 use Webkul\Field\Filament\Traits\HasCustomFields;
 use Webkul\Support\Enums\NavigationGroup;
+use Webkul\Support\Filament\NavigationBadge;
 
 class EmployeeResource extends Resource
 {
@@ -54,6 +55,31 @@ class EmployeeResource extends Resource
     public static function getNavigationGroup(): string|\UnitEnum
     {
         return NavigationGroup::Employee;
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return NavigationBadge::count('employees-expiring-contracts', fn (): int => Employee::query()
+            ->where('is_active', true)
+            ->whereNotNull('contract_end_date')
+            ->whereDate('contract_end_date', '<=', now()->addDays(30)->toDateString())
+            ->count());
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return __('employees::filament/resources/employee.navigation.badge-tooltip');
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        $hasExpired = NavigationBadge::value('employees-expired-contracts', fn (): int => Employee::query()
+            ->where('is_active', true)
+            ->whereNotNull('contract_end_date')
+            ->whereDate('contract_end_date', '<', now()->toDateString())
+            ->count()) > 0;
+
+        return $hasExpired ? 'danger' : 'warning';
     }
 
     public static function getGloballySearchableAttributes(): array

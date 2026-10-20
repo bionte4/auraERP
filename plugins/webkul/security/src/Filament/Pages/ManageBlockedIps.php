@@ -21,7 +21,7 @@ class ManageBlockedIps extends Page
 
     protected static ?int $navigationSort = 10;
 
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-shield-exclamation';
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-no-symbol';
 
     /**
      * @var array<int, array<string, mixed>>

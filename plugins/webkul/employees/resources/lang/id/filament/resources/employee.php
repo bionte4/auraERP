@@ -4,7 +4,8 @@ return [
     'title' => 'Karyawan',
 
     'navigation' => [
-        'title' => 'Karyawan',
+        'title'         => 'Karyawan',
+        'badge-tooltip' => 'Kontrak kedaluwarsa atau berakhir dalam 30 hari',
     ],
 
     'global-search' => [

@@ -6,7 +6,8 @@ return [
     'model-label' => 'Time off',
 
     'navigation' => [
-        'title' => 'Time off',
+        'title'         => 'Time off',
+        'badge-tooltip' => 'Time off requests awaiting approval',
     ],
 
     'global-search' => [

@@ -24,6 +24,7 @@ use Webkul\PluginManager\Package;
 use Webkul\Project\Models\Project;
 use Webkul\Project\Services\ProjectEmployeeAssigner;
 use Webkul\Support\Enums\NavigationGroup;
+use Webkul\Support\Filament\NavigationBadge;
 
 class AssignProjectEmployees extends Page implements HasForms
 {
@@ -57,6 +58,24 @@ class AssignProjectEmployees extends Page implements HasForms
     public static function getNavigationGroup(): string|\UnitEnum
     {
         return NavigationGroup::Project;
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return NavigationBadge::count('employees-without-user', fn (): int => Employee::query()
+            ->where('is_active', true)
+            ->whereNull('user_id')
+            ->count());
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return __('projects::filament/pages/assign-project-employees.navigation.badge-tooltip');
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'gray';
     }
 
     public static function getNavigationLabel(): string

@@ -3,6 +3,7 @@
 return [
     'navigation' => [
         'title' => 'Projects',
+        'badge-tooltip' => 'Active projects past due or ending within 90 days',
     ],
 
     'global-search' => [

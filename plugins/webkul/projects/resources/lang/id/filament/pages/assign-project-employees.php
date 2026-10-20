@@ -3,6 +3,7 @@
 return [
     'navigation' => [
         'title' => 'Tugaskan Karyawan',
+        'badge-tooltip' => 'Karyawan aktif tanpa Pengguna Terkait',
     ],
 
     'title'       => 'Tugaskan Karyawan ke Proyek',

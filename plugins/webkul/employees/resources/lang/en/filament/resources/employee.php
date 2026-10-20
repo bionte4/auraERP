@@ -4,7 +4,8 @@ return [
     'title' => 'Employees',
 
     'navigation' => [
-        'title' => 'Employees',
+        'title'         => 'Employees',
+        'badge-tooltip' => 'Contracts expired or ending within 30 days',
     ],
 
     'global-search' => [

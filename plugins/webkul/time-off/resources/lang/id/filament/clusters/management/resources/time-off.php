@@ -6,7 +6,8 @@ return [
     'model-label' => 'Cuti',
 
     'navigation' => [
-        'title' => 'Cuti',
+        'title'         => 'Cuti',
+        'badge-tooltip' => 'Pengajuan cuti menunggu persetujuan',
     ],
 
     'global-search' => [

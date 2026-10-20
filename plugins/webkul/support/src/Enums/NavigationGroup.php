@@ -7,7 +7,18 @@ use Filament\Support\Contracts\HasLabel;
 
 enum NavigationGroup: string implements HasIcon, HasLabel
 {
+    // Case order defines the sidebar group order (daily workflow first,
+    // administration last). Values must stay stable: they are persisted
+    // in translations and user navigation preferences.
     case Dashboard = 'dashboard';
+
+    case Employee = 'employee';
+
+    case Project = 'project';
+
+    case TimeOff = 'time-off';
+
+    case Recruitment = 'recruitment';
 
     case Contact = 'contact';
 
@@ -15,29 +26,21 @@ enum NavigationGroup: string implements HasIcon, HasLabel
 
     case Purchase = 'purchase';
 
-    case Maintenance = 'maintenance';
+    case Inventory = 'inventory';
 
     case Manufacturing = 'manufacturing';
 
-    case Inventory = 'inventory';
+    case Maintenance = 'maintenance';
 
     case Invoice = 'invoice';
 
     case Accounting = 'accounting';
 
-    case Project = 'project';
-
-    case Employee = 'employee';
-
-    case TimeOff = 'time-off';
-
-    case Recruitment = 'recruitment';
+    case Pos = 'pos';
 
     case Website = 'website';
 
     case Barcode = 'barcode';
-
-    case Pos = 'pos';
 
     case Plugin = 'plugin';
 
