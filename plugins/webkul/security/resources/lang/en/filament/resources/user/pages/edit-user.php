@@ -5,7 +5,7 @@ return [
         'title'       => 'User updated',
         'body'        => 'The user has been updated successfully.',
         'error-title' => 'User could not be saved',
-        'error-body'  => 'The form could not be saved. Try searching teams instead of listing all of them, then save again.',
+        'error-body'  => 'The form could not be saved. Check the error details and try again.',
     ],
 
     'header-actions' => [

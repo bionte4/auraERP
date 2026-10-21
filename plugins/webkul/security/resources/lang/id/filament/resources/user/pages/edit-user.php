@@ -5,7 +5,7 @@ return [
         'title'       => 'Pengguna diperbarui',
         'body'        => 'Pengguna berhasil diperbarui.',
         'error-title' => 'Pengguna tidak dapat disimpan',
-        'error-body'  => 'Form gagal disimpan. Cari tim yang dibutuhkan, jangan tampilkan semua sekaligus, lalu simpan lagi.',
+        'error-body'  => 'Form gagal disimpan. Periksa detail kesalahan lalu coba lagi.',
     ],
 
     'header-actions' => [

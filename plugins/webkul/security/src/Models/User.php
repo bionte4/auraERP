@@ -16,7 +16,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Traits\HasRoles;
 use Webkul\Employee\Models\Department;
@@ -28,7 +27,6 @@ use Webkul\Security\Support\DemoAccountGuard;
 use Webkul\Security\Support\OwnerSource;
 use Webkul\Security\Traits\HasOwnershipScope;
 use Webkul\Support\Models\Company;
-use Webkul\Support\Models\Scopes\CompanyScope;
 
 class User extends BaseUser implements FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery, HasEmailAuthentication
 {
@@ -123,7 +121,7 @@ class User extends BaseUser implements FilamentUser, HasAppAuthentication, HasAp
     public function partner(): BelongsTo
     {
         return $this->belongsTo(Partner::class, 'partner_id')
-            ->withoutGlobalScope(CompanyScope::class);
+            ->withoutGlobalScopes();
     }
 
     public function allowedCompanies(): BelongsToMany
@@ -153,39 +151,34 @@ class User extends BaseUser implements FilamentUser, HasAppAuthentication, HasAp
         });
     }
 
-    private function handlePartnerCreation(self $user)
+    /**
+     * @return array<string, mixed>
+     */
+    private function partnerSyncAttributes(self $user): array
     {
-        $partnerAttributes = Arr::only($user->toArray(), app(Partner::class)->getFillable());
-
-        $partner = $user->partner()->create([
-            ...$partnerAttributes,
+        return [
             'name'       => $user->name,
             'email'      => $user->email,
-            'creator_id' => Auth::user()->id ?? $user->id,
+            'creator_id' => Auth::id() ?? $user->id,
             'company_id' => $user->default_company_id,
             'user_id'    => $user->id,
             'sub_type'   => 'partner',
-        ]);
+        ];
+    }
+
+    private function handlePartnerCreation(self $user): void
+    {
+        $partner = $user->partner()->create($this->partnerSyncAttributes($user));
 
         $user->partner_id = $partner->id;
         $user->save();
     }
 
-    private function handlePartnerUpdation(self $user)
+    private function handlePartnerUpdation(self $user): void
     {
-        $partnerAttributes = Arr::only($user->toArray(), app(Partner::class)->getFillable());
-
         $partner = Partner::withoutGlobalScopes()->updateOrCreate(
             ['id' => $user->partner_id],
-            [
-                ...$partnerAttributes,
-                'name'       => $user->name,
-                'email'      => $user->email,
-                'creator_id' => Auth::user()->id ?? $user->id,
-                'company_id' => $user->default_company_id,
-                'user_id'    => $user->id,
-                'sub_type'   => 'partner',
-            ]
+            $this->partnerSyncAttributes($user),
         );
 
         if ($user->partner_id !== $partner->id) {

@@ -8,10 +8,12 @@ use Filament\Actions\ViewAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
+use Filament\Support\Exceptions\Halt;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 use Webkul\Security\Enums\PermissionType;
 use Webkul\Security\Filament\Resources\UserResource;
 use Webkul\Security\Models\User;
@@ -26,6 +28,24 @@ class EditUser extends EditRecord
      * @var array<int, string>
      */
     protected array $rolesBeforeSave = [];
+
+    public function save(bool $shouldRedirect = true, bool $shouldSendSavedNotification = true): void
+    {
+        try {
+            parent::save($shouldRedirect, $shouldSendSavedNotification);
+        } catch (Halt $exception) {
+            throw $exception;
+        } catch (Throwable $exception) {
+            report($exception);
+
+            Notification::make()
+                ->danger()
+                ->title(__('security::filament/resources/user/pages/edit-user.notification.error-title'))
+                ->body($exception->getMessage())
+                ->persistent()
+                ->send();
+        }
+    }
 
     protected function getSavedNotification(): Notification
     {

@@ -116,7 +116,6 @@ class UserForm
                                             ->helperText(__('security::filament/resources/user.form.sections.permissions.fields.teams-help'))
                                             ->relationship('teams', 'name')
                                             ->multiple()
-                                            ->searchable()
                                             ->native()
                                             ->preload()
                                             ->required(fn (Get $get) => $get('resource_permission') == PermissionType::GROUP),
@@ -129,6 +128,16 @@ class UserForm
                                 Section::make(__('security::filament/resources/user.form.sections.avatar.title'))
                                     ->relationship('partner')
                                     ->visible(fn (?User $record): bool => filled($record?->partner_id))
+                                    ->mutateRelationshipDataBeforeCreateUsing(function (array $data, $livewire): array {
+                                        $user = method_exists($livewire, 'getRecord') ? $livewire->getRecord() : null;
+                                        $data['name'] = (is_object($user) && filled($user->name ?? null)) ? $user->name : ($data['name'] ?? 'User');
+                                        $data['email'] = (is_object($user) && filled($user->email ?? null)) ? $user->email : ($data['email'] ?? null);
+                                        $data['user_id'] = is_object($user) ? ($user->id ?? null) : null;
+                                        $data['company_id'] = is_object($user) ? ($user->default_company_id ?? null) : null;
+                                        $data['sub_type'] = 'partner';
+
+                                        return $data;
+                                    })
                                     ->schema([
                                         FileUpload::make('avatar')
                                             ->hiddenLabel()
@@ -141,7 +150,6 @@ class UserForm
                                                 'image/bmp',
                                                 'image/webp',
                                             ])
-                                            ->imageEditor()
                                             ->directory('users/avatars')
                                             ->visibility('public'),
                                     ])
