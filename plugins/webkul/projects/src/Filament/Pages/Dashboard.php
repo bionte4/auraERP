@@ -14,6 +14,7 @@ use Webkul\Project\Filament\Widgets\AttendancePresenceWidget;
 use Webkul\Project\Filament\Widgets\ExpiringProjectsWidget;
 use Webkul\Project\Filament\Widgets\OperationalBudgetWidget;
 use Webkul\Project\Filament\Widgets\OperationManagerActionsWidget;
+use Webkul\Project\Filament\Widgets\ProjectResponsibilityWidget;
 use Webkul\Project\Filament\Widgets\OperationManagerWorkloadWidget;
 use Webkul\Project\Filament\Widgets\StatsOverviewWidget;
 use Webkul\Project\Filament\Widgets\TaskByStageChart;
@@ -177,6 +178,7 @@ class Dashboard extends BaseDashboard
             AttendancePresenceWidget::class,
             OperationManagerWorkloadWidget::class,
             OperationalBudgetWidget::class,
+            ProjectResponsibilityWidget::class,
             TaskByStageChart::class,
             TaskByStateChart::class,
             TopAssigneesWidget::class,

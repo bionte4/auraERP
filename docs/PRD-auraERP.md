@@ -3,9 +3,9 @@
 | Field | Nilai |
 | :--- | :--- |
 | **Produk** | auraERP — customisasi operasional Opsora |
-| **Versi dokumen** | 1.4 |
+| **Versi dokumen** | 1.5 |
 | **Tanggal** | 2026-10-21 |
-| **Revisi** | UI Roles berbasis section permission (SEC-07), OM kelola karyawan terscope PM (EMP-07), sidebar expanded + badge navigasi, pemisahan Accounting/Accounting Manager + Kontrol Anggaran Proyek (SEC-08, PRJ-14/15), kerahasiaan nilai kontrak (PRJ-16), hapus tim beranggotakan dengan konfirmasi (SEC-09), Team Board multi-layout + pencarian + sortir (PRJ-17) |
+| **Revisi** | UI Roles berbasis section permission (SEC-07), OM kelola karyawan terscope PM (EMP-07), sidebar expanded + badge navigasi, pemisahan Accounting/Accounting Manager + Kontrol Anggaran Proyek (SEC-08, PRJ-14/15), kerahasiaan nilai kontrak (PRJ-16), hapus tim beranggotakan dengan konfirmasi (SEC-09), Team Board multi-layout + pencarian + sortir (PRJ-17), dashboard tanggung jawab Proyek & Team Leader (PRJ-18), kelengkapan persona/checklist akunting |
 | **Status** | Baseline produk (fitur utama sudah live / di-deploy) |
 | **Pemilik produk** | Opsora / auraERP ops |
 | **Referensi operasional** | [WORKING_INSTRUCTION.md](../WORKING_INSTRUCTION.md) |
@@ -158,6 +158,7 @@ ID memakai prefiks modul. Prioritas: **P0** harus ada / sudah ada; **P1** pentin
 | PRJ-15 | **Pengaitan dokumen keuangan ke proyek:** kolom `accounts_account_moves.project_id` (nullable, FK null-on-delete) + field **Proyek** pada form Invoice pelanggan & Bill vendor (invoice memfilter proyek sesuai customer terpilih; non-editable saat posted/cancel) sebagai dasar realisasi anggaran per proyek (PRJ-14) | P0 | Done |
 | PRJ-16 | **Kerahasiaan nilai kontrak proyek:** `project_value` hanya terlihat oleh Admin & tim budget-control (Accounting/Accounting Manager) via satu gerbang `OperationalScope::canViewProjectValue()` — disembunyikan dari daftar/View/Edit proyek (field tidak dirender untuk non-finance), detail Customer, kartu Team Board, Ringkasan 360 karyawan, notifikasi pengingat proyek (isi tanpa nilai), konteks auraAI, dan API proyek. Accounting Manager dapat mengedit nilai kontrak dari halaman Budget Control (tercatat di activity log). OM/Team Leader memantau opex proyeknya lewat widget **Anggaran Operasional & Realisasi Opex** (`widget_project_operational_budget_widget`: anggaran, biaya vendor aktual, sisa, serapan — tanpa nilai kontrak/invoice) | P0 | Done |
 | PRJ-17 | **Team Board untuk skala banyak tim/proyek:** pilihan tampilan **Cards** (default) / **Compact** (kartu ringkas tanpa blok About) / **List** (satu baris per tim: anggota, proyek, task, nilai, status, diperbarui, Details) — Project kanban tetap khusus Admin/OM; **pencarian live** menurut nama tim atau nama proyek; **sortir** Nama A–Z/Z–A, anggota/proyek/task terbanyak, progress tertinggi/terendah, terakhir diperbarui, dan nilai terbesar (opsi & kolom nilai tunduk pada gerbang PRJ-16). Pilihan tampilan & sortir divalidasi server, tersimpan per sesi, dan scope kartu tetap mengikuti penugasan viewer (PRJ-13) | P1 | Done |
+| PRJ-18 | **Dashboard tanggung jawab Proyek & Team Leader:** widget `widget_project_project_responsibility_widget` di Project Dashboard, satu baris per proyek aktif (Proyek, Customer, Project Manager, Team Leader, jumlah anggota, progress tugas, tugas terlambat, sisa waktu tenggat; baris klik ke detail proyek; mengikuti filter atas dashboard). Scope `OperationalScope`: Operation Manager proyek kelolaan/ikutannya, Team Leader hanya proyek pimpinannya, Admin/HRD penuh. Tanpa nilai kontrak/data penagihan (tunduk PRJ-16). Permission di-grant baseline ke OM & Team Leader oleh `RolePermissionSynchronizer` | P0 | Done |
 
 ### 5.7 Laporan proyek — `RPT`
 
