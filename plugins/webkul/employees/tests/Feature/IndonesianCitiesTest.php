@@ -1,7 +1,9 @@
 <?php
 
 use Webkul\Employee\Data\IndonesianCities;
+use Webkul\Employee\Filament\Resources\EmployeeResource\Schemas\EmployeeForm;
 use Webkul\Employee\Models\WorkLocation;
+use Webkul\Support\Models\Company;
 
 require_once __DIR__.'/../../../support/tests/Helpers/TestBootstrapHelper.php';
 
@@ -40,4 +42,23 @@ it('labels a work location with its city for the employee form', function (): vo
     ]);
 
     expect($location->placementLabel())->toBe('Kota Bandung — Kantor Collaboration');
+});
+
+it('finds or creates a work location from an indonesian city for the placement map', function (): void {
+    TestBootstrapHelper::ensurePluginInstalled('employees');
+
+    $first = EmployeeForm::findOrCreatePlacementLocation(
+        'Kota Bandung',
+        Company::query()->value('id'),
+    );
+    $second = EmployeeForm::findOrCreatePlacementLocation(
+        'Kota Bandung',
+        $first?->company_id,
+    );
+
+    expect($first)->not->toBeNull()
+        ->and($first->city)->toBe('Kota Bandung')
+        ->and($first->latitude)->not->toBeNull()
+        ->and($first->longitude)->not->toBeNull()
+        ->and($second?->id)->toBe($first->id);
 });

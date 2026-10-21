@@ -21,23 +21,25 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Builder;
+use Webkul\Employee\Data\IndonesianCities;
 use Webkul\Employee\Enums\DistanceUnit;
 use Webkul\Employee\Enums\Gender;
 use Webkul\Employee\Enums\MaritalStatus;
+use Webkul\Employee\Enums\WorkLocation as WorkLocationType;
 use Webkul\Employee\Filament\Clusters\Configurations\Resources\DepartureReasonResource;
 use Webkul\Employee\Filament\Clusters\Configurations\Resources\JobPositionResource;
-use Webkul\Employee\Filament\Clusters\Configurations\Resources\WorkLocationResource;
 use Webkul\Employee\Filament\Resources\DepartmentResource;
 use Webkul\Employee\Models\Department;
+use Webkul\Employee\Models\Employee;
 use Webkul\Employee\Models\EmployeeJobPosition;
 use Webkul\Employee\Models\WorkLocation;
-use Webkul\Partner\Enums\AccountType;
 use Webkul\Partner\Models\Partner;
 use Webkul\Security\Filament\Resources\CompanyResource;
 use Webkul\Security\Filament\Resources\UserResource;
 use Webkul\Security\Models\User;
 use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Webkul\Support\Models\Calendar;
+use Webkul\Support\Models\Company;
 use Webkul\Support\Models\Country;
 
 class EmployeeForm
@@ -199,28 +201,47 @@ class EmployeeForm
                                                             ->relationship(
                                                                 name: 'companyAddress',
                                                                 titleAttribute: 'name',
-                                                                modifyQueryUsing: fn (Builder $query, Get $get) => static::scopeWorkAddressPartners($query, $get('address_id')),
+                                                                modifyQueryUsing: fn (Builder $query, Get $get) => static::scopeWorkAddressPartners(
+                                                                    $query,
+                                                                    $get('address_id'),
+                                                                    $get('company_id'),
+                                                                ),
                                                             )
                                                             ->getOptionLabelFromRecordUsing(fn (Partner $record): string => static::workAddressLabel($record))
                                                             ->searchable()
                                                             ->preload()
                                                             ->live()
                                                             ->suffixIcon('heroicon-o-map-pin')
-                                                            ->label(__('employees::filament/resources/employee.form.tabs.work-information.fields.work-address')),
-                                                        Select::make('work_location_id')
-                                                            ->relationship(
-                                                                name: 'workLocation',
-                                                                titleAttribute: 'name',
-                                                                modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(fn ($query) => $query->whereNull('company_id')->orWhere('company_id', $get('company_id') ?? current_company_id())),
-                                                            )
-                                                            ->getOptionLabelFromRecordUsing(fn (WorkLocation $record): string => $record->placementLabel())
+                                                            ->label(__('employees::filament/resources/employee.form.tabs.work-information.fields.work-address'))
+                                                            ->helperText(__('employees::filament/resources/employee.form.tabs.work-information.fields.work-address-help')),
+                                                        Select::make('placement_city')
+                                                            ->label(__('employees::filament/resources/employee.form.tabs.work-information.fields.placement-city'))
+                                                            ->helperText(__('employees::filament/resources/employee.form.tabs.work-information.fields.placement-city-help'))
+                                                            ->options(fn (Get $get): array => IndonesianCities::options($get('placement_city')))
                                                             ->searchable()
                                                             ->preload()
-                                                            ->label(__('employees::filament/resources/employee.form.tabs.work-information.fields.work-location'))
-                                                            ->helperText(__('employees::filament/resources/employee.form.tabs.work-information.fields.work-location-help'))
-                                                            ->prefixIcon('heroicon-o-map-pin')
-                                                            ->createOptionForm(fn (Schema $schema) => WorkLocationResource::form($schema))
-                                                            ->editOptionForm(fn (Schema $schema) => WorkLocationResource::form($schema)),
+                                                            ->live()
+                                                            ->dehydrated(false)
+                                                            ->afterStateHydrated(function (Select $component, ?Employee $record): void {
+                                                                $component->state($record?->workLocation?->city);
+                                                            })
+                                                            ->afterStateUpdated(function (Set $set, Get $get, mixed $state): void {
+                                                                if (! filled($state)) {
+                                                                    $set('work_location_id', null);
+
+                                                                    return;
+                                                                }
+
+                                                                $location = static::findOrCreatePlacementLocation(
+                                                                    (string) $state,
+                                                                    $get('company_id') ?? current_company_id(),
+                                                                );
+
+                                                                $set('work_location_id', $location?->id);
+                                                            })
+                                                            ->prefixIcon('heroicon-o-map-pin'),
+                                                        Hidden::make('work_location_id')
+                                                            ->dehydrated(),
                                                     ])->columns(1),
                                                 Fieldset::make(__('employees::filament/resources/employee.form.tabs.work-information.fields.approver'))
                                                     ->schema([
@@ -270,11 +291,14 @@ class EmployeeForm
                                                                     ->preload()
                                                                     ->default(current_company_id())
                                                                     ->live()
-                                                                    ->afterStateUpdated(fn (Set $set, Get $get, $state) => clear_foreign_company_values($set, $get, [
-                                                                        'job_id'           => EmployeeJobPosition::class,
-                                                                        'work_location_id' => WorkLocation::class,
-                                                                        'department_id'    => Department::class,
-                                                                    ], $state))
+                                                                    ->afterStateUpdated(function (Set $set, Get $get, $state): void {
+                                                                        clear_foreign_company_values($set, $get, [
+                                                                            'job_id'           => EmployeeJobPosition::class,
+                                                                            'work_location_id' => WorkLocation::class,
+                                                                            'department_id'    => Department::class,
+                                                                        ], $state);
+                                                                        $set('placement_city', null);
+                                                                    })
                                                                     ->prefixIcon('heroicon-o-building-office')
                                                                     ->label(__('employees::filament/resources/employee.form.tabs.work-information.fields.company'))
                                                                     ->createOptionForm(fn (Schema $schema) => CompanyResource::form($schema)),
@@ -305,7 +329,8 @@ class EmployeeForm
                                                                 TextInput::make('private_street2')
                                                                     ->label(__('employees::filament/resources/employee.form.tabs.private-information.fields.street-2')),
                                                                 TextInput::make('private_city')
-                                                                    ->label(__('employees::filament/resources/employee.form.tabs.private-information.fields.city')),
+                                                                    ->label(__('employees::filament/resources/employee.form.tabs.private-information.fields.city'))
+                                                                    ->helperText(__('employees::filament/resources/employee.form.tabs.private-information.fields.city-help')),
                                                                 TextInput::make('private_zip')
                                                                     ->label(__('employees::filament/resources/employee.form.tabs.private-information.fields.postal-code')),
                                                                 Select::make('private_country_id')
@@ -785,20 +810,92 @@ class EmployeeForm
     }
 
     /**
-     * Work Address is a company/office partner, not the employee contact card.
+     * Work Address is this company's own office partner, not customers/vendors
+     * or employee contact cards.
      */
-    public static function scopeWorkAddressPartners(Builder $query, mixed $selectedId = null): Builder
+    public static function scopeWorkAddressPartners(Builder $query, mixed $selectedId = null, mixed $companyId = null): Builder
     {
-        return $query->where(function (Builder $outer) use ($selectedId): void {
-            $outer->where(function (Builder $allowed): void {
-                $allowed->where('sub_type', 'company')
-                    ->orWhere('account_type', AccountType::COMPANY);
-            });
+        $companyId = filled($companyId) ? (int) $companyId : current_company_id();
+        $officeIds = [];
+
+        if ($companyId && class_exists(Company::class)) {
+            $company = Company::query()->find($companyId);
+
+            if ($company?->partner_id) {
+                $officeIds[] = (int) $company->partner_id;
+                $officeIds = array_merge(
+                    $officeIds,
+                    Partner::query()
+                        ->where('parent_id', $company->partner_id)
+                        ->pluck('id')
+                        ->map(fn ($id): int => (int) $id)
+                        ->all(),
+                );
+            }
+        }
+
+        return $query->where(function (Builder $outer) use ($officeIds, $selectedId): void {
+            if ($officeIds !== []) {
+                $outer->whereIn('id', array_values(array_unique($officeIds)));
+            } else {
+                $outer->whereRaw('1 = 0');
+            }
 
             if (filled($selectedId)) {
                 $outer->orWhereKey($selectedId);
             }
         });
+    }
+
+    public static function findOrCreatePlacementLocation(string $city, mixed $companyId): ?WorkLocation
+    {
+        $city = trim($city);
+
+        if ($city === '' || ! class_exists(WorkLocation::class)) {
+            return null;
+        }
+
+        $companyId = filled($companyId) ? (int) $companyId : current_company_id();
+        $coordinates = IndonesianCities::coordinates($city) ?? [];
+
+        $existing = WorkLocation::query()
+            ->where('city', $city)
+            ->when(
+                $companyId,
+                fn (Builder $query) => $query->where(function (Builder $inner) use ($companyId): void {
+                    $inner->where('company_id', $companyId)->orWhereNull('company_id');
+                }),
+            )
+            ->orderByRaw('company_id is not null desc')
+            ->first();
+
+        if ($existing instanceof WorkLocation) {
+            if (
+                ($existing->latitude === null || $existing->longitude === null)
+                && isset($coordinates['latitude'], $coordinates['longitude'])
+            ) {
+                $existing->update([
+                    'latitude'  => $coordinates['latitude'],
+                    'longitude' => $coordinates['longitude'],
+                ]);
+            }
+
+            return $existing;
+        }
+
+        if (! $companyId) {
+            return null;
+        }
+
+        return WorkLocation::query()->create([
+            'name'          => $city,
+            'city'          => $city,
+            'location_type' => WorkLocationType::Other,
+            'company_id'    => $companyId,
+            'is_active'     => true,
+            'latitude'      => $coordinates['latitude'] ?? null,
+            'longitude'     => $coordinates['longitude'] ?? null,
+        ]);
     }
 
     public static function workAddressLabel(Partner $record): string
