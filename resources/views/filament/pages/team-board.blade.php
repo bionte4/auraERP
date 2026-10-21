@@ -36,6 +36,19 @@
                         placeholder="{{ $labels['search-placeholder'] }}"
                         class="block w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 sm:max-w-[220px]"
                     >
+                    @php
+                        $sortChoices = ['name_asc', 'name_desc', 'members_desc', 'projects_desc', 'tasks_desc', 'progress_desc', 'progress_asc', ...(($board['canViewValue'] ?? false) ? ['value_desc'] : []), 'updated_desc'];
+                    @endphp
+                    <select
+                        wire:change="setSortBy($event.target.value)"
+                        aria-label="{{ $labels['sort'] }}"
+                        title="{{ $labels['sort'] }}"
+                        class="block w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 sm:max-w-[200px]"
+                    >
+                        @foreach ($sortChoices as $sortChoice)
+                            <option value="{{ $sortChoice }}" @selected(($board['sortBy'] ?? 'name_asc') === $sortChoice)>{{ $labels['sort-'.$sortChoice] }}</option>
+                        @endforeach
+                    </select>
                 @endif
                 @if ($board['action'])
                     <a class="team-board-add" href="{{ $board['action']['href'] }}">+ {{ $board['action']['label'] }}</a>

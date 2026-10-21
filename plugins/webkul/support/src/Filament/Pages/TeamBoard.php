@@ -34,6 +34,25 @@ class TeamBoard extends Page
 
     public string $search = '';
 
+    public string $sortBy = 'name_asc';
+
+    /**
+     * Sort options offered on the board (cards, compact, and list modes).
+     *
+     * @var array<int, string>
+     */
+    protected static array $sortOptions = [
+        'name_asc',
+        'name_desc',
+        'members_desc',
+        'projects_desc',
+        'tasks_desc',
+        'progress_desc',
+        'progress_asc',
+        'value_desc',
+        'updated_desc',
+    ];
+
     public static function canAccess(): bool
     {
         $user = auth()->user();
@@ -75,6 +94,10 @@ class TeamBoard extends Page
         $saved = (string) session('team-board.view-mode', 'cards');
 
         $this->viewMode = in_array($saved, ['cards', 'compact', 'list', 'kanban'], true) ? $saved : 'cards';
+
+        $savedSort = (string) session('team-board.sort', 'name_asc');
+
+        $this->sortBy = in_array($savedSort, static::$sortOptions, true) ? $savedSort : 'name_asc';
     }
 
     public function setViewMode(string $mode): void
@@ -82,6 +105,13 @@ class TeamBoard extends Page
         $this->viewMode = in_array($mode, ['cards', 'compact', 'list', 'kanban'], true) ? $mode : 'cards';
 
         session(['team-board.view-mode' => $this->viewMode]);
+    }
+
+    public function setSortBy(string $sort): void
+    {
+        $this->sortBy = in_array($sort, static::$sortOptions, true) ? $sort : 'name_asc';
+
+        session(['team-board.sort' => $this->sortBy]);
     }
 
     public function moveEmployeeOnKanban(int $employeeId, int $fromProjectId, int $toProjectId): void
@@ -121,11 +151,20 @@ class TeamBoard extends Page
     {
         $indonesian = str_starts_with((string) app()->getLocale(), 'id');
         $manages = static::managesTeams();
-        $cards = $this->filterCards($this->cardsFor(auth()->user()));
+        $cards = $this->sortCards($this->filterCards($this->cardsFor(auth()->user())));
+
+        $canViewValue = false;
+        $scopeClass = 'Webkul\\Project\\Services\\OperationalScope';
+
+        if (class_exists($scopeClass)) {
+            $canViewValue = app($scopeClass)->canViewProjectValue();
+        }
 
         return [
             'manages'  => $manages,
             'viewMode' => $this->viewMode,
+            'sortBy'   => $this->sortBy,
+            'canViewValue' => $canViewValue,
             'kanban'   => $this->viewMode === 'kanban' ? $this->kanbanColumns(auth()->user()) : [],
             'title'    => $manages
                 ? ($indonesian ? 'Kelola Tim' : 'Manage Teams')
@@ -171,6 +210,16 @@ class TeamBoard extends Page
                 'team'              => $indonesian ? 'Tim' : 'Team',
                 'search-placeholder' => $indonesian ? 'Cari tim atau proyek…' : 'Search teams or projects…',
                 'no-results'        => $indonesian ? 'Tidak ada tim yang cocok dengan pencarian.' : 'No teams match your search.',
+                'sort'              => $indonesian ? 'Urutkan' : 'Sort',
+                'sort-name_asc'     => $indonesian ? 'Nama A–Z' : 'Name A–Z',
+                'sort-name_desc'    => $indonesian ? 'Nama Z–A' : 'Name Z–A',
+                'sort-members_desc' => $indonesian ? 'Anggota terbanyak' : 'Most members',
+                'sort-projects_desc' => $indonesian ? 'Proyek terbanyak' : 'Most projects',
+                'sort-tasks_desc'   => $indonesian ? 'Task terbanyak' : 'Most tasks',
+                'sort-progress_desc' => $indonesian ? 'Progress tertinggi' : 'Highest progress',
+                'sort-progress_asc' => $indonesian ? 'Progress terendah' : 'Lowest progress',
+                'sort-value_desc'   => $indonesian ? 'Nilai terbesar' : 'Highest value',
+                'sort-updated_desc' => $indonesian ? 'Terakhir diperbarui' : 'Recently updated',
             ],
         ];
     }
@@ -203,6 +252,31 @@ class TeamBoard extends Page
 
             return false;
         }));
+    }
+
+    /**
+     * Order team cards per the board sort dropdown. Unknown sort keys
+     * fall back to name A–Z. Teams the viewer may not price (value
+     * hidden) always sink to the bottom on the value sort.
+     *
+     * @param  array<int, array<string, mixed>>  $cards
+     * @return array<int, array<string, mixed>>
+     */
+    protected function sortCards(array $cards): array
+    {
+        $sorted = match ($this->sortBy) {
+            'name_desc' => collect($cards)->sortByDesc(fn (array $card): string => mb_strtolower((string) ($card['name'] ?? ''))),
+            'members_desc' => collect($cards)->sortByDesc(fn (array $card): int => (int) ($card['member_count'] ?? 0)),
+            'projects_desc' => collect($cards)->sortByDesc(fn (array $card): int => (int) ($card['project_count'] ?? 0)),
+            'tasks_desc' => collect($cards)->sortByDesc(fn (array $card): int => (int) ($card['task_count'] ?? 0)),
+            'progress_desc' => collect($cards)->sortByDesc(fn (array $card): int => (int) ($card['progress'] ?? 0)),
+            'progress_asc' => collect($cards)->sortBy(fn (array $card): int => (int) ($card['progress'] ?? 0)),
+            'value_desc' => collect($cards)->sortByDesc(fn (array $card): float => (float) ($card['value_amount'] ?? -1)),
+            'updated_desc' => collect($cards)->sortByDesc(fn (array $card): int => (int) ($card['updated_ts'] ?? 0)),
+            default => collect($cards)->sortBy(fn (array $card): string => mb_strtolower((string) ($card['name'] ?? ''))),
+        };
+
+        return $sorted->values()->all();
     }
 
     /**
@@ -556,8 +630,10 @@ class TeamBoard extends Page
             'projects'      => $projectLinks,
             'task_count'    => $totalTasks,
             'value'         => $canViewProjectValue ? ($value > 0 ? 'Rp '.number_format($value, 0, ',', '.') : '—') : null,
+            'value_amount'  => $canViewProjectValue ? $value : null,
             'progress'      => $totalTasks > 0 ? (int) round(($doneTasks / $totalTasks) * 100) : 0,
             'updated'       => $latest?->locale(app()->getLocale())->diffForHumans() ?? '—',
+            'updated_ts'    => $latest?->getTimestamp() ?? 0,
             'href'          => url('/admin/teams'),
         ];
     }

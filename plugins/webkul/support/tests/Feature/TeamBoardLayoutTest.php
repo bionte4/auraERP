@@ -75,6 +75,49 @@ it('renders the board in cards, compact, and list modes with live search', funct
         ->assertSee($teamName);
 });
 
+it('sorts team cards by name and member count and persists the sort choice', function (): void {
+    boardAdminViewer();
+
+    $suffix = substr(uniqid(), -6);
+    $zulu = Team::query()->create(['name' => 'Sort Zulu '.$suffix]);
+    $alpha = Team::query()->create(['name' => 'Sort Alpha '.$suffix]);
+    $alpha->users()->attach(auth()->id());
+
+    $page = new TeamBoard;
+
+    $ownNames = fn (TeamBoard $board): array => collect($board->getBoardData()['cards'])
+        ->pluck('name')
+        ->filter(fn (string $name): bool => str_contains($name, $suffix))
+        ->values()
+        ->all();
+
+    // Default sort: name A–Z, regardless of creation order.
+    expect($ownNames($page))->toBe(['Sort Alpha '.$suffix, 'Sort Zulu '.$suffix]);
+
+    $page->setSortBy('name_desc');
+    expect($page->sortBy)->toBe('name_desc')
+        ->and(session('team-board.sort'))->toBe('name_desc')
+        ->and($ownNames($page))->toBe(['Sort Zulu '.$suffix, 'Sort Alpha '.$suffix]);
+
+    // Alpha has one attached member, Zulu none.
+    $page->setSortBy('members_desc');
+    expect($ownNames($page))->toBe(['Sort Alpha '.$suffix, 'Sort Zulu '.$suffix]);
+
+    // Unknown sorts fall back to name A–Z and are not persisted as-is.
+    $page->setSortBy('bogus');
+    expect($page->sortBy)->toBe('name_asc')
+        ->and(session('team-board.sort'))->toBe('name_asc');
+
+    session(['team-board.sort' => 'projects_desc']);
+    $fresh = new TeamBoard;
+    $fresh->mount();
+    expect($fresh->sortBy)->toBe('projects_desc');
+
+    session(['team-board.sort' => 'bogus']);
+    $fresh->mount();
+    expect($fresh->sortBy)->toBe('name_asc');
+});
+
 it('accepts cards, compact, and list view modes, persists the choice, and rejects unknown modes', function (): void {
     boardAdminViewer();
 
