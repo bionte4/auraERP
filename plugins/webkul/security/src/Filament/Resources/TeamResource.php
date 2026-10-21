@@ -23,7 +23,31 @@ class TeamResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->ownership();
+        $query = parent::getEloquentQuery()->ownership();
+
+        // Operational scope: non-Admin/HRD users only see teams of the
+        // projects assigned to them (managed or member), teams they
+        // created, and teams they belong to. Admin/HRD stay unscoped.
+        $scopeClass = 'Webkul\\Project\\Services\\OperationalScope';
+
+        if (! auth()->check() || ! class_exists($scopeClass)) {
+            return $query;
+        }
+
+        $scope = app($scopeClass);
+        $user = auth()->user();
+
+        if ($scope->isUnscoped($user)) {
+            return $query;
+        }
+
+        $teamIds = $scope->visibleTeamIds($user);
+
+        if ($teamIds === []) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query->whereIn($query->getModel()->getTable().'.id', $teamIds);
     }
 
     public static function getNavigationLabel(): string

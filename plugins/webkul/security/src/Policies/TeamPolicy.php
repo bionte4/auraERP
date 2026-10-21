@@ -23,7 +23,23 @@ class TeamPolicy
      */
     public function view(User $user, Team $team): bool
     {
-        return $user->can('view_security_team');
+        if (! $user->can('view_security_team')) {
+            return false;
+        }
+
+        $scopeClass = 'Webkul\\Project\\Services\\OperationalScope';
+
+        if (! class_exists($scopeClass)) {
+            return true;
+        }
+
+        $scope = app($scopeClass);
+
+        if ($scope->isUnscoped($user)) {
+            return true;
+        }
+
+        return in_array($team->id, $scope->visibleTeamIds($user), true);
     }
 
     /**
@@ -39,7 +55,26 @@ class TeamPolicy
      */
     public function update(User $user, Team $team): bool
     {
-        return $user->can('update_security_team');
+        if (! $user->can('update_security_team')) {
+            return false;
+        }
+
+        // Editing membership is narrower than viewing: scoped users may
+        // only modify teams of projects they manage (PM) or teams they
+        // created themselves — never teams of other people's projects.
+        $scopeClass = 'Webkul\\Project\\Services\\OperationalScope';
+
+        if (! class_exists($scopeClass)) {
+            return true;
+        }
+
+        $scope = app($scopeClass);
+
+        if ($scope->isUnscoped($user)) {
+            return true;
+        }
+
+        return in_array($team->id, $scope->editableTeamIds($user), true);
     }
 
     /**

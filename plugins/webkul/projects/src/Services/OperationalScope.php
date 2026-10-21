@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Webkul\Employee\Models\Employee;
 use Webkul\Project\Models\Project;
+use Webkul\Security\Models\Team;
 use Webkul\Security\Models\User;
 use Webkul\Security\Support\AdminAccess;
 
@@ -113,6 +114,89 @@ class OperationalScope
         }
 
         return ! $this->isUnscoped($user);
+    }
+
+    /**
+     * Team IDs a scoped user may see: teams of projects in their scope
+     * (managed or member), teams they created, and teams they belong to.
+     *
+     * @return array<int, int>
+     */
+    public function visibleTeamIds(?User $user = null): array
+    {
+        $user ??= auth()->user();
+
+        if (! $user instanceof User || ! Schema::hasTable('teams')) {
+            return [];
+        }
+
+        $ids = collect();
+
+        $projectIds = $this->projectIds($user);
+
+        if ($projectIds !== [] && Schema::hasColumn('teams', 'project_id')) {
+            $ids = $ids->merge(
+                Team::query()
+                    ->withoutGlobalScopes()
+                    ->whereIn('project_id', $projectIds)
+                    ->pluck('id')
+            );
+        }
+
+        $ids = $ids->merge(
+            Team::query()
+                ->withoutGlobalScopes()
+                ->where('creator_id', $user->id)
+                ->pluck('id')
+        );
+
+        if (Schema::hasTable('user_team')) {
+            $ids = $ids->merge(
+                DB::table('user_team')
+                    ->where('user_id', $user->id)
+                    ->pluck('team_id')
+            );
+        }
+
+        return $ids->map(fn ($id): int => (int) $id)->unique()->values()->all();
+    }
+
+    /**
+     * Team IDs a scoped user may modify: teams of projects they manage
+     * as Project Manager, plus teams they created themselves. Narrower
+     * than the view scope on purpose (member projects are view-only).
+     *
+     * @return array<int, int>
+     */
+    public function editableTeamIds(?User $user = null): array
+    {
+        $user ??= auth()->user();
+
+        if (! $user instanceof User || ! Schema::hasTable('teams')) {
+            return [];
+        }
+
+        $ids = collect();
+
+        $managedProjectIds = $this->managedProjectIds($user);
+
+        if ($managedProjectIds !== [] && Schema::hasColumn('teams', 'project_id')) {
+            $ids = $ids->merge(
+                Team::query()
+                    ->withoutGlobalScopes()
+                    ->whereIn('project_id', $managedProjectIds)
+                    ->pluck('id')
+            );
+        }
+
+        $ids = $ids->merge(
+            Team::query()
+                ->withoutGlobalScopes()
+                ->where('creator_id', $user->id)
+                ->pluck('id')
+        );
+
+        return $ids->map(fn ($id): int => (int) $id)->unique()->values()->all();
     }
 
     public function isUnscoped(?User $user = null): bool

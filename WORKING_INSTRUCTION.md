@@ -34,6 +34,7 @@ Saat membuat atau mengedit User di **Settings → Users**, terdapat pengaturan *
 3. **`Individual`**: User hanya dapat melihat dan mengelola data miliknya sendiri (*Self-Service*).
 
 ### C. Mengelola Anggota Tim (`Settings → Teams`) & Papan Manage Teams
+> **Scope Operation Manager:** daftar **Teams** untuk OM hanya menampilkan tim dari proyek yang di-assign kepadanya (proyek yang ia kelola sebagai PM + proyek yang ia ikuti sebagai anggota + tim buatannya + tim tempat ia anggota). **Mengubah anggota tim** lebih sempit lagi: hanya tim proyek di mana ia **Project Manager** atau tim buatannya sendiri — tim proyek orang lain tidak tampil dan tidak bisa diubah (URL langsung ditolak). Admin & HRD melihat semua tim.
 1. Buka **Settings → Teams** (`/admin/teams`) → **New team** / **Edit**.
 2. Isi **Nama** (disarankan **sama dengan nama Proyek**), lalu simpan. Anggota bisa dipilih manual, atau terisi otomatis (lihat poin 4).
 3. Alternatif manual: **Settings → Users** → edit user → bagian Teams (Resource Permission **Group**).
