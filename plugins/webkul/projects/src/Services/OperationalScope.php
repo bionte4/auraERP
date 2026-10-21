@@ -64,14 +64,49 @@ class OperationalScope
     }
 
     /**
+     * True when the user belongs to the finance team (Accounting staff
+     * or Accounting Manager). Finance keeps the full project/task list
+     * for billing and budget-control context.
+     */
+    public function hasFinanceRole(?User $user = null): bool
+    {
+        $user ??= auth()->user();
+
+        if (! $user instanceof User || ! method_exists($user, 'hasRole')) {
+            return false;
+        }
+
+        return $user->hasRole('Accounting') || $user->hasRole('Accounting Manager');
+    }
+
+    /**
+     * True when the model's OwnershipScope global scope must not cut
+     * down the Projects/Tasks lists for this user: unscoped roles
+     * (Admin/HRD) and finance, whose full list comes from
+     * projectListScopeIds() but would otherwise be filtered to records
+     * owned by their Resource Permission (Group/Individual) reach.
+     */
+    public function bypassesListOwnershipScope(?User $user = null): bool
+    {
+        $user ??= auth()->user();
+
+        if (! $user instanceof User) {
+            return false;
+        }
+
+        return $this->isUnscoped($user) || $this->hasFinanceRole($user);
+    }
+
+    /**
      * Project IDs the Projects/Tasks lists are restricted to for the
      * given user, or null when the lists stay unrestricted.
      *
-     * Admin/HRD are unscoped. Accounting keeps the full list for
-     * billing context unless they also operate as Operation Manager.
-     * Team Leaders only see the project they lead; Operation Managers
-     * and plain Staff only see projects assigned to them (as Project
-     * Manager or via their linked employee).
+     * Admin/HRD are unscoped. Accounting & Accounting Manager keep
+     * the full list for billing context unless they also operate as
+     * Operation Manager. Team Leaders only see the project they
+     * lead; Operation Managers and plain Staff only see projects
+     * assigned to them (as Project Manager or via their linked
+     * employee).
      *
      * @return array<int, int>|null
      */
@@ -89,7 +124,7 @@ class OperationalScope
 
         $hasRole = method_exists($user, 'hasRole');
 
-        if ($hasRole && $user->hasRole('Accounting') && ! $user->hasRole('Operation Manager')) {
+        if ($this->hasFinanceRole($user) && ! ($hasRole && $user->hasRole('Operation Manager'))) {
             return null;
         }
 
@@ -234,7 +269,8 @@ class OperationalScope
      * True when the user is plain Staff without a broader operational
      * role. Their project/task lists are restricted to projects they
      * are assigned to (member or managed by them). Operation Manager
-     * and Accounting intentionally keep the full project list.
+     * and finance (Accounting / Accounting Manager) intentionally
+     * keep the full project list.
      */
     public function isStaffOnly(?User $user = null): bool
     {
@@ -244,7 +280,7 @@ class OperationalScope
             return false;
         }
 
-        if (! $user->hasRole('Staff') || $user->hasRole('Operation Manager') || $user->hasRole('Accounting')) {
+        if (! $user->hasRole('Staff') || $user->hasRole('Operation Manager') || $this->hasFinanceRole($user)) {
             return false;
         }
 

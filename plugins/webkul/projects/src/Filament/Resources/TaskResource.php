@@ -72,13 +72,21 @@ class TaskResource extends Resource
         // Tasks follow the same project scope as the Projects list:
         // Operation Managers, Team Leaders, and plain Staff only see
         // tasks of projects assigned to them; Admin/HRD and
-        // Accounting keep the full list.
+        // Accounting keep the full list. As on the Projects list, the
+        // OwnershipScope global scope is lifted for those full-list
+        // roles so a Group / Individual Resource Permission cannot
+        // silently hide tasks of projects they do not own.
         $user = auth()->user();
 
         if ($user && class_exists(\Webkul\Project\Services\OperationalScope::class)) {
-            $projectIds = app(\Webkul\Project\Services\OperationalScope::class)->projectListScopeIds($user);
+            $scope = app(\Webkul\Project\Services\OperationalScope::class);
+            $projectIds = $scope->projectListScopeIds($user);
 
             if ($projectIds === null) {
+                if ($scope->bypassesListOwnershipScope($user)) {
+                    $query->withoutGlobalScope(\Webkul\Security\Models\Scopes\OwnershipScope::class);
+                }
+
                 return $query;
             }
 

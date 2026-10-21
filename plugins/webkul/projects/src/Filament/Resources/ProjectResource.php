@@ -107,13 +107,22 @@ class ProjectResource extends Resource
         // Operation Managers, Team Leaders, and plain Staff only see
         // projects assigned to them (see OperationalScope::
         // projectListScopeIds); Admin/HRD and Accounting keep the
-        // full list.
+        // full list. For those full-list roles the OwnershipScope
+        // global scope must be lifted too — otherwise a Group /
+        // Individual Resource Permission would silently cut the list
+        // down to records they own (e.g. an Accounting Manager who is
+        // not Project Manager anywhere would see "No projects").
         $user = auth()->user();
 
         if ($user && static::getModel() && class_exists(\Webkul\Project\Services\OperationalScope::class)) {
-            $projectIds = app(\Webkul\Project\Services\OperationalScope::class)->projectListScopeIds($user);
+            $scope = app(\Webkul\Project\Services\OperationalScope::class);
+            $projectIds = $scope->projectListScopeIds($user);
 
             if ($projectIds === null) {
+                if ($scope->bypassesListOwnershipScope($user)) {
+                    $query->withoutGlobalScope(\Webkul\Security\Models\Scopes\OwnershipScope::class);
+                }
+
                 return $query;
             }
 
