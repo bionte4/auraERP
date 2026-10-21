@@ -123,6 +123,21 @@ class InvoiceForm
                                                 $set('partner_bank_id', static::getDefaultRecipientBankId($get('move_type'), $get('company_id'), $state));
                                             })
                                             ->disabled(fn ($record) => in_array($record?->state, [MoveState::POSTED, MoveState::CANCEL])),
+                                        Select::make('project_id')
+                                            ->label(__('accounts::filament/resources/invoice.form.section.general.fields.project'))
+                                            ->helperText(__('accounts::filament/resources/invoice.form.section.general.fields.project-helper'))
+                                            ->options(fn (Get $get): array => \Illuminate\Support\Facades\Schema::hasTable('projects_projects')
+                                                ? \Webkul\Project\Models\Project::query()
+                                                    ->when($get('partner_id'), fn ($query, $partnerId) => $query->where('partner_id', $partnerId))
+                                                    ->orderBy('name')
+                                                    ->pluck('name', 'id')
+                                                    ->all()
+                                                : [])
+                                            ->searchable()
+                                            ->preload()
+                                            ->nullable()
+                                            ->visible(fn (): bool => \Illuminate\Support\Facades\Schema::hasTable('projects_projects'))
+                                            ->disabled(fn ($record) => in_array($record?->state, [MoveState::POSTED, MoveState::CANCEL])),
                                     ]),
 
                                 Group::make()

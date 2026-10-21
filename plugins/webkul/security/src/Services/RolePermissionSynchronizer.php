@@ -150,25 +150,49 @@ class RolePermissionSynchronizer
         ]));
         $rolesSynced[] = $operationManagerRole->name;
 
-        // 4. Accounting
+        // 4. Accounting (staff) — create/update financial documents,
+        // but no deleting them; deletion and final control sit with
+        // the Accounting Manager (role 5).
         $accountingRole = Role::query()->firstOrCreate(
             ['name' => 'Accounting', 'guard_name' => $guard],
             ['is_default' => false]
         );
-        $accountingRole->syncPermissions($this->permissionsMatching($allPermissions, [
+        $accountingPermissions = $this->permissionsMatching($allPermissions, [
             'contains' => ['invoice', 'account', 'payment', 'bill', 'partner', 'contact', 'product'],
             'exact'    => [
                 'page_support_my_day_dashboard',
                 'page_support_team_board',
                 'page_project_dashboard',
+                'page_project_project_budget_control',
+                'view_any_project_project',
+                'view_project_project',
+                'page_attendance_clock_page',
+            ],
+        ])->reject(fn (Permission $permission): bool => $this->isFinanceDeletePermission($permission->name))->values();
+        $accountingRole->syncPermissions($accountingPermissions);
+        $rolesSynced[] = $accountingRole->name;
+
+        // 5. Accounting Manager — full accounting incl. deleting
+        // financial documents, company-wide budget control.
+        $accountingManagerRole = Role::query()->firstOrCreate(
+            ['name' => 'Accounting Manager', 'guard_name' => $guard],
+            ['is_default' => false]
+        );
+        $accountingManagerRole->syncPermissions($this->permissionsMatching($allPermissions, [
+            'contains' => ['invoice', 'account', 'payment', 'bill', 'partner', 'contact', 'product'],
+            'exact'    => [
+                'page_support_my_day_dashboard',
+                'page_support_team_board',
+                'page_project_dashboard',
+                'page_project_project_budget_control',
                 'view_any_project_project',
                 'view_project_project',
                 'page_attendance_clock_page',
             ],
         ]));
-        $rolesSynced[] = $accountingRole->name;
+        $rolesSynced[] = $accountingManagerRole->name;
 
-        // 5. Kasir
+        // 6. Kasir
         $kasirRole = Role::query()->firstOrCreate(
             ['name' => 'Kasir', 'guard_name' => $guard],
             ['is_default' => false]
@@ -188,7 +212,7 @@ class RolePermissionSynchronizer
         ]));
         $rolesSynced[] = $kasirRole->name;
 
-        // 6. Staff — self-service (+ task/timesheet updates); no eval dashboard / company-wide HR
+        // 7. Staff — self-service (+ task/timesheet updates); no eval dashboard / company-wide HR
         $staffRole = Role::query()->firstOrCreate(
             ['name' => 'Staff', 'guard_name' => $guard],
             ['is_default' => false]
@@ -221,7 +245,7 @@ class RolePermissionSynchronizer
         ]));
         $rolesSynced[] = $staffRole->name;
 
-        // 7. Team Leader — Staff self-service + read access to their own
+        // 8. Team Leader — Staff self-service + read access to their own
         // project's team (employees/departments). Record-level restriction
         // to the single led project is enforced by OperationalScope and
         // the Project/Task resource queries, not by permissions alone.
@@ -339,6 +363,26 @@ class RolePermissionSynchronizer
      * @param  array{contains?: array<int, string>, exact?: array<int, string>}  $rules
      * @return Collection<int, Permission>
      */
+    /**
+     * Delete-style permissions on financial documents (invoices,
+     * bills, payments, account moves). Reserved for Accounting
+     * Manager; accounting staff may create/update but not delete.
+     */
+    protected function isFinanceDeletePermission(string $name): bool
+    {
+        if (! str_contains($name, 'delete')) {
+            return false;
+        }
+
+        foreach (['invoice', 'bill', 'payment', 'account'] as $keyword) {
+            if (str_contains($name, $keyword)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     protected function permissionsMatching(Collection $allPermissions, array $rules): Collection
     {
         $contains = $rules['contains'] ?? [];

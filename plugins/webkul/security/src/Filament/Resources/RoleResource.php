@@ -428,6 +428,7 @@ class RoleResource extends RolesRoleResource
         'hrd',
         'operation manager',
         'accounting',
+        'accounting manager',
         'kasir',
         'staff',
         'team leader',

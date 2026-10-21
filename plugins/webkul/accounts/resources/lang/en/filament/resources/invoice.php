@@ -22,6 +22,8 @@ return [
                 'fields' => [
                     'customer-invoice' => 'Customer Invoice',
                     'customer'         => 'Customer',
+                    'project'          => 'Project',
+                    'project-helper'   => 'Optional — link this invoice to a project for budget control.',
                     'invoice-date'     => 'Invoice Date',
                     'due-date'         => 'Due Date',
                     'payment-term'     => 'Payment Term',

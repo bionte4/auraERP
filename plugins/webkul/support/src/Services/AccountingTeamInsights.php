@@ -85,7 +85,12 @@ class AccountingTeamInsights
      */
     public function teamScope(User $user): array
     {
-        if (AdminAccess::check($user) || ! Schema::hasTable('teams') || ! Schema::hasTable('user_team')) {
+        // Accounting Managers always see the whole company; staff are
+        // scoped to their teams below.
+        if (AdminAccess::check($user)
+            || (method_exists($user, 'hasRole') && $user->hasRole('Accounting Manager'))
+            || ! Schema::hasTable('teams')
+            || ! Schema::hasTable('user_team')) {
             return [
                 'partner_ids' => [],
                 'user_ids'    => [],

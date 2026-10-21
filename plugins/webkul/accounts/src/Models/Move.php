@@ -67,6 +67,7 @@ class Move extends Model implements Sortable
         'secure_sequence_number',
         'invoice_payment_term_id',
         'partner_id',
+        'project_id',
         'commercial_partner_id',
         'partner_shipping_id',
         'partner_bank_id',
@@ -229,6 +230,16 @@ class Move extends Model implements Sortable
     public function partner()
     {
         return $this->belongsTo(Partner::class, 'partner_id');
+    }
+
+    /**
+     * Optional project this document belongs to, used for project
+     * budget control. The projects plugin may be absent, so callers
+     * should check the column/table before relying on it.
+     */
+    public function project()
+    {
+        return $this->belongsTo(\Webkul\Project\Models\Project::class, 'project_id');
     }
 
     public function commercialPartner()

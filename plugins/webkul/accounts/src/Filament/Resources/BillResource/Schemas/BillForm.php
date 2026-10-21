@@ -119,6 +119,20 @@ class BillForm
                                                 $set('invoice_payment_term_id', $partner?->property_supplier_payment_term_id);
                                             })
                                             ->disabled(fn ($record) => in_array($record?->state, [MoveState::POSTED, MoveState::CANCEL])),
+                                        Select::make('project_id')
+                                            ->label(__('accounts::filament/resources/bill.form.section.general.fields.project'))
+                                            ->helperText(__('accounts::filament/resources/bill.form.section.general.fields.project-helper'))
+                                            ->options(fn (): array => \Illuminate\Support\Facades\Schema::hasTable('projects_projects')
+                                                ? \Webkul\Project\Models\Project::query()
+                                                    ->orderBy('name')
+                                                    ->pluck('name', 'id')
+                                                    ->all()
+                                                : [])
+                                            ->searchable()
+                                            ->preload()
+                                            ->nullable()
+                                            ->visible(fn (): bool => \Illuminate\Support\Facades\Schema::hasTable('projects_projects'))
+                                            ->disabled(fn ($record) => in_array($record?->state, [MoveState::POSTED, MoveState::CANCEL])),
                                         TextInput::make('reference')
                                             ->label(__('accounts::filament/resources/bill.form.section.general.fields.bill-reference'))
                                             ->disabled(fn ($record) => in_array($record?->state, [MoveState::POSTED, MoveState::CANCEL])),

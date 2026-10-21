@@ -22,6 +22,8 @@ return [
                 'fields' => [
                     'customer-invoice' => 'Faktur Pelanggan',
                     'customer'         => 'Pelanggan',
+                    'project'          => 'Proyek',
+                    'project-helper'   => 'Opsional — kaitkan invoice ini ke proyek untuk kontrol anggaran.',
                     'invoice-date'     => 'Tanggal Faktur',
                     'due-date'         => 'Tanggal Jatuh Tempo',
                     'payment-term'     => 'Termin Pembayaran',

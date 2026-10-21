@@ -85,7 +85,8 @@ ID memakai prefiks modul. Prioritas: **P0** harus ada / sudah ada; **P1** pentin
 
 | ID | Requirement | Prioritas | Status |
 | :--- | :--- | :--- | :--- |
-| SEC-01 | Sistem menyediakan 7 role standar: Admin, HRD, Operation Manager, Accounting, Kasir, Staff, Team Leader | P0 | Done |
+| SEC-01 | Sistem menyediakan 8 role standar: Admin, HRD, Operation Manager, Accounting, Accounting Manager, Kasir, Staff, Team Leader | P0 | Done |
+| SEC-08 | **Pemisahan tugas akunting:** Accounting (staff) boleh buat/ubah dokumen keuangan tetapi **tidak** memegang permission hapus finansial (invoice/bill/payment/account move); hak delete/restore/force-delete keuangan hanya **Accounting Manager** (+ Admin). User Accounting lama tidak otomatis naik role — penetapan Accounting Manager manual oleh Admin | P0 | Done |
 | SEC-02 | `php artisan security:sync-rbac` menyinkronkan baseline; non-Admin memakai **sync** (stale grant hilang); Admin mendapat semua permission | P0 | Done |
 | SEC-03 | Fitur admin-only (Audit Trail, Backup DB, IP Diblokir) tidak dapat diakses non-Admin (role + policy) | P0 | Done |
 | SEC-04 | Rate limit login + auto-blokir IP setelah ambang kegagalan; Admin dapat unblock | P0 | Done |
@@ -151,6 +152,8 @@ ID memakai prefiks modul. Prioritas: **P0** harus ada / sudah ada; **P1** pentin
 | PRJ-12 | **Atur Project Manager massal** (khusus Admin, `page_project_assign_project_managers`): grid semua proyek + dropdown PM per baris (hanya user Operation Manager), chip beban proyek per OM, filter & badge proyek tanpa PM; **bulk via template Excel terisi** (semua proyek + email PM saat ini; sheet referensi email OM) dengan laporan hasil per baris; PM tersinkron ke tim proyek. Panduan operasional: `docs/OM-USER-EMPLOYEE-LINKING.md` | P0 | Done |
 | PRJ-13 | **Scope daftar Projects/Tasks & kartu Team Board untuk Operation Manager** dibatasi ke proyek penugasan (sebagai PM atau via karyawan tertaut yang di-assign); Team Leader proyek pimpinannya, Staff penugasannya; Accounting & Admin/HRD tetap penuh (`OperationalScope::projectListScopeIds`) | P0 | Done |
 | PRJ-09 | Widget dashboard **Proyek Mendekati / Melewati Tenggat**: proyek aktif expired/≤3 bulan, badge sisa hari, progress + task overdue, baris bisa diklik ke View/Edit | P0 | Done |
+| PRJ-14 | **Kontrol Anggaran Proyek** (`/admin/project/budget-control`, `page_project_project_budget_control`): per proyek nilai kontrak vs terinvoice/belum terbayar (invoice posted), anggaran operasional vs biaya vendor posted (serapan %, status Aman <80% / Waspada ≥80% / Over budget ≥100% / Belum ada anggaran), jam timesheet, pencarian + filter status + ringkasan total + ekspor Excel. Scope: Admin & Accounting Manager se-perusahaan, Accounting staff proyek timnya (`ProjectBudgetControlData`) | P0 | Done |
+| PRJ-15 | **Pengaitan dokumen keuangan ke proyek:** kolom `accounts_account_moves.project_id` (nullable, FK null-on-delete) + field **Proyek** pada form Invoice pelanggan & Bill vendor (invoice memfilter proyek sesuai customer terpilih; non-editable saat posted/cancel) sebagai dasar realisasi anggaran per proyek (PRJ-14) | P0 | Done |
 
 ### 5.7 Laporan proyek — `RPT`
 

@@ -62,7 +62,7 @@ class MyDayDashboard extends Page
 
         $bundle = match (true) {
             AdminAccess::check($user)                                              => $this->adminBundle($indonesian, $scope),
-            method_exists($user, 'hasRole') && $user->hasRole('Accounting')        => $this->accountingBundle($indonesian),
+            method_exists($user, 'hasRole') && ($user->hasRole('Accounting') || $user->hasRole('Accounting Manager')) => $this->accountingBundle($indonesian),
             method_exists($user, 'hasRole') && $user->hasRole('HRD')               => $this->hrdBundle($indonesian, $scope),
             method_exists($user, 'hasRole') && $user->hasRole('Operation Manager') => $this->omBundle($indonesian, $scope),
             method_exists($user, 'hasRole') && $user->hasRole('Kasir')             => $this->kasirBundle($indonesian),

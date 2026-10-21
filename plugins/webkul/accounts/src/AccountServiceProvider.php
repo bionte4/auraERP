@@ -126,6 +126,7 @@ class AccountServiceProvider extends PackageServiceProvider
                 '2026_07_30_120000_create_products_category_company_accounts_table',
                 '2026_07_30_120001_create_partners_partner_company_properties_table',
                 '2026_08_03_130000_seed_accounts_sequences',
+                '2026_10_21_120000_add_project_id_to_accounts_account_moves_table',
             ])
             ->runsMigrations()
             ->hasSettings([

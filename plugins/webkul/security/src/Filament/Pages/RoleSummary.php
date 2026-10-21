@@ -42,13 +42,14 @@ class RoleSummary extends Page
      * @var array<string, int>
      */
     protected static array $roleOrder = [
-        'admin'             => 0,
-        'hrd'               => 1,
-        'operation manager' => 2,
-        'accounting'        => 3,
-        'kasir'             => 4,
-        'team leader'       => 5,
-        'staff'             => 6,
+        'admin'              => 0,
+        'hrd'                => 1,
+        'operation manager'  => 2,
+        'accounting manager' => 3,
+        'accounting'         => 4,
+        'kasir'              => 5,
+        'team leader'        => 6,
+        'staff'              => 7,
     ];
 
     public function mount(): void

@@ -21,6 +21,8 @@ return [
                 'fields' => [
                     'vendor-bill'       => 'Vendor Bill',
                     'vendor'            => 'Vendor',
+                    'project'           => 'Project',
+                    'project-helper'    => 'Optional — link this bill to a project for budget control.',
                     'bill-date'         => 'Bill Date',
                     'bill-reference'    => 'Bill Reference',
                     'accounting-date'   => 'Accounting Date',

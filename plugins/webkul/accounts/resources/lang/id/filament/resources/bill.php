@@ -21,6 +21,8 @@ return [
                 'fields' => [
                     'vendor-bill'       => 'Tagihan Pemasok',
                     'vendor'            => 'Pemasok',
+                    'project'           => 'Proyek',
+                    'project-helper'    => 'Opsional — kaitkan bill ini ke proyek untuk kontrol anggaran.',
                     'bill-date'         => 'Tanggal Tagihan',
                     'bill-reference'    => 'Referensi Tagihan',
                     'accounting-date'   => 'Tanggal Akuntansi',
