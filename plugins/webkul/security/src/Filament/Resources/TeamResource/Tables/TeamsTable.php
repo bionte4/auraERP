@@ -9,6 +9,8 @@ use Filament\Actions\ViewAction;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Webkul\Security\Filament\Resources\TeamResource\Pages\ManageTeams;
+use Webkul\Security\Filament\Resources\TeamResource\Schemas\TeamForm;
 use Webkul\Security\Models\Team;
 
 class TeamsTable
@@ -41,6 +43,16 @@ class TeamsTable
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make()
+                    ->using(function (Team $record, array $data): Team {
+                        $page = app(ManageTeams::class);
+
+                        return $page->persistTeam($data, $record);
+                    })
+                    ->fillForm(fn (Team $record): array => [
+                        'name'       => $record->name,
+                        'project_id' => $record->project_id,
+                        'employees'  => TeamForm::assignedEmployeeIds($record),
+                    ])
                     ->successNotification(
                         Notification::make()
                             ->success()
@@ -77,6 +89,9 @@ class TeamsTable
             ->emptyStateActions([
                 CreateAction::make()
                     ->icon('heroicon-o-plus-circle')
+                    ->using(function (array $data): Team {
+                        return app(ManageTeams::class)->persistTeam($data);
+                    })
                     ->successNotification(
                         Notification::make()
                             ->success()

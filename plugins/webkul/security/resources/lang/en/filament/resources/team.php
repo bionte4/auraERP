@@ -9,13 +9,14 @@ return [
 
     'form' => [
         'fields' => [
-            'name'          => 'Name',
-            'project'       => 'Linked project',
-            'project-help'  => 'Optional explicit link. When set, team membership syncs from this project (preferred over name matching).',
-            'members'       => 'Team members',
-            'members-help'  => 'Members are user (login) accounts, not employee records. For a project-linked team, accounts backed by an employee record mirror the project roster automatically (Project Manager + assigned employees): unassigned employees are removed again on sync, while accounts without an employee record stay. Assign employees via Project → Assign Employees.',
-            'unsynced'      => 'Project employees who cannot sync (no Related User / login account)',
-            'unsynced-help' => 'These employees are assigned to the linked project but have no login account, so they cannot become team members. Create their Related User from Project → Assign Employees to include them.',
+            'name'            => 'Name',
+            'project'         => 'Linked project',
+            'project-help'    => 'Optional explicit link. When set, team membership syncs from this project (preferred over name matching).',
+            'members'         => 'Members (employees)',
+            'members-help'    => 'Select employees, including those without a login account (marked No login). Saving assigns them to the linked project. Employees who have a Related User are also mirrored into team login membership for Group scope.',
+            'members-search'  => 'Search employees…',
+            'members-note'    => 'Employees without a login can still be assigned to the project. They cannot sign in until a Related User is created (Project → Assign Employees).',
+            'no-login'        => 'No login',
         ],
     ],
 
@@ -37,10 +38,10 @@ return [
 
             'delete' => [
                 'modal' => [
-                    'heading'            => 'Delete team?',
-                    'description'        => 'Team ":name" will be deleted. This cannot be undone.',
+                    'heading'             => 'Delete team?',
+                    'description'         => 'Team ":name" will be deleted. This cannot be undone.',
                     'description-members' => 'Team ":name" still has :count member(s). They will be removed from the team first, then the team will be deleted. This cannot be undone.',
-                    'submit'             => 'Yes, delete team',
+                    'submit'              => 'Yes, delete team',
                 ],
                 'notification' => [
                     'title' => 'Team deleted',
