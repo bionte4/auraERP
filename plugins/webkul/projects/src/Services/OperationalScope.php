@@ -199,6 +199,27 @@ class OperationalScope
         return $ids->map(fn ($id): int => (int) $id)->unique()->values()->all();
     }
 
+    /**
+     * True when the user is plain Staff without a broader operational
+     * role. Their project/task lists are restricted to projects they
+     * are assigned to (member or managed by them). Operation Manager
+     * and Accounting intentionally keep the full project list.
+     */
+    public function isStaffOnly(?User $user = null): bool
+    {
+        $user ??= auth()->user();
+
+        if (! $user instanceof User || ! method_exists($user, 'hasRole')) {
+            return false;
+        }
+
+        if (! $user->hasRole('Staff') || $user->hasRole('Operation Manager') || $user->hasRole('Accounting')) {
+            return false;
+        }
+
+        return ! $this->isUnscoped($user);
+    }
+
     public function isUnscoped(?User $user = null): bool
     {
         $user ??= auth()->user();

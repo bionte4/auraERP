@@ -102,7 +102,10 @@ class UserForm
                                             ->helperText(fn (?User $record): ?string => filled($record) && Auth::id() === $record->id
                                                 ? __('security::filament/resources/user.form.sections.permissions.fields.resource-permission-self-change-disabled')
                                                 : null)
-                                            ->default(PermissionType::GLOBAL->value)
+                                            // Least privilege by default: new users only
+                                            // see their own data until an admin raises
+                                            // this to Group/Global for their role.
+                                            ->default(PermissionType::INDIVIDUAL->value)
                                             ->afterStateUpdated(function (Get $get, Set $set) {
                                                 if ($get('resource_permission') != PermissionType::GROUP) {
                                                     $set('teams', []);

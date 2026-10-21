@@ -69,7 +69,8 @@ class TaskResource extends Resource
     {
         $query = parent::getEloquentQuery();
 
-        // Team Leaders only see tasks of the single project they lead.
+        // Team Leaders only see tasks of the single project they lead;
+        // plain Staff only see tasks of projects they are assigned to.
         $user = auth()->user();
 
         if ($user && class_exists(\Webkul\Project\Services\OperationalScope::class)) {
@@ -77,11 +78,15 @@ class TaskResource extends Resource
 
             if ($scope->isTeamLeaderOnly($user)) {
                 $projectIds = $scope->teamLeaderProjectIds($user);
-
-                $projectIds === []
-                    ? $query->whereRaw('1 = 0')
-                    : $query->whereIn($query->getModel()->getTable().'.project_id', $projectIds);
+            } elseif ($scope->isStaffOnly($user)) {
+                $projectIds = $scope->projectIds($user);
+            } else {
+                return $query;
             }
+
+            $projectIds === []
+                ? $query->whereRaw('1 = 0')
+                : $query->whereIn($query->getModel()->getTable().'.project_id', $projectIds);
         }
 
         return $query;

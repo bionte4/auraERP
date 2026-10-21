@@ -22,7 +22,7 @@ Perintah `security:sync-rbac` **menyetel ulang** permission role non-Admin denga
 | **Accounting** | Invoice pelanggan, bill vendor, payment, partners/products terkait, serta **Dashboard → Hari Saya** dengan kontrol anggaran tim (invoice terbuka, overdue AR/AP, payment pending, budget proyek tim). |
 | **Kasir** | Mengoperasikan **POS Terminal** (`/admin/pos-terminal`), membuka/menutup sesi shift kasir (`POS Sessions`), membuat transaksi penjualan kasir (`POS Orders`), melihat katalog produk & pelanggan, serta melakukan absensi (`/admin/absen`). |
 | **Team Leader** | Self-service seperti Staff + lihat karyawan & departemen + Project Dashboard. **Hanya melihat satu proyek yang ia pimpin** (`Team Leader` di form proyek, berbasis karyawan): daftar proyek, task, timesheet, dan widget operasional terscope ke proyek tersebut. Satu karyawan hanya boleh memimpin **satu proyek aktif**; leader otomatis menjadi anggota proyek. Tidak dapat membuat/mengubah proyek atau mengelola karyawan (bukan approver). Struktur pimpinan terlihat di tab **Struktur Organisasi** pada detail proyek (PM → Team Leader → Anggota). |
-| **Staff (Karyawan)** | Self-service: Absensi, Cuti/Izin pribadi, Timesheet & update tugas proyek, melihat Performance Plan & Evaluation miliknya sendiri, Hari Saya / Team Board. **Tidak** akses **Dashboard Evaluasi** agregat maupun `view_any_evaluation`. |
+| **Staff (Karyawan)** | Daftar **Proyek & Task hanya menampilkan proyek tempat ia ditugaskan** (anggota/PM). Self-service: Absensi, Cuti/Izin pribadi, Timesheet & update tugas proyek, melihat Performance Plan & Evaluation miliknya sendiri, Hari Saya / Team Board. **Tidak** akses **Dashboard Evaluasi** agregat maupun `view_any_evaluation`. |
 
 ### B. 3 Tingkatan Scope Data (`Resource Permission` pada Menu Settings → Users)
 Saat membuat atau mengedit User di **Settings → Users**, terdapat pengaturan **Resource Permission**:
@@ -32,6 +32,8 @@ Saat membuat atau mengedit User di **Settings → Users**, terdapat pengaturan *
    - Rekan satu tim (`Teams`), **DAN**
    - **Seluruh bawahan langsung (Level 1) maupun bawahan tidak langsung (Level 2 dst.)** berdasarkan pohon struktur organisasi karyawan (`Manager / parent_id` serta `Department Manager`).
 3. **`Individual`**: User hanya dapat melihat dan mengelola data miliknya sendiri (*Self-Service*).
+
+> **Default user baru = `Individual`** (hak terkecil). Naikkan ke `Group`/`Global` secara sadar lewat **Settings → Users** sesuai peran (mis. OM lazimnya `Group`, HRD/Admin `Global`). **Audit user lama:** user yang terlanjur `Global` padahal bukan Admin/HRD tetap melihat absensi/evaluasi semua orang — tinjau dengan perintah: `php artisan tinker --execute='print_r(\Webkul\Security\Models\User::where("resource_permission", "global")->pluck("email")->toArray());'` lalu turunkan yang tidak perlu dari halaman Users.
 
 ### C. Mengelola Anggota Tim (`Settings → Teams`) & Papan Manage Teams
 > **Scope Operation Manager:** daftar **Teams** untuk OM hanya menampilkan tim dari proyek yang di-assign kepadanya (proyek yang ia kelola sebagai PM + proyek yang ia ikuti sebagai anggota + tim buatannya + tim tempat ia anggota). **Mengubah anggota tim** lebih sempit lagi: hanya tim proyek di mana ia **Project Manager** atau tim buatannya sendiri — tim proyek orang lain tidak tampil dan tidak bisa diubah (URL langsung ditolak). Admin & HRD melihat semua tim.
