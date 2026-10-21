@@ -16,10 +16,11 @@ class SyncTeamMembershipsCommand extends Command
         $result = $synchronizer->syncAll();
 
         $this->info(sprintf(
-            'Synced %d project(s) into %d team(s); attached %d new membership(s).',
+            'Synced %d project(s) into %d team(s); attached %d new membership(s), removed %d stale employee membership(s).',
             $result['projects'],
             $result['teams'],
             $result['attached'],
+            $result['detached'] ?? 0,
         ));
 
         return self::SUCCESS;

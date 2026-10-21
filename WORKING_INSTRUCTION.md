@@ -41,10 +41,11 @@ Saat membuat atau mengedit User di **Settings → Users**, terdapat pengaturan *
 1. Buka **Settings → Teams** (`/admin/teams`) → **New team** / **Edit**.
 2. Isi **Nama** (disarankan **sama dengan nama Proyek**), lalu simpan. Anggota bisa dipilih manual, atau terisi otomatis (lihat poin 4).
 3. Alternatif manual: **Settings → Users** → edit user → bagian Teams (Resource Permission **Group**).
-4. **Sinkron otomatis anggota Tim** (nama Tim = nama Proyek, case-insensitive):
-   - **Manajer Proyek** + karyawan yang ditugaskan ke proyek (yang punya Related User) otomatis masuk anggota Tim.
-   - Dipicu saat simpan proyek, Assign Employees, atau simpan Tim.
-   - Backfill sekali setelah deploy: `sudo -u www-data php artisan projects:sync-team-memberships`.
+4. **Sinkron otomatis anggota Tim — model cermin (mirror)** (tim tertaut `project_id`, atau nama Tim = nama Proyek, case-insensitive):
+   - Anggota tim adalah **akun user (login)**, bukan record karyawan — karena Tim dipakai untuk scope Resource Permission *Group*. Roster tim tertaut proyek selalu **mencerminkan proyeknya**: **Manajer Proyek** + akun (Related User) karyawan yang ditugaskan otomatis masuk; **karyawan yang dilepas dari proyek juga otomatis keluar dari Tim** saat sinkron berikutnya.
+   - **Pengecualian aman:** akun yang **tidak punya record karyawan** (mis. akun manajer/demo yang ditambahkan manual) tidak pernah dilepas oleh sinkron. Tim yang tidak tertaut proyek mana pun (tim manual murni) tidak disentuh sinkron sama sekali.
+   - **Karyawan tanpa Related User tidak dapat tersinkron** (tidak punya akun login). Mereka dilaporkan apa adanya: daftar namanya tampil di **Settings → Teams → Edit** pada tim terkait ("*Karyawan proyek yang tidak dapat tersinkron*"), dan di **Project → Assign Employees** karyawan semacam itu bertanda `(no login)` + ada tombol pembuatan Related User massal (badge di menu = jumlah karyawan aktif tanpa akun).
+   - Dipicu saat simpan proyek, Assign Employees, atau simpan Tim. Backfill setelah deploy: `sudo -u www-data php artisan projects:sync-team-memberships` (output sekarang juga melaporkan jumlah keanggotaan karyawan basi yang dilepas).
 5. Papan **Dashboard → Team Board / Manage Teams** menampilkan:
    - **Anggota**: Manajer Proyek + karyawan yang di-assign ke proyek (nama Tim = nama Proyek).
    - **Total N anggota** dapat diklik → membuka daftar karyawan terlibat (peran + nama proyek).

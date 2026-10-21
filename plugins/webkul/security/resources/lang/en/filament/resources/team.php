@@ -13,7 +13,9 @@ return [
             'project'       => 'Linked project',
             'project-help'  => 'Optional explicit link. When set, team membership syncs from this project (preferred over name matching).',
             'members'       => 'Team members',
-            'members-help'  => 'Select users who belong to this team. Manage Teams counts projects where these users are Project Manager.',
+            'members-help'  => 'Members are user (login) accounts, not employee records. For a project-linked team, accounts backed by an employee record mirror the project roster automatically (Project Manager + assigned employees): unassigned employees are removed again on sync, while accounts without an employee record stay. Assign employees via Project → Assign Employees.',
+            'unsynced'      => 'Project employees who cannot sync (no Related User / login account)',
+            'unsynced-help' => 'These employees are assigned to the linked project but have no login account, so they cannot become team members. Create their Related User from Project → Assign Employees to include them.',
         ],
     ],
 

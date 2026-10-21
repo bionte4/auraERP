@@ -145,7 +145,7 @@ ID memakai prefiks modul. Prioritas: **P0** harus ada / sudah ada; **P1** pentin
 | PRJ-02 | Assign Employees (checkbox multi-karyawan) + sinkron Livewire saat ganti proyek | P0 | Done |
 | PRJ-03 | Assign dua arah Proyek ↔ Karyawan; followers otomatis bila Related User ada | P0 | Done |
 | PRJ-03a | Unassign karyawan: hilangkan centang di Assign Employees / Assigned Projects → simpan; lepaskan juga dari task terbuka | P0 | Done |
-| PRJ-04 | Sinkron Tim ↔ Proyek (nama/link); backfill `projects:sync-team-memberships` | P0 | Done |
+| PRJ-04 | Sinkron Tim ↔ Proyek (nama/link) **model cermin**: anggota tim (akun user) mencerminkan roster proyek — Manajer Proyek + Related User karyawan ter-assign masuk, karyawan yang dilepas dari proyek keluar dari tim; akun tanpa record karyawan (manual) tidak pernah dilepas sinkron dan tim manual tanpa proyek tidak disentuh. Karyawan tanpa Related User tidak dapat tersinkron dan **dilaporkan** (daftar nama di Edit Team tim terkait; tanda `(no login)` + pembuatan massal di Assign Employees). Backfill `projects:sync-team-memberships` (melaporkan attached + detached) | P0 | Done |
 | PRJ-05 | Reminder proyek 3/2/1 bulan sebelum end date | P0 | Done |
 | PRJ-06 | Dashboard OM: widget beban, aksi, kehadiran (scope) | P0 | Done |
 | PRJ-07 | Bulk import proyek Excel | P1 | Done |

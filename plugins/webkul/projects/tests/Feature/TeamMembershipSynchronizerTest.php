@@ -47,6 +47,46 @@ it('syncs project manager and assigned employees into a team with the same name'
         ->toContain($manager->id, $memberUser->id);
 });
 
+it('mirrors the project roster: unassigned employees leave the team, non-employee accounts stay, login-less employees are reported', function (): void {
+    $manager = User::withoutEvents(fn () => User::factory()->create(['name' => 'Mirror PM']));
+    $userA = User::withoutEvents(fn () => User::factory()->create(['name' => 'Mirror User A']));
+    $userB = User::withoutEvents(fn () => User::factory()->create(['name' => 'Mirror User B']));
+    $manualUser = User::withoutEvents(fn () => User::factory()->create(['name' => 'Mirror Manual']));
+
+    $employeeA = Employee::factory()->create(['name' => 'Mirror Employee A', 'user_id' => $userA->id]);
+    $employeeB = Employee::factory()->create(['name' => 'Mirror Employee B', 'user_id' => $userB->id]);
+    Employee::factory()->create(['name' => 'Mirror Employee No Login', 'user_id' => null]);
+    $noLogin = Employee::query()->where('name', 'Mirror Employee No Login')->firstOrFail();
+
+    $team = Team::query()->create(['name' => 'Mirror Ops']);
+    $team->users()->attach([$manager->id, $userA->id, $userB->id, $manualUser->id]);
+
+    $manualTeam = Team::query()->create(['name' => 'Mirror Manual Only']);
+    $manualTeam->users()->attach([$userB->id]);
+
+    $project = Project::factory()->create([
+        'name'    => 'Mirror Ops',
+        'user_id' => $manager->id,
+    ]);
+
+    app(ProjectEmployeeAssigner::class)->sync($project, [$employeeA->id, $noLogin->id], $manager->id);
+
+    $memberIds = Team::query()->find($team->id)->users()->pluck('users.id')->all();
+
+    expect($memberIds)->toContain($manager->id, $userA->id, $manualUser->id)
+        ->not->toContain($userB->id);
+
+    expect(app(TeamMembershipSynchronizer::class)->unsyncedEmployeeNamesForTeam($team))
+        ->toContain('Mirror Employee No Login')
+        ->not->toContain('Mirror Employee A');
+
+    // Teams that resolve to no project are manual: sync never strips them.
+    app(TeamMembershipSynchronizer::class)->syncForTeam($manualTeam);
+
+    expect(Team::query()->find($manualTeam->id)->users()->pluck('users.id')->all())
+        ->toContain($userB->id);
+});
+
 it('backfills memberships for existing projects via syncAll', function (): void {
     $manager = User::withoutEvents(fn () => User::factory()->create());
     Team::query()->create(['name' => 'Backfill Team']);
