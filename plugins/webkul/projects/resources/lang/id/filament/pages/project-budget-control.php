@@ -34,8 +34,8 @@ return [
         'unpaid'      => 'Belum terbayar',
         'budget'      => 'Anggaran Operasional',
         'vendor-cost' => 'Biaya Vendor (realisasi)',
+        'remaining'   => 'Sisa Anggaran',
         'absorption'  => 'Serapan',
-        'hours'       => 'Jam Timesheet',
         'empty'       => 'Tidak ada proyek yang cocok dengan filter saat ini.',
     ],
 

@@ -15,9 +15,10 @@ use Webkul\Project\Models\Project;
  *
  * Contract value and the operational budget live on the project;
  * realization comes from posted customer invoices / vendor bills
- * linked via `accounts_account_moves.project_id`, plus timesheet
- * hours from analytic records. Projects whose documents are not
- * linked yet simply show zero realization.
+ * linked via `accounts_account_moves.project_id`. Projects whose
+ * documents are not linked yet simply show zero realization.
+ * Absorption and remaining budget are always computed from those
+ * sources — never stored or edited directly.
  */
 class ProjectBudgetControlData
 {
@@ -49,9 +50,8 @@ class ProjectBudgetControlData
 
         $invoiced = $this->moveAggregates('out_invoice');
         $vendorCosts = $this->moveAggregates('in_invoice');
-        $hours = $this->timesheetHours();
 
-        return $projects->map(function (Project $project) use ($invoiced, $vendorCosts, $hours): array {
+        return $projects->map(function (Project $project) use ($invoiced, $vendorCosts): array {
             $contractValue = (float) ($project->project_value ?? 0);
             $budget = (float) ($project->operational_cost ?? 0);
             $invoicedTotal = (float) ($invoiced[$project->id]['total'] ?? 0);
@@ -78,8 +78,8 @@ class ProjectBudgetControlData
                 'unpaid'         => $invoicedUnpaid,
                 'budget'         => $budget,
                 'vendor_cost'    => $vendorCost,
+                'remaining'      => $budget - $vendorCost,
                 'absorption_pct' => $absorption,
-                'hours'          => (float) ($hours[$project->id] ?? 0),
                 'status'         => $status,
             ];
         })->all();
@@ -98,6 +98,7 @@ class ProjectBudgetControlData
             'unpaid'         => array_sum(array_column($rows, 'unpaid')),
             'budget'         => array_sum(array_column($rows, 'budget')),
             'vendor_cost'    => array_sum(array_column($rows, 'vendor_cost')),
+            'remaining'      => array_sum(array_column($rows, 'remaining')),
             'warning'        => count(array_filter($rows, fn (array $row): bool => $row['status'] === self::STATUS_WARNING)),
             'over'           => count(array_filter($rows, fn (array $row): bool => $row['status'] === self::STATUS_OVER)),
         ];
@@ -110,8 +111,8 @@ class ProjectBudgetControlData
     {
         $headings = [
             'project', 'customer', 'contract_value', 'invoiced', 'invoiced_pct',
-            'unpaid', 'operational_budget', 'vendor_cost', 'absorption_pct',
-            'timesheet_hours', 'status',
+            'unpaid', 'operational_budget', 'vendor_cost', 'remaining_budget',
+            'absorption_pct', 'status',
         ];
 
         $export = new class($headings, $rows) implements FromArray, WithHeadings
@@ -141,8 +142,8 @@ class ProjectBudgetControlData
                     $row['unpaid'],
                     $row['budget'],
                     $row['vendor_cost'],
+                    $row['remaining'],
                     $row['absorption_pct'],
-                    $row['hours'],
                     $row['status'],
                 ], $this->rows);
             }
@@ -175,22 +176,4 @@ class ProjectBudgetControlData
             ->all();
     }
 
-    /**
-     * @return array<int, float>
-     */
-    protected function timesheetHours(): array
-    {
-        if (! Schema::hasTable('analytic_records')) {
-            return [];
-        }
-
-        return DB::table('analytic_records')
-            ->whereNotNull('project_id')
-            ->when(Schema::hasColumn('analytic_records', 'deleted_at'), fn ($query) => $query->whereNull('deleted_at'))
-            ->groupBy('project_id')
-            ->selectRaw('project_id, sum(unit_amount) as total')
-            ->pluck('total', 'project_id')
-            ->map(fn ($total): float => (float) $total)
-            ->all();
-    }
 }

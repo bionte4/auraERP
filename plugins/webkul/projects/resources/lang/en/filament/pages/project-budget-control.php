@@ -34,8 +34,8 @@ return [
         'unpaid'      => 'Unpaid',
         'budget'      => 'Operational Budget',
         'vendor-cost' => 'Vendor Cost (actual)',
+        'remaining'   => 'Remaining Budget',
         'absorption'  => 'Absorption',
-        'hours'       => 'Timesheet Hours',
         'empty'       => 'No projects match the current filter.',
     ],
 

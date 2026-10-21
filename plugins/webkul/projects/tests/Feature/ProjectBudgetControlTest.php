@@ -67,6 +67,7 @@ it('computes invoicing, absorption, and status per project', function (): void {
         ->and($row['invoiced_pct'])->toBe(40.0)
         ->and($row['vendor_cost'])->toBe(85_000_000.0)
         ->and($row['absorption_pct'])->toBe(85.0)
+        ->and($row['remaining'])->toBe(15_000_000.0)
         ->and($row['status'])->toBe(ProjectBudgetControlData::STATUS_WARNING);
 
     $noBudgetRow = $rows->firstWhere('id', $noBudgetProject->id);

@@ -61,7 +61,7 @@
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-white/10">
                         <thead class="bg-gray-50 dark:bg-white/5">
                             <tr>
-                                @foreach (['project', 'customer', 'contract', 'invoiced', 'budget', 'vendor-cost', 'absorption', 'hours'] as $column)
+                                @foreach (['project', 'customer', 'contract', 'invoiced', 'budget', 'vendor-cost', 'remaining', 'absorption'] as $column)
                                     <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                                         {{ __($lang.'.table.'.$column) }}
                                     </th>
@@ -122,6 +122,9 @@
                                     <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
                                         {{ $money($row['vendor_cost']) }}
                                     </td>
+                                    <td class="px-4 py-3 text-sm {{ $row['budget'] > 0 && $row['remaining'] < 0 ? 'font-medium text-danger-600 dark:text-danger-400' : 'text-gray-600 dark:text-gray-300' }}">
+                                        {{ $row['budget'] > 0 ? $money($row['remaining']) : '—' }}
+                                    </td>
                                     <td class="px-4 py-3 text-sm">
                                         @if ($row['absorption_pct'] !== null)
                                             <span class="mr-1 text-gray-700 dark:text-gray-200">{{ $row['absorption_pct'] }}%</span>
@@ -129,9 +132,6 @@
                                         <span class="rounded-full px-2 py-0.5 text-xs font-medium {{ $statusStyles[$row['status']] }}">
                                             {{ __($lang.'.status.'.$row['status']) }}
                                         </span>
-                                    </td>
-                                    <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
-                                        {{ number_format($row['hours'], 1) }}
                                     </td>
                                 </tr>
                             @endforeach
