@@ -11,11 +11,11 @@ return [
 
     'header-actions' => [
         'template' => [
-            'label' => 'Download Excel Template',
+            'label' => 'Employee Import Template',
         ],
 
         'import' => [
-            'label'             => 'Import Excel / CSV',
+            'label'             => 'Import Employees Excel / CSV',
             'modal-heading'     => 'Bulk Import Employees',
             'modal-description' => 'Upload an .xlsx or .csv file matching the template columns (name, work_email, work_phone, mobile_phone, job_title, department, employment_type, join_date, contract_end_date). Existing work_email records will be updated.',
             'file-label'        => 'Excel (.xlsx) or CSV (.csv) File',

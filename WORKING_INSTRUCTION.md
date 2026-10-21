@@ -144,9 +144,9 @@ Scope OM dihitung dari `Project Manager` proyek (berbasis user) **dan** karyawan
 
 ### C. Bulk Import Karyawan (Excel `.xlsx` / CSV)
 1. Buka menu **Employees → Employees** (`/admin/employees/employees`).
-2. Klik tombol **`Unduh Template` (`Download Template`)** di pojok kanan atas untuk mengunduh file `template-import-employees.xlsx`.
+2. Klik tombol **`Template Impor Karyawan` (`Employee Import Template`)** di pojok kanan atas untuk mengunduh file `template-import-employees.xlsx`.
 3. Isi kolom: `name`, `work_email`, `work_phone`, `mobile_phone`, `job_title`, `department`, `employment_type`, `join_date`, `contract_end_date`, `identification_id`.
-4. Klik tombol **`Impor Excel / CSV` (`Import Excel / CSV`)**, unggah file yang sudah diisi, lalu klik **Submit**.
+4. Klik tombol **`Impor Karyawan Excel / CSV` (`Import Employees Excel / CSV`)**, unggah file yang sudah diisi, lalu klik **Submit**.
 5. **Perilaku import = menambah DAN mengganti, kuncinya `work_email`:**
 
    | Kondisi baris | Perilaku |
