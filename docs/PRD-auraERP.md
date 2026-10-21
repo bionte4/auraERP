@@ -63,7 +63,8 @@ Dokumen ini menetapkan *apa yang harus benar* di produk. Cara menjalankan menu d
 | Direksi / IT Admin | **Admin** | Akses penuh, audit, backup, IP block, integrasi, instalasi plugin |
 | HRD | **HRD** | Karyawan, absensi sites, cuti, performance/evaluation, dashboard evaluasi, laporan ops mingguan |
 | Manajer Operasional | **Operation Manager** | Proyek, assign karyawan, timesheet/task, laporan ops + **laporan klien**, evaluasi L1/L2, approval cuti/absensi tim |
-| Finance | **Accounting** | Invoice/bill/payment, partners/products terkait, My Day, Team Board, lihat Project Dashboard / proyek (view) |
+| Finance (staff) | **Accounting** | Invoice/bill/payment (buat/ubah, **tanpa hapus**), partners/products terkait, My Day, Team Board, lihat Project Dashboard / proyek (view), Kontrol Anggaran Proyek sebatas timnya |
+| Finance (manajer) | **Accounting Manager** | Seluruh hak Accounting staff **ditambah hapus/restore/force-delete dokumen keuangan**, Kontrol Anggaran Proyek se-perusahaan, atur anggaran operasional & nilai kontrak dari halaman Budget Control |
 | Kasir toko | **Kasir** | POS terminal, sesi, order; absensi; My Day; lihat/create partner & lihat produk; tanpa user management |
 | Karyawan lapangan / staf | **Staff** | Absensi, cuti sendiri, task/timesheet, lihat evaluasi sendiri — tanpa dashboard agregat |
 
@@ -203,6 +204,7 @@ ID memakai prefiks modul. Prioritas: **P0** harus ada / sudah ada; **P1** pentin
 | Assign Project Employees | ✓ | — | ✓ | — | — | — |
 | Widget aksi OM | ✓ | — | ✓ | — | — | — |
 | Project Dashboard (view) | ✓ | — | ✓ | ✓ | — | — |
+| Kontrol Anggaran Proyek | ✓ | — | — | ✓** | — | — |
 | Team Board | ✓ | — | ✓ | ✓ | — | ✓ |
 | My Day | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | POS Terminal | ✓ | — | — | — | ✓ | — |
@@ -210,6 +212,8 @@ ID memakai prefiks modul. Prioritas: **P0** harus ada / sudah ada; **P1** pentin
 | Absensi clock | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 \*Accounting: invoice/bill/payment/partner/product terkait + view proyek; bukan domain OM Sales/Inventory.
+
+\**Kontrol Anggaran Proyek: Accounting staff sebatas proyek timnya (read-only); **Accounting Manager** (kolom Accounting, cakupan manajer) se-perusahaan plus hak hapus dokumen keuangan dan edit anggaran operasional/nilai kontrak dari halaman tersebut (SEC-08, PRJ-14).
 
 ---
 
@@ -302,7 +306,8 @@ git fetch/merge fork/master → composer install
 ### 9.4 Deploy VPS
 
 - [ ] Tidak ada `Permission denied` pada `storage/logs` / `bootstrap/cache` saat Artisan sebagai `www-data`
-- [ ] `security:sync-rbac` melaporkan roles: Admin, HRD, Operation Manager, Accounting, Kasir, Staff
+- [ ] `security:sync-rbac` melaporkan 8 roles: Admin, HRD, Operation Manager, Accounting, Accounting Manager, Kasir, Staff, Team Leader
+- [ ] Accounting staff **tidak** dapat menghapus invoice/bill/payment; Accounting Manager dapat (SEC-08), dan keduanya membuka **Kontrol Anggaran Proyek** (manager se-perusahaan, staff sebatas timnya)
 
 ---
 
