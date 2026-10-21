@@ -145,9 +145,11 @@ ID memakai prefiks modul. Prioritas: **P0** harus ada / sudah ada; **P1** pentin
 | PRJ-05 | Reminder proyek 3/2/1 bulan sebelum end date | P0 | Done |
 | PRJ-06 | Dashboard OM: widget beban, aksi, kehadiran (scope) | P0 | Done |
 | PRJ-07 | Bulk import proyek Excel | P1 | Done |
-| PRJ-08 | **Manajer Proyek** (`projects.user_id`): assign/ganti/kosongkan di form proyek (1 user); beda dari Assign Employees | P0 | Done |
+| PRJ-08 | **Manajer Proyek** (`projects.user_id`): assign/ganti/kosongkan di form proyek (1 user); beda dari Assign Employees. Penetapan massal lihat PRJ-12 | P0 | Done |
 | PRJ-10 | **Team Leader proyek** (`projects_projects.team_leader_employee_id`, berbasis karyawan): satu karyawan memimpin maksimal **satu proyek aktif** (validasi model + partial unique index); leader otomatis anggota proyek; role baseline **Team Leader** hanya melihat proyek/task/timesheet proyek pimpinannya (`OperationalScope` + scoping resource) dan tidak dapat mengelola karyawan | P0 | Done |
 | PRJ-11 | Tab **Struktur Organisasi** pada detail proyek: tampil hierarki Project Manager → Team Leader → Anggota Tim (read-only) | P1 | Done |
+| PRJ-12 | **Atur Project Manager massal** (khusus Admin, `page_project_assign_project_managers`): grid semua proyek + dropdown PM per baris (hanya user Operation Manager), chip beban proyek per OM, filter & badge proyek tanpa PM; **bulk via template Excel terisi** (semua proyek + email PM saat ini; sheet referensi email OM) dengan laporan hasil per baris; PM tersinkron ke tim proyek. Panduan operasional: `docs/OM-USER-EMPLOYEE-LINKING.md` | P0 | Done |
+| PRJ-13 | **Scope daftar Projects/Tasks & kartu Team Board untuk Operation Manager** dibatasi ke proyek penugasan (sebagai PM atau via karyawan tertaut yang di-assign); Team Leader proyek pimpinannya, Staff penugasannya; Accounting & Admin/HRD tetap penuh (`OperationalScope::projectListScopeIds`) | P0 | Done |
 | PRJ-09 | Widget dashboard **Proyek Mendekati / Melewati Tenggat**: proyek aktif expired/≤3 bulan, badge sisa hari, progress + task overdue, baris bisa diklik ke View/Edit | P0 | Done |
 
 ### 5.7 Laporan proyek — `RPT`

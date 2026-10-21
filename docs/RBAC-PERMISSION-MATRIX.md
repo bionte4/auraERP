@@ -4,8 +4,8 @@ Dokumen ini menjelaskan arti angka **Permissions** pada daftar **Pengaturan → 
 
 | Field | Nilai |
 | :--- | :--- |
-| **Versi dokumen** | 1.3 |
-| **Tanggal** | 2026-10-20 |
+| **Versi dokumen** | 1.4 |
+| **Tanggal** | 2026-10-21 |
 | **Status** | Live (sesuai hasil sync di production) |
 
 ---
@@ -14,7 +14,7 @@ Dokumen ini menjelaskan arti angka **Permissions** pada daftar **Pengaturan → 
 
 Angka tersebut adalah **jumlah permission yang saat ini dimiliki role** (baris aktif di tabel `role_has_permissions`). Cara membacanya:
 
-- Total “pool” permission di sistem ditentukan oleh plugin yang ter-install. Di production saat ini pool-nya **1.366 permission** — itulah sebabnya **Admin = 1.366** (Admin selalu menerima seluruh pool).
+- Total “pool” permission di sistem ditentukan oleh plugin yang ter-install. Di production saat ini pool-nya **1.367 permission** — itulah sebabnya **Admin = 1.367** (Admin selalu menerima seluruh pool).
 - Angka role lain adalah hasil irisan pool dengan aturan role-nya (lihat §3). Angka **bukan skor/nilai tetap**: ia naik/turun mengikuti jumlah plugin & resource yang ter-install, jadi wajar bila di server lokal (plugin sebagian) angkanya lebih kecil dengan pola yang sama.
 - Rincian persisnya terlihat di **Roles → Edit**: checkbox tercentang pada section **Resources / Pages / Widgets**. Total centang = angka di daftar.
 - Daftar nama permission sebuah role juga bisa dilihat via server:
@@ -50,11 +50,11 @@ Baseline disusun dari dua mekanisme di `RolePermissionSynchronizer`:
 - **`contains`** — role menerima semua permission yang namanya mengandung kata kunci tertentu (menyapu lintas resource/plugin).
 - **`exact`** — daftar nama permission spesifik yang diberikan satu per satu.
 
-Hasil snapshot production (2026-10-20, pool 1.366):
+Hasil snapshot production (2026-10-21, pool 1.367):
 
 | Role | Jml. | Mekanisme utama | Profil akses |
 | :--- | ---: | :--- | :--- |
-| **Admin** | 1.366 | Seluruh pool | Akses penuh termasuk fitur admin-only (Audit Trail, Database Backups, Blocked IPs, Sync RBAC). |
+| **Admin** | 1.367 | Seluruh pool | Akses penuh termasuk fitur admin-only (Audit Trail, Database Backups, Blocked IPs, Sync RBAC, **Atur Project Manager** via `page_project_assign_project_managers`). |
 | **Accounting** | 544 | `contains`: invoice, account, payment, bill, partner, contact, product | Keuangan & mitra. Angkanya besar karena kata kuncinya menyapu banyak resource lintas plugin (akuntansi, penjualan, pembelian, produk). Dapat melihat proyek (view saja) + dashboard proyek. **Tidak** mengelola karyawan/proyek. |
 | **HRD** | 343 | `contains`: employee, attendance, performance, evaluation, time_off, recruitment | Domain SDM penuh: karyawan, absensi, cuti, evaluasi, rekrutmen + People Dashboard. Tanpa widget OM dan tanpa laporan proyek klien. |
 | **Operation Manager** | 198 | `contains`: project_project, project_task, project_timesheet, timesheet, partner_partner, performance, evaluation, time_off, attendance + daftar `exact` | Delivery proyek & approval tim: proyek/task/timesheet, dashboard proyek & OM, laporan mingguan (internal + klien), evaluasi, People Dashboard (terscope). Karyawan: lihat + `create/update/delete` per record (lihat pembatasan scope di §4). Teams: `view/create/update` (tanpa hapus) agar dapat mengelola tim proyek & membuka Team Board. Tanpa modul Sales/Purchase/Inventory penuh, tanpa akuntansi. |
