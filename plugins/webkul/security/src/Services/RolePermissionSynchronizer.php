@@ -123,6 +123,13 @@ class RolePermissionSynchronizer
                 'delete_employee_employee',
                 'view_any_employee_department',
                 'view_employee_department',
+                // Teams: OM manages project teams day to day (Team Board
+                // links here to create teams). No delete: removing a team
+                // stays an Admin decision.
+                'view_any_security_team',
+                'view_security_team',
+                'create_security_team',
+                'update_security_team',
                 'page_project_dashboard',
                 'page_project_assign_project_employees',
                 'page_project_weekly_operations_report',

@@ -44,6 +44,7 @@ class TeamBoard extends Page
 
         return $user->hasRole($adminRole)
             || $user->hasRole('Operation Manager')
+            || $user->hasRole('Team Leader')
             || $user->hasRole('Staff');
     }
 
