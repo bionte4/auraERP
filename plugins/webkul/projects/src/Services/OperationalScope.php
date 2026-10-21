@@ -134,13 +134,8 @@ class OperationalScope
 
         $projectIds = $this->projectIds($user);
 
-        if ($projectIds !== [] && Schema::hasColumn('teams', 'project_id')) {
-            $ids = $ids->merge(
-                Team::query()
-                    ->withoutGlobalScopes()
-                    ->whereIn('project_id', $projectIds)
-                    ->pluck('id')
-            );
+        if ($projectIds !== []) {
+            $ids = $ids->merge($this->teamIdsForProjects($projectIds));
         }
 
         $ids = $ids->merge(
@@ -180,13 +175,8 @@ class OperationalScope
 
         $managedProjectIds = $this->managedProjectIds($user);
 
-        if ($managedProjectIds !== [] && Schema::hasColumn('teams', 'project_id')) {
-            $ids = $ids->merge(
-                Team::query()
-                    ->withoutGlobalScopes()
-                    ->whereIn('project_id', $managedProjectIds)
-                    ->pluck('id')
-            );
+        if ($managedProjectIds !== []) {
+            $ids = $ids->merge($this->teamIdsForProjects($managedProjectIds));
         }
 
         $ids = $ids->merge(
@@ -218,6 +208,56 @@ class OperationalScope
         }
 
         return ! $this->isUnscoped($user);
+    }
+
+    /**
+     * Team IDs belonging to the given projects, via the explicit
+     * project_id link or — for legacy teams created before that link
+     * existed (or left unlinked because a duplicate name won the sync
+     * match) — via an exact project-name match on unlinked teams.
+     * Mirrors how TeamMembershipSynchronizer resolves teams.
+     *
+     * @param  array<int, int>  $projectIds
+     * @return array<int, int>
+     */
+    protected function teamIdsForProjects(array $projectIds): array
+    {
+        if ($projectIds === [] || ! Schema::hasTable('teams')) {
+            return [];
+        }
+
+        $ids = collect();
+
+        if (Schema::hasColumn('teams', 'project_id')) {
+            $ids = $ids->merge(
+                Team::query()
+                    ->withoutGlobalScopes()
+                    ->whereIn('project_id', $projectIds)
+                    ->pluck('id')
+            );
+
+            $projectNames = Project::query()
+                ->withoutGlobalScopes()
+                ->whereIn('id', $projectIds)
+                ->pluck('name')
+                ->map(fn ($name): string => mb_strtolower(trim((string) $name)))
+                ->filter(fn (string $name): bool => $name !== '')
+                ->unique()
+                ->values()
+                ->all();
+
+            if ($projectNames !== []) {
+                $ids = $ids->merge(
+                    Team::query()
+                        ->withoutGlobalScopes()
+                        ->whereNull('project_id')
+                        ->whereIn(DB::raw('LOWER(TRIM(name))'), $projectNames)
+                        ->pluck('id')
+                );
+            }
+        }
+
+        return $ids->map(fn ($id): int => (int) $id)->unique()->values()->all();
     }
 
     public function isUnscoped(?User $user = null): bool

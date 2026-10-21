@@ -64,6 +64,42 @@ it('scopes the teams list and editing to assigned projects for operation manager
         ->and($omUser->can('update', $foreignTeam))->toBeFalse();
 });
 
+it('matches legacy unlinked teams by project name for view and edit scope', function (): void {
+    $omUser = FilamentHelper::actingAs([
+        'view_any_security_team',
+        'view_security_team',
+        'create_security_team',
+        'update_security_team',
+    ]);
+    $omRole = Role::query()->firstOrCreate(['name' => 'Operation Manager', 'guard_name' => 'web']);
+    $omUser->syncRoles([$omRole]);
+
+    $otherPm = User::factory()->create();
+
+    $managedProject = Project::factory()->create(['name' => 'Legacy Named Project', 'user_id' => $omUser->id]);
+    $memberProject = Project::factory()->create(['name' => 'Member Named Project', 'user_id' => $otherPm->id]);
+
+    $ownEmployee = Employee::factory()->create(['name' => 'OM Self', 'user_id' => $omUser->id]);
+
+    DB::table('projects_project_employees')->insert([
+        ['project_id' => $memberProject->id, 'employee_id' => $ownEmployee->id],
+    ]);
+
+    // Legacy teams: no project_id, linked only by an identical name.
+    $legacyManagedTeam = Team::query()->create(['name' => 'Legacy Named Project', 'project_id' => null, 'creator_id' => $otherPm->id]);
+    $legacyMemberTeam = Team::query()->create(['name' => 'Member Named Project', 'project_id' => null, 'creator_id' => $otherPm->id]);
+    $unrelatedTeam = Team::query()->create(['name' => 'Unrelated Legacy Team', 'project_id' => null, 'creator_id' => $otherPm->id]);
+
+    $visibleIds = TeamResource::getEloquentQuery()->pluck('id')->all();
+
+    expect($visibleIds)
+        ->toContain($legacyManagedTeam->id, $legacyMemberTeam->id)
+        ->not->toContain($unrelatedTeam->id);
+
+    expect($omUser->can('update', $legacyManagedTeam))->toBeTrue()
+        ->and($omUser->can('update', $legacyMemberTeam))->toBeFalse();
+});
+
 it('does not scope the teams list for hrd', function (): void {
     $hrdUser = FilamentHelper::actingAs([
         'view_any_security_team',
