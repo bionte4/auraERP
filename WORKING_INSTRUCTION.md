@@ -326,6 +326,7 @@ Buka menu **Employees → Performance Plans → Evaluations** (`/admin/evaluatio
    - Layar Project Assign: permission `page_project_assign_project_employees`. Tab di Employee mengikuti izin update Employee (plugin Projects harus terpasang).
 3. **Assign / Unassign Manajer Proyek (`Project Manager`) — satu orang per proyek:**
    - Field di form proyek: **Manajer Proyek (`Project Manager`)** → kolom DB `projects_projects.user_id` (relasi ke **User**, biasanya user dengan role **Operation Manager**).
+   - **Cara massal (disarankan):** **Project → Atur Project Manager** (`/admin/project/assign-project-managers`, khusus Admin; permission `page_project_assign_project_managers`) — semua proyek dalam satu tabel, ganti PM lewat dropdown per baris (pilihan hanya user berperan **Operation Manager**), langsung tersimpan dan tersinkron ke tim proyek. Chip di atas tabel menampilkan jumlah proyek per OM; filter **Belum ada manajer** + badge menu (jumlah proyek tanpa PM) memudahkan memburu proyek yatim. Mengganti/mengosongkan PM tidak menghapus PM lama dari anggota tim.
    - **Assign / ganti:**
      1. Buka **Project → Projects** (`/admin/project/projects`) → Edit proyek.
      2. Di bagian **Additional / tambahan**, pilih user pada **Manajer Proyek**.
