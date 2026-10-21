@@ -5,7 +5,7 @@
 | **Produk** | auraERP — customisasi operasional Opsora |
 | **Versi dokumen** | 1.5 |
 | **Tanggal** | 2026-10-21 |
-| **Revisi** | UI Roles berbasis section permission (SEC-07), OM kelola karyawan terscope PM (EMP-07), sidebar expanded + badge navigasi, pemisahan Accounting/Accounting Manager + Kontrol Anggaran Proyek (SEC-08, PRJ-14/15), kerahasiaan nilai kontrak (PRJ-16), hapus tim beranggotakan dengan konfirmasi (SEC-09), Team Board multi-layout + pencarian + sortir (PRJ-17), dashboard tanggung jawab Proyek & Team Leader (PRJ-18), kelengkapan persona/checklist akunting |
+| **Revisi** | UI Roles berbasis section permission (SEC-07), OM kelola karyawan terscope PM (EMP-07), sidebar expanded + badge navigasi, pemisahan Accounting/Accounting Manager + Kontrol Anggaran Proyek (SEC-08, PRJ-14/15), kerahasiaan nilai kontrak (PRJ-16), hapus tim beranggotakan dengan konfirmasi (SEC-09), Team Board multi-layout + pencarian + sortir (PRJ-17), dashboard tanggung jawab Proyek & Team Leader (PRJ-18), kelengkapan persona/checklist akunting, status & rencana OTP login (SEC-10, implementasi ditahan) |
 | **Status** | Baseline produk (fitur utama sudah live / di-deploy) |
 | **Pemilik produk** | Opsora / auraERP ops |
 | **Referensi operasional** | [WORKING_INSTRUCTION.md](../WORKING_INSTRUCTION.md) |
@@ -95,6 +95,7 @@ ID memakai prefiks modul. Prioritas: **P0** harus ada / sudah ada; **P1** pentin
 | SEC-06 | Setelah sync RBAC, user harus logout/login agar cache Spatie segar | P0 | Operasional |
 | SEC-07 | UI pengelolaan Role (`/admin/shield/roles`) menampilkan section permission Resources/Pages/Widgets dengan checkbox per entitas; baseline role bawaan bersumber dari kode (`RolePermissionSynchronizer`) dan ter-reset saat sync, role custom tidak disentuh sync | P0 | Done |
 | SEC-09 | **Hapus tim yang masih beranggotakan:** tombol Delete di `Settings → Teams` selalu tampil bagi pemegang `delete_security_team` (praktisnya Admin; OM tetap tanpa hak hapus). Menghapus tim beranggotakan wajib lewat modal konfirmasi yang menyebutkan jumlah anggota; anggota dilepas dari tim lalu tim dihapus dalam satu alur — tidak perlu mengosongkan tim manual lebih dulu. Team Board sendiri tidak menyediakan aksi hapus | P0 | Done |
+| SEC-10 | **OTP/MFA saat login (belum diaktifkan — keputusan: implementasi ditahan):** aktifkan MFA bawaan Filament — **Email Authentication (OTP 6 digit via email)** dan/atau **App Authentication (TOTP + recovery codes)** — sebagai faktor kedua setelah password. Fondasi sudah terpasang (User mengimplementasikan kedua kontrak MFA, kolom `app_authentication_secret`/`app_authentication_recovery_codes`/`has_email_authentication` sudah termigrasi, halaman Login & Profile sudah menangani challenge); aktivasi = registrasi provider di panel + rollout wajib bertahap (Admin & Accounting Manager → Operation Manager → semua user). Alternatif *Cloudflare Access One-time PIN* sudah dievaluasi: bukan pilihan utama (tier gratis ≤50 user, login ganda tanpa integrasi JWT, origin wajib dikunci dari bypass); *Cloudflare Turnstile* hanya anti-bot (bukan OTP) dan boleh menjadi pelengkap. Prasyarat: SMTP produksi andal + email user aktif | P1 | Planned |
 
 ### 5.2 Karyawan & organisasi — `EMP`
 
@@ -341,6 +342,7 @@ git fetch/merge fork/master → composer install
 | Soft-lock: warning UI sebelum sync mencabut grant custom | P1 | Kurangi surprise operasional |
 | Perluas Accounting ke laporan AR aging di My Day | P1 | Sudah ada kartu; bisa diperdalam |
 | Hardening Select native di seluruh filter app (audit lanjutan) | P1 | Sebagian sudah diperbaiki |
+| Aktifkan OTP/MFA login (SEC-10) | P1 | Fondasi MFA bawaan Filament sudah terpasang; aktivasi ditahan menunggu kesiapan SMTP & keputusan rollout |
 
 ---
 
@@ -354,6 +356,7 @@ git fetch/merge fork/master → composer install
 | Domain OM | Proyek + HR approval tim; **bukan** Sales/Purchase/Inventory penuh |
 | Domain HRD | People ops + eval + weekly ops internal; **bukan** customer weekly report |
 | Manajer Proyek | 1 user via `projects.user_id` di form proyek; **terpisah** dari pivot Assign Employees |
+| OTP login | Belum diaktifkan; rekomendasi MFA bawaan Filament (Email OTP/TOTP) di atas Cloudflare Access OTP; implementasi ditahan (SEC-10) |
 
 ---
 

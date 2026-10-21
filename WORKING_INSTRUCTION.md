@@ -89,6 +89,10 @@ Saat membuat atau mengedit User di **Settings → Users**, terdapat pengaturan *
    - `SECURITY_LOGIN_BLOCK_MINUTES` (default `30`)
    - `SECURITY_LOGIN_IP_WHITELIST` (comma-separated, default `127.0.0.1,::1`)
 5. Setelah deploy: `php artisan migrate` (tabel `security_blocked_ips`) lalu `security:sync-rbac`.
+6. **OTP / MFA saat login (status: belum aktif — rencana disetujui, implementasi ditahan):**
+   - Fondasi sudah terpasang lengkap di kode: model User mengimplementasikan **Email Authentication (OTP via email)** dan **App Authentication (TOTP/authenticator + recovery codes)** bawaan Filament, kolom database-nya sudah ada, dan halaman Login + Profile sudah menangani alur challenge-nya. Aktivasi tinggal mendaftarkan provider MFA di `AdminPanelProvider` — belum dilakukan, jadi **saat ini login tetap username/password** yang dilindungi poin 1–4 di atas.
+   - Rencana aktivasi (PRD `SEC-10`): wajib bertahap — **Admin & Accounting Manager dulu**, lalu Operation Manager, lalu semua user; user mengatur OTP dari halaman **Profile**.
+   - Prasyarat sebelum aktivasi: pastikan **SMTP produksi andal** dan alamat email user aktif (kode OTP email kadaluarsa singkat). Alternatif yang sudah dievaluasi dan **tidak** dijadikan pilihan utama: *Cloudflare Access One-time PIN* (gerbang luar; gratis hanya ≤50 user, login ganda tanpa integrasi JWT, origin wajib dikunci) dan *Cloudflare Turnstile* (anti-bot saja, bukan OTP — boleh ditambahkan sebagai pelengkap kapan pun). Cloudflare tidak menyediakan OTP SMS/WhatsApp.
 
 ### G. Deploy dari Fork (jika `origin` 403)
 VPS menarik dari fork `bionte4/auraERP` (branch `master`) karena akses write ke `aureuserp/aureuserp` terbatas. Lihat juga **§12** untuk blok lengkap.
