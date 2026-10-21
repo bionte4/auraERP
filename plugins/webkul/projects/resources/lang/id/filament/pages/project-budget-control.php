@@ -42,6 +42,14 @@ return [
     'note' => 'Serapan = bill vendor ter-posting yang dikaitkan ke proyek ÷ anggaran operasional pada proyek. Dokumen yang belum dikaitkan ke proyek tidak ikut terhitung — kaitkan dari form invoice/bill.',
 
     'actions' => [
-        'export' => 'Ekspor Excel',
+        'export'      => 'Ekspor Excel',
+        'set-budget'  => 'Atur Anggaran',
+        'edit-budget' => 'Ubah',
+        'save'        => 'Simpan',
+        'cancel'      => 'Batal',
+    ],
+
+    'notifications' => [
+        'budget-saved' => 'Anggaran operasional diperbarui.',
     ],
 ];

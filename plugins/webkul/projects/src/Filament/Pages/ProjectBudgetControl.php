@@ -5,8 +5,10 @@ namespace Webkul\Project\Filament\Pages;
 use BackedEnum;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Actions\Action;
+use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Contracts\Support\Htmlable;
+use Webkul\Project\Models\Project;
 use Webkul\Project\Services\ProjectBudgetControlData;
 use Webkul\Security\Models\User;
 use Webkul\Security\Support\AdminAccess;
@@ -27,6 +29,10 @@ class ProjectBudgetControl extends Page
     public string $search = '';
 
     public string $statusFilter = 'all';
+
+    public ?int $editingBudgetProjectId = null;
+
+    public string $budgetAmount = '';
 
     protected static function getPagePermission(): ?string
     {
@@ -56,6 +62,96 @@ class ProjectBudgetControl extends Page
     public function setStatusFilter(string $value): void
     {
         $this->statusFilter = $value;
+    }
+
+    /**
+     * Only Admins and Accounting Managers may set a project's
+     * operational budget. Accounting staff monitor realization; the
+     * budget itself is a management decision (segregation of duties),
+     * and general project editing stays with Admin / OM.
+     */
+    public function canEditBudgets(): bool
+    {
+        $user = auth()->user();
+
+        if (! $user instanceof User) {
+            return false;
+        }
+
+        return AdminAccess::check($user)
+            || (method_exists($user, 'hasRole') && $user->hasRole('Accounting Manager'));
+    }
+
+    public function startEditBudget(int $projectId): void
+    {
+        if (! $this->canEditBudgets() || ! $this->projectInScope($projectId)) {
+            return;
+        }
+
+        $project = $this->findProject($projectId);
+
+        if (! $project) {
+            return;
+        }
+
+        $this->editingBudgetProjectId = $project->id;
+        $this->budgetAmount = rtrim(rtrim(number_format((float) ($project->operational_cost ?? 0), 2, '.', ''), '0'), '.');
+        $this->budgetAmount = $this->budgetAmount === '' || $this->budgetAmount === '-0' ? '0' : $this->budgetAmount;
+    }
+
+    public function cancelEditBudget(): void
+    {
+        $this->editingBudgetProjectId = null;
+        $this->budgetAmount = '';
+    }
+
+    public function saveBudget(): void
+    {
+        if (! $this->canEditBudgets() || $this->editingBudgetProjectId === null) {
+            return;
+        }
+
+        $this->validate([
+            'budgetAmount' => ['required', 'numeric', 'min:0'],
+        ]);
+
+        if (! $this->projectInScope($this->editingBudgetProjectId)) {
+            return;
+        }
+
+        $project = $this->findProject($this->editingBudgetProjectId);
+
+        if (! $project) {
+            $this->cancelEditBudget();
+
+            return;
+        }
+
+        // Only the operational budget is touched — contract value,
+        // dates, manager and other project fields stay with Admin/OM.
+        $project->forceFill(['operational_cost' => (float) $this->budgetAmount])->save();
+
+        $this->cancelEditBudget();
+
+        Notification::make()
+            ->success()
+            ->title(__('projects::filament/pages/project-budget-control.notifications.budget-saved'))
+            ->send();
+    }
+
+    protected function projectInScope(int $projectId): bool
+    {
+        $scoped = $this->scopedProjectIds();
+
+        return $scoped === null || in_array($projectId, $scoped, true);
+    }
+
+    protected function findProject(int $projectId): ?Project
+    {
+        return Project::query()
+            ->withoutGlobalScopes()
+            ->whereNull('deleted_at')
+            ->find($projectId);
     }
 
     /**

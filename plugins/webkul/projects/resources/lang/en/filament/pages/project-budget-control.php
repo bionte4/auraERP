@@ -42,6 +42,14 @@ return [
     'note' => 'Absorption = posted vendor bills linked to the project ÷ operational budget on the project. Documents not yet linked to a project are not counted — link them from the invoice/bill form.',
 
     'actions' => [
-        'export' => 'Export Excel',
+        'export'      => 'Export Excel',
+        'set-budget'  => 'Set budget',
+        'edit-budget' => 'Edit',
+        'save'        => 'Save',
+        'cancel'      => 'Cancel',
+    ],
+
+    'notifications' => [
+        'budget-saved' => 'Operational budget updated.',
     ],
 ];
