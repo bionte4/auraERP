@@ -148,6 +148,18 @@ class EmployeeForm
                                         modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(owned_by_company($get('company_id'))),
                                     )
                                     ->preload()
+                                    ->live()
+                                    ->afterStateUpdated(function (Set $set, mixed $state): void {
+                                        if (! filled($state)) {
+                                            return;
+                                        }
+
+                                        $managerUserId = Employee::query()->whereKey($state)->value('user_id');
+
+                                        if (filled($managerUserId)) {
+                                            $set('leave_manager_id', $managerUserId);
+                                        }
+                                    })
                                     ->suffixIcon('heroicon-o-user')
                                     ->label(__('employees::filament/resources/employee.form.sections.fields.manager')),
                                 // CheckboxList — Select multiple/searchable forces Alpine and can render empty.
@@ -197,23 +209,17 @@ class EmployeeForm
                                             ->schema([
                                                 Fieldset::make(__('employees::filament/resources/employee.form.tabs.work-information.fields.location'))
                                                     ->schema([
-                                                        Select::make('address_id')
-                                                            ->relationship(
-                                                                name: 'companyAddress',
-                                                                titleAttribute: 'name',
-                                                                modifyQueryUsing: fn (Builder $query, Get $get) => static::scopeWorkAddressPartners(
-                                                                    $query,
-                                                                    $get('address_id'),
-                                                                    $get('company_id'),
-                                                                ),
-                                                            )
-                                                            ->getOptionLabelFromRecordUsing(fn (Partner $record): string => static::workAddressLabel($record))
-                                                            ->searchable()
-                                                            ->preload()
-                                                            ->live()
-                                                            ->suffixIcon('heroicon-o-map-pin')
-                                                            ->label(__('employees::filament/resources/employee.form.tabs.work-information.fields.work-address'))
-                                                            ->helperText(__('employees::filament/resources/employee.form.tabs.work-information.fields.work-address-help')),
+                                                        Hidden::make('address_id')
+                                                            ->dehydrated()
+                                                            ->afterStateHydrated(function (Hidden $component, Get $get, ?Employee $record): void {
+                                                                if (filled($record?->address_id)) {
+                                                                    $component->state($record->address_id);
+
+                                                                    return;
+                                                                }
+
+                                                                $component->state(static::companyOfficePartnerId($get('company_id')));
+                                                            }),
                                                         Select::make('placement_city')
                                                             ->label(__('employees::filament/resources/employee.form.tabs.work-information.fields.placement-city'))
                                                             ->helperText(__('employees::filament/resources/employee.form.tabs.work-information.fields.placement-city-help'))
@@ -246,17 +252,21 @@ class EmployeeForm
                                                 Fieldset::make(__('employees::filament/resources/employee.form.tabs.work-information.fields.approver'))
                                                     ->schema([
                                                         Select::make('leave_manager_id')
-                                                            ->options(fn () => User::pluck('name', 'id'))
+                                                            ->options(fn (): array => static::approverUserOptions())
+                                                            ->searchable()
                                                             ->preload()
                                                             ->live()
                                                             ->suffixIcon('heroicon-o-clock')
-                                                            ->label(__('employees::filament/resources/employee.form.tabs.work-information.fields.time-off')),
+                                                            ->label(__('employees::filament/resources/employee.form.tabs.work-information.fields.time-off'))
+                                                            ->helperText(__('employees::filament/resources/employee.form.tabs.work-information.fields.time-off-help')),
                                                         Select::make('attendance_manager_id')
-                                                            ->options(fn () => User::pluck('name', 'id'))
+                                                            ->options(fn (): array => static::approverUserOptions())
+                                                            ->searchable()
                                                             ->preload()
                                                             ->live()
                                                             ->suffixIcon('heroicon-o-clock')
-                                                            ->label(__('employees::filament/resources/employee.form.tabs.work-information.fields.attendance-manager')),
+                                                            ->label(__('employees::filament/resources/employee.form.tabs.work-information.fields.attendance-manager'))
+                                                            ->helperText(__('employees::filament/resources/employee.form.tabs.work-information.fields.attendance-manager-help')),
                                                     ])->columns(1),
                                                 Fieldset::make(__('employees::filament/resources/employee.form.tabs.work-information.fields.schedule'))
                                                     ->schema([
@@ -298,6 +308,7 @@ class EmployeeForm
                                                                             'department_id'    => Department::class,
                                                                         ], $state);
                                                                         $set('placement_city', null);
+                                                                        $set('address_id', static::companyOfficePartnerId($state));
                                                                     })
                                                                     ->prefixIcon('heroicon-o-building-office')
                                                                     ->label(__('employees::filament/resources/employee.form.tabs.work-information.fields.company'))
@@ -807,6 +818,33 @@ class EmployeeForm
                         ->required(fn (Get $get) => Country::find($get('country_id'))?->state_required),
                 ])->columns(2),
         ];
+    }
+
+    public static function companyOfficePartnerId(mixed $companyId = null): ?int
+    {
+        $companyId = filled($companyId) ? (int) $companyId : current_company_id();
+
+        if (! $companyId || ! class_exists(Company::class)) {
+            return null;
+        }
+
+        $partnerId = Company::query()->whereKey($companyId)->value('partner_id');
+
+        return filled($partnerId) ? (int) $partnerId : null;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public static function approverUserOptions(): array
+    {
+        return Employee::query()
+            ->where('is_active', true)
+            ->whereNotNull('user_id')
+            ->orderBy('name')
+            ->pluck('name', 'user_id')
+            ->mapWithKeys(fn ($name, $userId): array => [(int) $userId => (string) $name])
+            ->all();
     }
 
     /**
