@@ -56,6 +56,18 @@ class WorkLocation extends Model
         return $query->where('is_active', true);
     }
 
+    public function placementLabel(): string
+    {
+        $name = (string) $this->name;
+        $city = trim((string) ($this->city ?? ''));
+
+        if ($city === '') {
+            return $name;
+        }
+
+        return $city.' — '.$name;
+    }
+
     protected static function boot()
     {
         parent::boot();

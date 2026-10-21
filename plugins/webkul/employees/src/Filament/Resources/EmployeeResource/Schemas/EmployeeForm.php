@@ -2,11 +2,10 @@
 
 namespace Webkul\Employee\Filament\Resources\EmployeeResource\Schemas;
 
-use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Filament\Actions\Action;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
@@ -32,9 +31,12 @@ use Webkul\Employee\Filament\Resources\DepartmentResource;
 use Webkul\Employee\Models\Department;
 use Webkul\Employee\Models\EmployeeJobPosition;
 use Webkul\Employee\Models\WorkLocation;
+use Webkul\Partner\Enums\AccountType;
+use Webkul\Partner\Models\Partner;
 use Webkul\Security\Filament\Resources\CompanyResource;
 use Webkul\Security\Filament\Resources\UserResource;
 use Webkul\Security\Models\User;
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Webkul\Support\Models\Calendar;
 use Webkul\Support\Models\Country;
 
@@ -147,11 +149,11 @@ class EmployeeForm
                                     ->suffixIcon('heroicon-o-user')
                                     ->label(__('employees::filament/resources/employee.form.sections.fields.manager')),
                                 // CheckboxList — Select multiple/searchable forces Alpine and can render empty.
-                                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('employees_employee_categories_search'),
-                                                                CheckboxList::make('employees_employee_categories')
+                                LivewireSearchableCheckboxList::searchInput('employees_employee_categories_search'),
+                                CheckboxList::make('employees_employee_categories')
                                     ->relationship('categories', 'name',
-                                    fn (\Illuminate\Database\Eloquent\Builder $query, \Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query, $get, 'employees_employee_categories', 'name'))
-                                    
+                                        fn (Builder $query, Get $get) => LivewireSearchableCheckboxList::applySearch($query, $get, 'employees_employee_categories', 'name'))
+
                                     ->columns(2)
                                     ->label(__('employees::filament/resources/employee.form.sections.fields.employee-tags')),
                                 Select::make('coach_id')
@@ -194,7 +196,13 @@ class EmployeeForm
                                                 Fieldset::make(__('employees::filament/resources/employee.form.tabs.work-information.fields.location'))
                                                     ->schema([
                                                         Select::make('address_id')
-                                                            ->relationship('companyAddress', 'name')
+                                                            ->relationship(
+                                                                name: 'companyAddress',
+                                                                titleAttribute: 'name',
+                                                                modifyQueryUsing: fn (Builder $query, Get $get) => static::scopeWorkAddressPartners($query, $get('address_id')),
+                                                            )
+                                                            ->getOptionLabelFromRecordUsing(fn (Partner $record): string => static::workAddressLabel($record))
+                                                            ->searchable()
                                                             ->preload()
                                                             ->live()
                                                             ->suffixIcon('heroicon-o-map-pin')
@@ -205,8 +213,11 @@ class EmployeeForm
                                                                 titleAttribute: 'name',
                                                                 modifyQueryUsing: fn (Builder $query, Get $get) => $query->where(fn ($query) => $query->whereNull('company_id')->orWhere('company_id', $get('company_id') ?? current_company_id())),
                                                             )
+                                                            ->getOptionLabelFromRecordUsing(fn (WorkLocation $record): string => $record->placementLabel())
+                                                            ->searchable()
                                                             ->preload()
                                                             ->label(__('employees::filament/resources/employee.form.tabs.work-information.fields.work-location'))
+                                                            ->helperText(__('employees::filament/resources/employee.form.tabs.work-information.fields.work-location-help'))
                                                             ->prefixIcon('heroicon-o-map-pin')
                                                             ->createOptionForm(fn (Schema $schema) => WorkLocationResource::form($schema))
                                                             ->editOptionForm(fn (Schema $schema) => WorkLocationResource::form($schema)),
@@ -771,5 +782,29 @@ class EmployeeForm
                         ->required(fn (Get $get) => Country::find($get('country_id'))?->state_required),
                 ])->columns(2),
         ];
+    }
+
+    /**
+     * Work Address is a company/office partner, not the employee contact card.
+     */
+    public static function scopeWorkAddressPartners(Builder $query, mixed $selectedId = null): Builder
+    {
+        return $query->where(function (Builder $outer) use ($selectedId): void {
+            $outer->where(function (Builder $allowed): void {
+                $allowed->where('sub_type', 'company')
+                    ->orWhere('account_type', AccountType::COMPANY);
+            });
+
+            if (filled($selectedId)) {
+                $outer->orWhereKey($selectedId);
+            }
+        });
+    }
+
+    public static function workAddressLabel(Partner $record): string
+    {
+        return collect([$record->name, $record->street1, $record->city])
+            ->filter(fn (mixed $part): bool => filled($part))
+            ->implode(' — ');
     }
 }

@@ -1,0 +1,3579 @@
+[
+  {
+    "code": "11.05",
+    "name": "Aceh Barat",
+    "province": "Aceh",
+    "latitude": 4.442252,
+    "longitude": 96.192983
+  },
+  {
+    "code": "11.12",
+    "name": "Aceh Barat Daya",
+    "province": "Aceh",
+    "latitude": 3.83359,
+    "longitude": 96.851615
+  },
+  {
+    "code": "11.06",
+    "name": "Aceh Besar",
+    "province": "Aceh",
+    "latitude": 5.354249,
+    "longitude": 95.496151
+  },
+  {
+    "code": "11.14",
+    "name": "Aceh Jaya",
+    "province": "Aceh",
+    "latitude": 4.811484,
+    "longitude": 95.700191
+  },
+  {
+    "code": "11.01",
+    "name": "Aceh Selatan",
+    "province": "Aceh",
+    "latitude": 3.067979,
+    "longitude": 97.468771
+  },
+  {
+    "code": "11.1",
+    "name": "Aceh Singkil",
+    "province": "Aceh",
+    "latitude": 2.375879,
+    "longitude": 97.924429
+  },
+  {
+    "code": "11.16",
+    "name": "Aceh Tamiang",
+    "province": "Aceh",
+    "latitude": 4.212262,
+    "longitude": 97.914711
+  },
+  {
+    "code": "11.04",
+    "name": "Aceh Tengah",
+    "province": "Aceh",
+    "latitude": 4.564267,
+    "longitude": 96.961893
+  },
+  {
+    "code": "11.02",
+    "name": "Aceh Tenggara",
+    "province": "Aceh",
+    "latitude": 3.338797,
+    "longitude": 97.745642
+  },
+  {
+    "code": "11.03",
+    "name": "Aceh Timur",
+    "province": "Aceh",
+    "latitude": 4.701663,
+    "longitude": 97.645039
+  },
+  {
+    "code": "11.08",
+    "name": "Aceh Utara",
+    "province": "Aceh",
+    "latitude": 4.991194,
+    "longitude": 97.158737
+  },
+  {
+    "code": "11.17",
+    "name": "Bener Meriah",
+    "province": "Aceh",
+    "latitude": 4.77388,
+    "longitude": 96.978004
+  },
+  {
+    "code": "11.11",
+    "name": "Bireuen",
+    "province": "Aceh",
+    "latitude": 5.08274,
+    "longitude": 96.592121
+  },
+  {
+    "code": "11.13",
+    "name": "Gayo Lues",
+    "province": "Aceh",
+    "latitude": 3.977599,
+    "longitude": 97.332068
+  },
+  {
+    "code": "11.71",
+    "name": "Kota Banda Aceh",
+    "province": "Aceh",
+    "latitude": 5.554927,
+    "longitude": 95.356614
+  },
+  {
+    "code": "11.74",
+    "name": "Kota Langsa",
+    "province": "Aceh",
+    "latitude": 4.468683,
+    "longitude": 97.89865
+  },
+  {
+    "code": "11.73",
+    "name": "Kota Lhokseumawe",
+    "province": "Aceh",
+    "latitude": 5.202364,
+    "longitude": 97.042392
+  },
+  {
+    "code": "11.72",
+    "name": "Kota Sabang",
+    "province": "Aceh",
+    "latitude": 5.831884,
+    "longitude": 95.363531
+  },
+  {
+    "code": "11.75",
+    "name": "Kota Subulussalam",
+    "province": "Aceh",
+    "latitude": 2.581939,
+    "longitude": 97.907427
+  },
+  {
+    "code": "11.15",
+    "name": "Nagan Raya",
+    "province": "Aceh",
+    "latitude": 4.181243,
+    "longitude": 96.525773
+  },
+  {
+    "code": "11.07",
+    "name": "Pidie",
+    "province": "Aceh",
+    "latitude": 5.1143,
+    "longitude": 95.941283
+  },
+  {
+    "code": "11.18",
+    "name": "Pidie Jaya",
+    "province": "Aceh",
+    "latitude": 5.104771,
+    "longitude": 96.211668
+  },
+  {
+    "code": "11.09",
+    "name": "Simeulue",
+    "province": "Aceh",
+    "latitude": 2.629031,
+    "longitude": 96.022078
+  },
+  {
+    "code": "51.03",
+    "name": "Badung",
+    "province": "Bali",
+    "latitude": -8.644872,
+    "longitude": 115.135905
+  },
+  {
+    "code": "51.06",
+    "name": "Bangli",
+    "province": "Bali",
+    "latitude": -8.333336,
+    "longitude": 115.368281
+  },
+  {
+    "code": "51.08",
+    "name": "Buleleng",
+    "province": "Bali",
+    "latitude": -7.842826,
+    "longitude": 115.197029
+  },
+  {
+    "code": "51.04",
+    "name": "Gianyar",
+    "province": "Bali",
+    "latitude": -8.704512,
+    "longitude": 115.352322
+  },
+  {
+    "code": "51.01",
+    "name": "Jembrana",
+    "province": "Bali",
+    "latitude": -8.395578,
+    "longitude": 114.705461
+  },
+  {
+    "code": "51.07",
+    "name": "Karangasem",
+    "province": "Bali",
+    "latitude": -8.335562,
+    "longitude": 115.617073
+  },
+  {
+    "code": "51.05",
+    "name": "Klungkung",
+    "province": "Bali",
+    "latitude": -8.744603,
+    "longitude": 115.557544
+  },
+  {
+    "code": "51.71",
+    "name": "Kota Denpasar",
+    "province": "Bali",
+    "latitude": -8.614589,
+    "longitude": 115.226699
+  },
+  {
+    "code": "51.02",
+    "name": "Tabanan",
+    "province": "Bali",
+    "latitude": -8.556652,
+    "longitude": 115.001312
+  },
+  {
+    "code": "36.72",
+    "name": "Kota Cilegon",
+    "province": "Banten",
+    "latitude": -6.016339,
+    "longitude": 106.036341
+  },
+  {
+    "code": "36.73",
+    "name": "Kota Serang",
+    "province": "Banten",
+    "latitude": -6.084561,
+    "longitude": 106.123733
+  },
+  {
+    "code": "36.71",
+    "name": "Kota Tangerang",
+    "province": "Banten",
+    "latitude": -6.241261,
+    "longitude": 106.744112
+  },
+  {
+    "code": "36.74",
+    "name": "Kota Tangerang Selatan",
+    "province": "Banten",
+    "latitude": -6.355867,
+    "longitude": 106.713446
+  },
+  {
+    "code": "36.02",
+    "name": "Lebak",
+    "province": "Banten",
+    "latitude": -6.64326,
+    "longitude": 106.187272
+  },
+  {
+    "code": "36.01",
+    "name": "Pandeglang",
+    "province": "Banten",
+    "latitude": -6.547377,
+    "longitude": 105.799488
+  },
+  {
+    "code": "36.04",
+    "name": "Serang",
+    "province": "Banten",
+    "latitude": -6.116966,
+    "longitude": 106.151808
+  },
+  {
+    "code": "36.03",
+    "name": "Tangerang",
+    "province": "Banten",
+    "latitude": -6.176192,
+    "longitude": 106.638216
+  },
+  {
+    "code": "17.01",
+    "name": "Bengkulu Selatan",
+    "province": "Bengkulu",
+    "latitude": -4.358988,
+    "longitude": 103.002039
+  },
+  {
+    "code": "17.09",
+    "name": "Bengkulu Tengah",
+    "province": "Bengkulu",
+    "latitude": -3.671227,
+    "longitude": 102.387562
+  },
+  {
+    "code": "17.03",
+    "name": "Bengkulu Utara",
+    "province": "Bengkulu",
+    "latitude": -3.189133,
+    "longitude": 101.857642
+  },
+  {
+    "code": "17.04",
+    "name": "Kaur",
+    "province": "Bengkulu",
+    "latitude": -4.590528,
+    "longitude": 103.365261
+  },
+  {
+    "code": "17.08",
+    "name": "Kepahiang",
+    "province": "Bengkulu",
+    "latitude": -3.647936,
+    "longitude": 102.666139
+  },
+  {
+    "code": "17.71",
+    "name": "Kota Bengkulu",
+    "province": "Bengkulu",
+    "latitude": -3.821629,
+    "longitude": 102.303834
+  },
+  {
+    "code": "17.07",
+    "name": "Lebong",
+    "province": "Bengkulu",
+    "latitude": -3.053477,
+    "longitude": 102.208994
+  },
+  {
+    "code": "17.06",
+    "name": "Muko Muko",
+    "province": "Bengkulu",
+    "latitude": -2.402442,
+    "longitude": 101.153554
+  },
+  {
+    "code": "17.02",
+    "name": "Rejang Lebong",
+    "province": "Bengkulu",
+    "latitude": -3.438904,
+    "longitude": 102.698485
+  },
+  {
+    "code": "17.05",
+    "name": "Seluma",
+    "province": "Bengkulu",
+    "latitude": -4.076826,
+    "longitude": 102.671787
+  },
+  {
+    "code": "34.02",
+    "name": "Bantul",
+    "province": "DI Yogyakarta",
+    "latitude": -7.887745,
+    "longitude": 110.327414
+  },
+  {
+    "code": "34.03",
+    "name": "Gunungkidul",
+    "province": "DI Yogyakarta",
+    "latitude": -7.993038,
+    "longitude": 110.557931
+  },
+  {
+    "code": "34.71",
+    "name": "Kota Yogyakarta",
+    "province": "DI Yogyakarta",
+    "latitude": -7.826139,
+    "longitude": 110.402126
+  },
+  {
+    "code": "34.01",
+    "name": "Kulon Progo",
+    "province": "DI Yogyakarta",
+    "latitude": -7.812308,
+    "longitude": 110.147983
+  },
+  {
+    "code": "34.04",
+    "name": "Sleman",
+    "province": "DI Yogyakarta",
+    "latitude": -7.690247,
+    "longitude": 110.341986
+  },
+  {
+    "code": "31.01",
+    "name": "Kepulauan Seribu",
+    "province": "DKI Jakarta",
+    "latitude": -5.635047,
+    "longitude": 106.580354
+  },
+  {
+    "code": "31.73",
+    "name": "Kota Jakarta Barat",
+    "province": "DKI Jakarta",
+    "latitude": -6.136862,
+    "longitude": 106.815071
+  },
+  {
+    "code": "31.71",
+    "name": "Kota Jakarta Pusat",
+    "province": "DKI Jakarta",
+    "latitude": -6.18234,
+    "longitude": 106.842872
+  },
+  {
+    "code": "31.74",
+    "name": "Kota Jakarta Selatan",
+    "province": "DKI Jakarta",
+    "latitude": -6.283818,
+    "longitude": 106.804863
+  },
+  {
+    "code": "31.75",
+    "name": "Kota Jakarta Timur",
+    "province": "DKI Jakarta",
+    "latitude": -6.262891,
+    "longitude": 106.882229
+  },
+  {
+    "code": "31.72",
+    "name": "Kota Jakarta Utara",
+    "province": "DKI Jakarta",
+    "latitude": -6.136197,
+    "longitude": 106.90069
+  },
+  {
+    "code": "75.02",
+    "name": "Boalemo",
+    "province": "Gorontalo",
+    "latitude": 0.68762,
+    "longitude": 122.335683
+  },
+  {
+    "code": "75.03",
+    "name": "Bone Bolango",
+    "province": "Gorontalo",
+    "latitude": 0.556403,
+    "longitude": 123.309971
+  },
+  {
+    "code": "75.01",
+    "name": "Gorontalo",
+    "province": "Gorontalo",
+    "latitude": 0.538443,
+    "longitude": 123.059497
+  },
+  {
+    "code": "75.05",
+    "name": "Gorontalo Utara",
+    "province": "Gorontalo",
+    "latitude": 0.866198,
+    "longitude": 123.049529
+  },
+  {
+    "code": "75.71",
+    "name": "Kota Gorontalo",
+    "province": "Gorontalo",
+    "latitude": 0.527863,
+    "longitude": 123.054403
+  },
+  {
+    "code": "15.04",
+    "name": "Batanghari",
+    "province": "Jambi",
+    "latitude": -1.859239,
+    "longitude": 103.0075
+  },
+  {
+    "code": "15.08",
+    "name": "Bungo",
+    "province": "Jambi",
+    "latitude": -1.515188,
+    "longitude": 101.998936
+  },
+  {
+    "code": "15.01",
+    "name": "Kerinci",
+    "province": "Jambi",
+    "latitude": -2.063338,
+    "longitude": 101.600494
+  },
+  {
+    "code": "15.71",
+    "name": "Kota Jambi",
+    "province": "Jambi",
+    "latitude": -1.635417,
+    "longitude": 103.634369
+  },
+  {
+    "code": "15.72",
+    "name": "Kota Sungai Penuh",
+    "province": "Jambi",
+    "latitude": -2.049119,
+    "longitude": 101.349135
+  },
+  {
+    "code": "15.02",
+    "name": "Merangin",
+    "province": "Jambi",
+    "latitude": -2.208447,
+    "longitude": 102.117106
+  },
+  {
+    "code": "15.05",
+    "name": "Muaro Jambi",
+    "province": "Jambi",
+    "latitude": -1.707654,
+    "longitude": 103.78608
+  },
+  {
+    "code": "15.03",
+    "name": "Sarolangun",
+    "province": "Jambi",
+    "latitude": -2.331246,
+    "longitude": 102.627533
+  },
+  {
+    "code": "15.06",
+    "name": "Tanjung Jabung Barat",
+    "province": "Jambi",
+    "latitude": -0.983104,
+    "longitude": 103.269247
+  },
+  {
+    "code": "15.07",
+    "name": "Tanjung Jabung Timur",
+    "province": "Jambi",
+    "latitude": -1.177289,
+    "longitude": 104.228482
+  },
+  {
+    "code": "15.09",
+    "name": "Tebo",
+    "province": "Jambi",
+    "latitude": -1.388453,
+    "longitude": 102.44059
+  },
+  {
+    "code": "32.04",
+    "name": "Bandung",
+    "province": "Jawa Barat",
+    "latitude": -6.921553,
+    "longitude": 107.611021
+  },
+  {
+    "code": "32.17",
+    "name": "Bandung Barat",
+    "province": "Jawa Barat",
+    "latitude": -6.897754,
+    "longitude": 107.412429
+  },
+  {
+    "code": "32.16",
+    "name": "Bekasi",
+    "province": "Jawa Barat",
+    "latitude": -6.234986,
+    "longitude": 106.994544
+  },
+  {
+    "code": "32.01",
+    "name": "Bogor",
+    "province": "Jawa Barat",
+    "latitude": -6.596299,
+    "longitude": 106.797242
+  },
+  {
+    "code": "32.07",
+    "name": "Ciamis",
+    "province": "Jawa Barat",
+    "latitude": -7.313159,
+    "longitude": 108.404894
+  },
+  {
+    "code": "32.03",
+    "name": "Cianjur",
+    "province": "Jawa Barat",
+    "latitude": -7.054244,
+    "longitude": 107.069143
+  },
+  {
+    "code": "32.09",
+    "name": "Cirebon",
+    "province": "Jawa Barat",
+    "latitude": -6.713704,
+    "longitude": 108.560848
+  },
+  {
+    "code": "32.05",
+    "name": "Garut",
+    "province": "Jawa Barat",
+    "latitude": -7.216254,
+    "longitude": 107.901491
+  },
+  {
+    "code": "32.12",
+    "name": "Indramayu",
+    "province": "Jawa Barat",
+    "latitude": -6.441854,
+    "longitude": 108.176547
+  },
+  {
+    "code": "32.15",
+    "name": "Karawang",
+    "province": "Jawa Barat",
+    "latitude": -6.302191,
+    "longitude": 107.304612
+  },
+  {
+    "code": "32.73",
+    "name": "Kota Bandung",
+    "province": "Jawa Barat",
+    "latitude": -6.9009,
+    "longitude": 107.684106
+  },
+  {
+    "code": "32.79",
+    "name": "Kota Banjar",
+    "province": "Jawa Barat",
+    "latitude": -7.391726,
+    "longitude": 108.615012
+  },
+  {
+    "code": "32.75",
+    "name": "Kota Bekasi",
+    "province": "Jawa Barat",
+    "latitude": -6.328311,
+    "longitude": 106.928011
+  },
+  {
+    "code": "32.71",
+    "name": "Kota Bogor",
+    "province": "Jawa Barat",
+    "latitude": -6.54838,
+    "longitude": 106.776161
+  },
+  {
+    "code": "32.77",
+    "name": "Kota Cimahi",
+    "province": "Jawa Barat",
+    "latitude": -6.851267,
+    "longitude": 107.540404
+  },
+  {
+    "code": "32.74",
+    "name": "Kota Cirebon",
+    "province": "Jawa Barat",
+    "latitude": -6.73994,
+    "longitude": 108.528146
+  },
+  {
+    "code": "32.76",
+    "name": "Kota Depok",
+    "province": "Jawa Barat",
+    "latitude": -6.429777,
+    "longitude": 106.742689
+  },
+  {
+    "code": "32.72",
+    "name": "Kota Sukabumi",
+    "province": "Jawa Barat",
+    "latitude": -6.945768,
+    "longitude": 106.939597
+  },
+  {
+    "code": "32.78",
+    "name": "Kota Tasikmalaya",
+    "province": "Jawa Barat",
+    "latitude": -7.338085,
+    "longitude": 108.288666
+  },
+  {
+    "code": "32.08",
+    "name": "Kuningan",
+    "province": "Jawa Barat",
+    "latitude": -6.986984,
+    "longitude": 108.553816
+  },
+  {
+    "code": "32.1",
+    "name": "Majalengka",
+    "province": "Jawa Barat",
+    "latitude": -6.807363,
+    "longitude": 108.278786
+  },
+  {
+    "code": "32.18",
+    "name": "Pangandaran",
+    "province": "Jawa Barat",
+    "latitude": -7.640797,
+    "longitude": 108.556729
+  },
+  {
+    "code": "32.14",
+    "name": "Purwakarta",
+    "province": "Jawa Barat",
+    "latitude": -6.55278,
+    "longitude": 107.446532
+  },
+  {
+    "code": "32.13",
+    "name": "Subang",
+    "province": "Jawa Barat",
+    "latitude": -6.498389,
+    "longitude": 107.739546
+  },
+  {
+    "code": "32.02",
+    "name": "Sukabumi",
+    "province": "Jawa Barat",
+    "latitude": -6.919929,
+    "longitude": 106.926509
+  },
+  {
+    "code": "32.11",
+    "name": "Sumedang",
+    "province": "Jawa Barat",
+    "latitude": -6.809871,
+    "longitude": 107.981773
+  },
+  {
+    "code": "32.06",
+    "name": "Tasikmalaya",
+    "province": "Jawa Barat",
+    "latitude": -7.326248,
+    "longitude": 108.220115
+  },
+  {
+    "code": "33.04",
+    "name": "Banjarnegara",
+    "province": "Jawa Tengah",
+    "latitude": -7.355873,
+    "longitude": 109.660073
+  },
+  {
+    "code": "33.02",
+    "name": "Banyumas",
+    "province": "Jawa Tengah",
+    "latitude": -7.455072,
+    "longitude": 109.116746
+  },
+  {
+    "code": "33.25",
+    "name": "Batang",
+    "province": "Jawa Tengah",
+    "latitude": -7.032355,
+    "longitude": 109.867953
+  },
+  {
+    "code": "33.16",
+    "name": "Blora",
+    "province": "Jawa Tengah",
+    "latitude": -6.969153,
+    "longitude": 111.413052
+  },
+  {
+    "code": "33.09",
+    "name": "Boyolali",
+    "province": "Jawa Tengah",
+    "latitude": -7.387212,
+    "longitude": 110.703869
+  },
+  {
+    "code": "33.29",
+    "name": "Brebes",
+    "province": "Jawa Tengah",
+    "latitude": -7.052071,
+    "longitude": 108.888136
+  },
+  {
+    "code": "33.01",
+    "name": "Cilacap",
+    "province": "Jawa Tengah",
+    "latitude": -7.461671,
+    "longitude": 108.804615
+  },
+  {
+    "code": "33.21",
+    "name": "Demak",
+    "province": "Jawa Tengah",
+    "latitude": -6.922907,
+    "longitude": 110.635097
+  },
+  {
+    "code": "33.15",
+    "name": "Grobogan",
+    "province": "Jawa Tengah",
+    "latitude": -7.098095,
+    "longitude": 110.896677
+  },
+  {
+    "code": "33.2",
+    "name": "Jepara",
+    "province": "Jawa Tengah",
+    "latitude": -6.589915,
+    "longitude": 110.667299
+  },
+  {
+    "code": "33.13",
+    "name": "Karanganyar",
+    "province": "Jawa Tengah",
+    "latitude": -7.619696,
+    "longitude": 111.0698
+  },
+  {
+    "code": "33.05",
+    "name": "Kebumen",
+    "province": "Jawa Tengah",
+    "latitude": -7.668689,
+    "longitude": 109.651946
+  },
+  {
+    "code": "33.24",
+    "name": "Kendal",
+    "province": "Jawa Tengah",
+    "latitude": -7.019097,
+    "longitude": 110.137476
+  },
+  {
+    "code": "33.1",
+    "name": "Klaten",
+    "province": "Jawa Tengah",
+    "latitude": -7.673222,
+    "longitude": 110.628519
+  },
+  {
+    "code": "33.71",
+    "name": "Kota Magelang",
+    "province": "Jawa Tengah",
+    "latitude": -7.476396,
+    "longitude": 110.226466
+  },
+  {
+    "code": "33.75",
+    "name": "Kota Pekalongan",
+    "province": "Jawa Tengah",
+    "latitude": -6.923894,
+    "longitude": 109.686501
+  },
+  {
+    "code": "33.73",
+    "name": "Kota Salatiga",
+    "province": "Jawa Tengah",
+    "latitude": -7.331071,
+    "longitude": 110.501716
+  },
+  {
+    "code": "33.74",
+    "name": "Kota Semarang",
+    "province": "Jawa Tengah",
+    "latitude": -6.967057,
+    "longitude": 110.303759
+  },
+  {
+    "code": "33.72",
+    "name": "Kota Surakarta",
+    "province": "Jawa Tengah",
+    "latitude": -7.547233,
+    "longitude": 110.817553
+  },
+  {
+    "code": "33.76",
+    "name": "Kota Tegal",
+    "province": "Jawa Tengah",
+    "latitude": -6.865957,
+    "longitude": 109.112033
+  },
+  {
+    "code": "33.19",
+    "name": "Kudus",
+    "province": "Jawa Tengah",
+    "latitude": -6.807823,
+    "longitude": 110.841687
+  },
+  {
+    "code": "33.08",
+    "name": "Magelang",
+    "province": "Jawa Tengah",
+    "latitude": -7.477075,
+    "longitude": 110.218216
+  },
+  {
+    "code": "33.18",
+    "name": "Pati",
+    "province": "Jawa Tengah",
+    "latitude": -6.707092,
+    "longitude": 111.087008
+  },
+  {
+    "code": "33.26",
+    "name": "Pekalongan",
+    "province": "Jawa Tengah",
+    "latitude": -6.890506,
+    "longitude": 109.676149
+  },
+  {
+    "code": "33.27",
+    "name": "Pemalang",
+    "province": "Jawa Tengah",
+    "latitude": -7.01108,
+    "longitude": 109.391404
+  },
+  {
+    "code": "33.03",
+    "name": "Purbalingga",
+    "province": "Jawa Tengah",
+    "latitude": -7.32733,
+    "longitude": 109.399899
+  },
+  {
+    "code": "33.06",
+    "name": "Purworejo",
+    "province": "Jawa Tengah",
+    "latitude": -7.713076,
+    "longitude": 110.009061
+  },
+  {
+    "code": "33.17",
+    "name": "Rembang",
+    "province": "Jawa Tengah",
+    "latitude": -6.769864,
+    "longitude": 111.455671
+  },
+  {
+    "code": "33.22",
+    "name": "Semarang",
+    "province": "Jawa Tengah",
+    "latitude": -6.990399,
+    "longitude": 110.42291
+  },
+  {
+    "code": "33.14",
+    "name": "Sragen",
+    "province": "Jawa Tengah",
+    "latitude": -7.392456,
+    "longitude": 110.953023
+  },
+  {
+    "code": "33.11",
+    "name": "Sukoharjo",
+    "province": "Jawa Tengah",
+    "latitude": -7.681521,
+    "longitude": 110.867742
+  },
+  {
+    "code": "33.28",
+    "name": "Tegal",
+    "province": "Jawa Tengah",
+    "latitude": -6.869811,
+    "longitude": 109.115065
+  },
+  {
+    "code": "33.23",
+    "name": "Temanggung",
+    "province": "Jawa Tengah",
+    "latitude": -7.239758,
+    "longitude": 110.121665
+  },
+  {
+    "code": "33.12",
+    "name": "Wonogiri",
+    "province": "Jawa Tengah",
+    "latitude": -7.962051,
+    "longitude": 110.957573
+  },
+  {
+    "code": "33.07",
+    "name": "Wonosobo",
+    "province": "Jawa Tengah",
+    "latitude": -7.3998,
+    "longitude": 109.920964
+  },
+  {
+    "code": "35.26",
+    "name": "Bangkalan",
+    "province": "Jawa Timur",
+    "latitude": -7.046372,
+    "longitude": 112.89625
+  },
+  {
+    "code": "35.1",
+    "name": "Banyuwangi",
+    "province": "Jawa Timur",
+    "latitude": -8.332571,
+    "longitude": 114.141579
+  },
+  {
+    "code": "35.05",
+    "name": "Blitar",
+    "province": "Jawa Timur",
+    "latitude": -8.131198,
+    "longitude": 112.311557
+  },
+  {
+    "code": "35.22",
+    "name": "Bojonegoro",
+    "province": "Jawa Timur",
+    "latitude": -7.227871,
+    "longitude": 111.81462
+  },
+  {
+    "code": "35.11",
+    "name": "Bondowoso",
+    "province": "Jawa Timur",
+    "latitude": -7.945128,
+    "longitude": 113.882059
+  },
+  {
+    "code": "35.25",
+    "name": "Gresik",
+    "province": "Jawa Timur",
+    "latitude": -5.793347,
+    "longitude": 112.659822
+  },
+  {
+    "code": "35.09",
+    "name": "Jember",
+    "province": "Jawa Timur",
+    "latitude": -8.168856,
+    "longitude": 113.702177
+  },
+  {
+    "code": "35.17",
+    "name": "Jombang",
+    "province": "Jawa Timur",
+    "latitude": -7.561464,
+    "longitude": 112.241304
+  },
+  {
+    "code": "35.06",
+    "name": "Kediri",
+    "province": "Jawa Timur",
+    "latitude": -7.811106,
+    "longitude": 112.004605
+  },
+  {
+    "code": "35.79",
+    "name": "Kota Batu",
+    "province": "Jawa Timur",
+    "latitude": -7.887333,
+    "longitude": 112.561172
+  },
+  {
+    "code": "35.72",
+    "name": "Kota Blitar",
+    "province": "Jawa Timur",
+    "latitude": -8.087993,
+    "longitude": 112.18208
+  },
+  {
+    "code": "35.71",
+    "name": "Kota Kediri",
+    "province": "Jawa Timur",
+    "latitude": -7.822703,
+    "longitude": 112.036567
+  },
+  {
+    "code": "35.77",
+    "name": "Kota Madiun",
+    "province": "Jawa Timur",
+    "latitude": -7.641165,
+    "longitude": 111.525411
+  },
+  {
+    "code": "35.73",
+    "name": "Kota Malang",
+    "province": "Jawa Timur",
+    "latitude": -7.921025,
+    "longitude": 112.628614
+  },
+  {
+    "code": "35.76",
+    "name": "Kota Mojokerto",
+    "province": "Jawa Timur",
+    "latitude": -7.464711,
+    "longitude": 112.436795
+  },
+  {
+    "code": "35.75",
+    "name": "Kota Pasuruan",
+    "province": "Jawa Timur",
+    "latitude": -7.634979,
+    "longitude": 112.925365
+  },
+  {
+    "code": "35.74",
+    "name": "Kota Probolinggo",
+    "province": "Jawa Timur",
+    "latitude": -7.780742,
+    "longitude": 113.212806
+  },
+  {
+    "code": "35.78",
+    "name": "Kota Surabaya",
+    "province": "Jawa Timur",
+    "latitude": -7.280553,
+    "longitude": 112.66901
+  },
+  {
+    "code": "35.24",
+    "name": "Lamongan",
+    "province": "Jawa Timur",
+    "latitude": -7.122932,
+    "longitude": 112.328194
+  },
+  {
+    "code": "35.08",
+    "name": "Lumajang",
+    "province": "Jawa Timur",
+    "latitude": -8.135205,
+    "longitude": 113.224416
+  },
+  {
+    "code": "35.19",
+    "name": "Madiun",
+    "province": "Jawa Timur",
+    "latitude": -7.629084,
+    "longitude": 111.516882
+  },
+  {
+    "code": "35.2",
+    "name": "Magetan",
+    "province": "Jawa Timur",
+    "latitude": -7.654249,
+    "longitude": 111.336057
+  },
+  {
+    "code": "35.07",
+    "name": "Malang",
+    "province": "Jawa Timur",
+    "latitude": -7.977131,
+    "longitude": 112.634027
+  },
+  {
+    "code": "35.16",
+    "name": "Mojokerto",
+    "province": "Jawa Timur",
+    "latitude": -7.541338,
+    "longitude": 112.509497
+  },
+  {
+    "code": "35.18",
+    "name": "Nganjuk",
+    "province": "Jawa Timur",
+    "latitude": -7.615016,
+    "longitude": 111.946507
+  },
+  {
+    "code": "35.21",
+    "name": "Ngawi",
+    "province": "Jawa Timur",
+    "latitude": -7.402722,
+    "longitude": 111.444345
+  },
+  {
+    "code": "35.01",
+    "name": "Pacitan",
+    "province": "Jawa Timur",
+    "latitude": -8.101718,
+    "longitude": 111.144671
+  },
+  {
+    "code": "35.28",
+    "name": "Pamekasan",
+    "province": "Jawa Timur",
+    "latitude": -7.160544,
+    "longitude": 113.482627
+  },
+  {
+    "code": "35.14",
+    "name": "Pasuruan",
+    "province": "Jawa Timur",
+    "latitude": -7.750811,
+    "longitude": 112.818483
+  },
+  {
+    "code": "35.02",
+    "name": "Ponorogo",
+    "province": "Jawa Timur",
+    "latitude": -7.971227,
+    "longitude": 111.498893
+  },
+  {
+    "code": "35.13",
+    "name": "Probolinggo",
+    "province": "Jawa Timur",
+    "latitude": -7.744146,
+    "longitude": 113.21584
+  },
+  {
+    "code": "35.27",
+    "name": "Sampang",
+    "province": "Jawa Timur",
+    "latitude": -7.057816,
+    "longitude": 113.254054
+  },
+  {
+    "code": "35.15",
+    "name": "Sidoarjo",
+    "province": "Jawa Timur",
+    "latitude": -7.455974,
+    "longitude": 112.660888
+  },
+  {
+    "code": "35.12",
+    "name": "Situbondo",
+    "province": "Jawa Timur",
+    "latitude": -7.706784,
+    "longitude": 114.005414
+  },
+  {
+    "code": "35.29",
+    "name": "Sumenep",
+    "province": "Jawa Timur",
+    "latitude": -7.006745,
+    "longitude": 113.859867
+  },
+  {
+    "code": "35.03",
+    "name": "Trenggalek",
+    "province": "Jawa Timur",
+    "latitude": -8.135935,
+    "longitude": 111.640198
+  },
+  {
+    "code": "35.23",
+    "name": "Tuban",
+    "province": "Jawa Timur",
+    "latitude": -6.896266,
+    "longitude": 112.065071
+  },
+  {
+    "code": "35.04",
+    "name": "Tulungagung",
+    "province": "Jawa Timur",
+    "latitude": -8.072904,
+    "longitude": 111.899641
+  },
+  {
+    "code": "61.07",
+    "name": "Bengkayang",
+    "province": "Kalimantan Barat",
+    "latitude": 1.015775,
+    "longitude": 109.708033
+  },
+  {
+    "code": "61.06",
+    "name": "Kapuas Hulu",
+    "province": "Kalimantan Barat",
+    "latitude": 0.827426,
+    "longitude": 112.796541
+  },
+  {
+    "code": "61.11",
+    "name": "Kayong Utara",
+    "province": "Kalimantan Barat",
+    "latitude": -1.043507,
+    "longitude": 110.058949
+  },
+  {
+    "code": "61.04",
+    "name": "Ketapang",
+    "province": "Kalimantan Barat",
+    "latitude": -1.681497,
+    "longitude": 110.464761
+  },
+  {
+    "code": "61.71",
+    "name": "Kota Pontianak",
+    "province": "Kalimantan Barat",
+    "latitude": -0.082903,
+    "longitude": 109.351822
+  },
+  {
+    "code": "61.72",
+    "name": "Kota Singkawang",
+    "province": "Kalimantan Barat",
+    "latitude": 0.793275,
+    "longitude": 108.986286
+  },
+  {
+    "code": "61.12",
+    "name": "Kubu Raya",
+    "province": "Kalimantan Barat",
+    "latitude": -0.369484,
+    "longitude": 109.512356
+  },
+  {
+    "code": "61.08",
+    "name": "Landak",
+    "province": "Kalimantan Barat",
+    "latitude": 0.504635,
+    "longitude": 109.707038
+  },
+  {
+    "code": "61.1",
+    "name": "Melawi",
+    "province": "Kalimantan Barat",
+    "latitude": -0.723936,
+    "longitude": 111.655953
+  },
+  {
+    "code": "61.02",
+    "name": "Mempawah",
+    "province": "Kalimantan Barat",
+    "latitude": 0.344018,
+    "longitude": 109.101976
+  },
+  {
+    "code": "61.01",
+    "name": "Sambas",
+    "province": "Kalimantan Barat",
+    "latitude": 1.52191,
+    "longitude": 109.413809
+  },
+  {
+    "code": "61.03",
+    "name": "Sanggau",
+    "province": "Kalimantan Barat",
+    "latitude": 0.35023,
+    "longitude": 110.547042
+  },
+  {
+    "code": "61.09",
+    "name": "Sekadau",
+    "province": "Kalimantan Barat",
+    "latitude": 0.017192,
+    "longitude": 110.929004
+  },
+  {
+    "code": "61.05",
+    "name": "Sintang",
+    "province": "Kalimantan Barat",
+    "latitude": 0.1927,
+    "longitude": 111.559812
+  },
+  {
+    "code": "63.11",
+    "name": "Balangan",
+    "province": "Kalimantan Selatan",
+    "latitude": -2.287897,
+    "longitude": 115.620548
+  },
+  {
+    "code": "63.03",
+    "name": "Banjar",
+    "province": "Kalimantan Selatan",
+    "latitude": -3.31875,
+    "longitude": 114.592583
+  },
+  {
+    "code": "63.04",
+    "name": "Barito Kuala",
+    "province": "Kalimantan Selatan",
+    "latitude": -3.019296,
+    "longitude": 114.677932
+  },
+  {
+    "code": "63.06",
+    "name": "Hulu Sungai Selatan",
+    "province": "Kalimantan Selatan",
+    "latitude": -2.712581,
+    "longitude": 115.158777
+  },
+  {
+    "code": "63.07",
+    "name": "Hulu Sungai Tengah",
+    "province": "Kalimantan Selatan",
+    "latitude": -2.618758,
+    "longitude": 115.4293
+  },
+  {
+    "code": "63.08",
+    "name": "Hulu Sungai Utara",
+    "province": "Kalimantan Selatan",
+    "latitude": -2.424245,
+    "longitude": 115.159706
+  },
+  {
+    "code": "63.72",
+    "name": "Kota Banjarbaru",
+    "province": "Kalimantan Selatan",
+    "latitude": -3.487358,
+    "longitude": 114.702675
+  },
+  {
+    "code": "63.71",
+    "name": "Kota Banjarmasin",
+    "province": "Kalimantan Selatan",
+    "latitude": -3.330128,
+    "longitude": 114.597571
+  },
+  {
+    "code": "63.02",
+    "name": "Kotabaru",
+    "province": "Kalimantan Selatan",
+    "latitude": -2.79511,
+    "longitude": 115.971255
+  },
+  {
+    "code": "63.09",
+    "name": "Tabalong",
+    "province": "Kalimantan Selatan",
+    "latitude": -1.836321,
+    "longitude": 115.515534
+  },
+  {
+    "code": "63.1",
+    "name": "Tanah Bumbu",
+    "province": "Kalimantan Selatan",
+    "latitude": -3.447333,
+    "longitude": 115.706393
+  },
+  {
+    "code": "63.01",
+    "name": "Tanah Laut",
+    "province": "Kalimantan Selatan",
+    "latitude": -3.844038,
+    "longitude": 114.988859
+  },
+  {
+    "code": "63.05",
+    "name": "Tapin",
+    "province": "Kalimantan Selatan",
+    "latitude": -2.862273,
+    "longitude": 115.010964
+  },
+  {
+    "code": "62.04",
+    "name": "Barito Selatan",
+    "province": "Kalimantan Tengah",
+    "latitude": -1.922879,
+    "longitude": 114.78889
+  },
+  {
+    "code": "62.13",
+    "name": "Barito Timur",
+    "province": "Kalimantan Tengah",
+    "latitude": -1.981911,
+    "longitude": 115.180388
+  },
+  {
+    "code": "62.05",
+    "name": "Barito Utara",
+    "province": "Kalimantan Tengah",
+    "latitude": -0.754211,
+    "longitude": 115.045145
+  },
+  {
+    "code": "62.1",
+    "name": "Gunung Mas",
+    "province": "Kalimantan Tengah",
+    "latitude": -0.967789,
+    "longitude": 113.535714
+  },
+  {
+    "code": "62.03",
+    "name": "Kapuas",
+    "province": "Kalimantan Tengah",
+    "latitude": -1.922879,
+    "longitude": 114.336362
+  },
+  {
+    "code": "62.06",
+    "name": "Katingan",
+    "province": "Kalimantan Tengah",
+    "latitude": -1.859558,
+    "longitude": 113.336905
+  },
+  {
+    "code": "62.71",
+    "name": "Kota Palangkaraya",
+    "province": "Kalimantan Tengah",
+    "latitude": -1.70189,
+    "longitude": 113.602476
+  },
+  {
+    "code": "62.01",
+    "name": "Kotawaringin Barat",
+    "province": "Kalimantan Tengah",
+    "latitude": -2.504212,
+    "longitude": 111.64681
+  },
+  {
+    "code": "62.02",
+    "name": "Kotawaringin Timur",
+    "province": "Kalimantan Tengah",
+    "latitude": -2.251473,
+    "longitude": 112.785465
+  },
+  {
+    "code": "62.09",
+    "name": "Lamandau",
+    "province": "Kalimantan Tengah",
+    "latitude": -1.778874,
+    "longitude": 111.417317
+  },
+  {
+    "code": "62.12",
+    "name": "Murung Raya",
+    "province": "Kalimantan Tengah",
+    "latitude": -0.068451,
+    "longitude": 114.173182
+  },
+  {
+    "code": "62.11",
+    "name": "Pulang Pisau",
+    "province": "Kalimantan Tengah",
+    "latitude": -2.746171,
+    "longitude": 114.262242
+  },
+  {
+    "code": "62.07",
+    "name": "Seruyan",
+    "province": "Kalimantan Tengah",
+    "latitude": -2.120177,
+    "longitude": 112.165025
+  },
+  {
+    "code": "62.08",
+    "name": "Sukamara",
+    "province": "Kalimantan Tengah",
+    "latitude": -2.560249,
+    "longitude": 111.183772
+  },
+  {
+    "code": "64.03",
+    "name": "Berau",
+    "province": "Kalimantan Timur",
+    "latitude": 1.776754,
+    "longitude": 117.269176
+  },
+  {
+    "code": "64.71",
+    "name": "Kota Balikpapan",
+    "province": "Kalimantan Timur",
+    "latitude": -1.267784,
+    "longitude": 116.853741
+  },
+  {
+    "code": "64.74",
+    "name": "Kota Bontang",
+    "province": "Kalimantan Timur",
+    "latitude": 0.129923,
+    "longitude": 117.450651
+  },
+  {
+    "code": "64.72",
+    "name": "Kota Samarinda",
+    "province": "Kalimantan Timur",
+    "latitude": -0.530353,
+    "longitude": 117.136504
+  },
+  {
+    "code": "64.07",
+    "name": "Kutai Barat",
+    "province": "Kalimantan Timur",
+    "latitude": -0.420915,
+    "longitude": 115.768045
+  },
+  {
+    "code": "64.02",
+    "name": "Kutai Kartanegara",
+    "province": "Kalimantan Timur",
+    "latitude": 0.195633,
+    "longitude": 116.200417
+  },
+  {
+    "code": "64.08",
+    "name": "Kutai Timur",
+    "province": "Kalimantan Timur",
+    "latitude": 0.945361,
+    "longitude": 117.011088
+  },
+  {
+    "code": "64.11",
+    "name": "Mahakam Ulu",
+    "province": "Kalimantan Timur",
+    "latitude": 0.622602,
+    "longitude": 115.313145
+  },
+  {
+    "code": "64.01",
+    "name": "Paser",
+    "province": "Kalimantan Timur",
+    "latitude": -1.689667,
+    "longitude": 116.015822
+  },
+  {
+    "code": "64.09",
+    "name": "Penajam Paser Utara",
+    "province": "Kalimantan Timur",
+    "latitude": -1.197386,
+    "longitude": 116.567303
+  },
+  {
+    "code": "65.01",
+    "name": "Bulungan",
+    "province": "Kalimantan Utara",
+    "latitude": 2.762034,
+    "longitude": 117.074347
+  },
+  {
+    "code": "65.71",
+    "name": "Kota Tarakan",
+    "province": "Kalimantan Utara",
+    "latitude": 3.372579,
+    "longitude": 117.571978
+  },
+  {
+    "code": "65.02",
+    "name": "Malinau",
+    "province": "Kalimantan Utara",
+    "latitude": 2.618555,
+    "longitude": 115.690497
+  },
+  {
+    "code": "65.03",
+    "name": "Nunukan",
+    "province": "Kalimantan Utara",
+    "latitude": 3.907457,
+    "longitude": 117.042351
+  },
+  {
+    "code": "65.04",
+    "name": "Tana Tidung",
+    "province": "Kalimantan Utara",
+    "latitude": 3.555328,
+    "longitude": 117.04466
+  },
+  {
+    "code": "19.01",
+    "name": "Bangka",
+    "province": "Kepulauan Bangka Belitung",
+    "latitude": -2.308124,
+    "longitude": 106.028152
+  },
+  {
+    "code": "19.05",
+    "name": "Bangka Barat",
+    "province": "Kepulauan Bangka Belitung",
+    "latitude": -1.841238,
+    "longitude": 105.551871
+  },
+  {
+    "code": "19.03",
+    "name": "Bangka Selatan",
+    "province": "Kepulauan Bangka Belitung",
+    "latitude": -2.776898,
+    "longitude": 106.293958
+  },
+  {
+    "code": "19.04",
+    "name": "Bangka Tengah",
+    "province": "Kepulauan Bangka Belitung",
+    "latitude": -2.430516,
+    "longitude": 106.100155
+  },
+  {
+    "code": "19.02",
+    "name": "Belitung",
+    "province": "Kepulauan Bangka Belitung",
+    "latitude": -2.884281,
+    "longitude": 107.66316
+  },
+  {
+    "code": "19.06",
+    "name": "Belitung Timur",
+    "province": "Kepulauan Bangka Belitung",
+    "latitude": -2.916457,
+    "longitude": 108.003722
+  },
+  {
+    "code": "19.71",
+    "name": "Kota Pangkal Pinang",
+    "province": "Kepulauan Bangka Belitung",
+    "latitude": -2.137566,
+    "longitude": 106.124226
+  },
+  {
+    "code": "21.01",
+    "name": "Bintan",
+    "province": "Kepulauan Riau",
+    "latitude": 1.019658,
+    "longitude": 104.569819
+  },
+  {
+    "code": "21.02",
+    "name": "Karimun",
+    "province": "Kepulauan Riau",
+    "latitude": 0.765387,
+    "longitude": 103.428744
+  },
+  {
+    "code": "21.05",
+    "name": "Kepulauan Anambas",
+    "province": "Kepulauan Riau",
+    "latitude": 2.938901,
+    "longitude": 105.760258
+  },
+  {
+    "code": "21.71",
+    "name": "Kota Batam",
+    "province": "Kepulauan Riau",
+    "latitude": 1.050734,
+    "longitude": 103.960724
+  },
+  {
+    "code": "21.72",
+    "name": "Kota Tanjung Pinang",
+    "province": "Kepulauan Riau",
+    "latitude": 0.926001,
+    "longitude": 104.462505
+  },
+  {
+    "code": "21.04",
+    "name": "Lingga",
+    "province": "Kepulauan Riau",
+    "latitude": -0.509497,
+    "longitude": 104.414161
+  },
+  {
+    "code": "21.03",
+    "name": "Natuna",
+    "province": "Kepulauan Riau",
+    "latitude": 3.930517,
+    "longitude": 108.19015
+  },
+  {
+    "code": "18.71",
+    "name": "Kota Bandar Lampung",
+    "province": "Lampung",
+    "latitude": -5.44792,
+    "longitude": 105.269842
+  },
+  {
+    "code": "18.72",
+    "name": "Kota Metro",
+    "province": "Lampung",
+    "latitude": -5.150333,
+    "longitude": 105.301594
+  },
+  {
+    "code": "18.04",
+    "name": "Lampung Barat",
+    "province": "Lampung",
+    "latitude": -5.111704,
+    "longitude": 104.305787
+  },
+  {
+    "code": "18.01",
+    "name": "Lampung Selatan",
+    "province": "Lampung",
+    "latitude": -5.541489,
+    "longitude": 105.511001
+  },
+  {
+    "code": "18.02",
+    "name": "Lampung Tengah",
+    "province": "Lampung",
+    "latitude": -4.872847,
+    "longitude": 105.326013
+  },
+  {
+    "code": "18.07",
+    "name": "Lampung Timur",
+    "province": "Lampung",
+    "latitude": -5.119712,
+    "longitude": 105.595151
+  },
+  {
+    "code": "18.03",
+    "name": "Lampung Utara",
+    "province": "Lampung",
+    "latitude": -4.808609,
+    "longitude": 104.862881
+  },
+  {
+    "code": "18.11",
+    "name": "Mesuji",
+    "province": "Lampung",
+    "latitude": -3.975419,
+    "longitude": 105.374944
+  },
+  {
+    "code": "18.09",
+    "name": "Pesawaran",
+    "province": "Lampung",
+    "latitude": -5.455957,
+    "longitude": 105.084691
+  },
+  {
+    "code": "18.13",
+    "name": "Pesisir Barat",
+    "province": "Lampung",
+    "latitude": -5.366944,
+    "longitude": 104.186642
+  },
+  {
+    "code": "18.1",
+    "name": "Pringsewu",
+    "province": "Lampung",
+    "latitude": -5.366689,
+    "longitude": 104.972212
+  },
+  {
+    "code": "18.06",
+    "name": "Tanggamus",
+    "province": "Lampung",
+    "latitude": -5.514054,
+    "longitude": 104.777144
+  },
+  {
+    "code": "18.05",
+    "name": "Tulang Bawang",
+    "province": "Lampung",
+    "latitude": -4.390363,
+    "longitude": 105.550441
+  },
+  {
+    "code": "18.12",
+    "name": "Tulang Bawang Barat",
+    "province": "Lampung",
+    "latitude": -4.432426,
+    "longitude": 105.168264
+  },
+  {
+    "code": "18.08",
+    "name": "Way Kanan",
+    "province": "Lampung",
+    "latitude": -4.56694,
+    "longitude": 104.51616
+  },
+  {
+    "code": "81.04",
+    "name": "Buru",
+    "province": "Maluku",
+    "latitude": -3.353909,
+    "longitude": 126.648918
+  },
+  {
+    "code": "81.09",
+    "name": "Buru Selatan",
+    "province": "Maluku",
+    "latitude": -3.486676,
+    "longitude": 126.350153
+  },
+  {
+    "code": "81.07",
+    "name": "Kepulauan Aru",
+    "province": "Maluku",
+    "latitude": -6.228148,
+    "longitude": 134.497966
+  },
+  {
+    "code": "81.71",
+    "name": "Kota Ambon",
+    "province": "Maluku",
+    "latitude": -3.71095,
+    "longitude": 128.259342
+  },
+  {
+    "code": "81.72",
+    "name": "Kota Tual",
+    "province": "Maluku",
+    "latitude": -5.590518,
+    "longitude": 132.004094
+  },
+  {
+    "code": "81.08",
+    "name": "Maluku Barat Daya",
+    "province": "Maluku",
+    "latitude": -7.786721,
+    "longitude": 126.242783
+  },
+  {
+    "code": "81.01",
+    "name": "Maluku Tengah",
+    "province": "Maluku",
+    "latitude": -3.121446,
+    "longitude": 129.459992
+  },
+  {
+    "code": "81.02",
+    "name": "Maluku Tenggara",
+    "province": "Maluku",
+    "latitude": -5.771488,
+    "longitude": 132.73776
+  },
+  {
+    "code": "81.06",
+    "name": "Seram Bagian Barat",
+    "province": "Maluku",
+    "latitude": -3.164206,
+    "longitude": 128.483656
+  },
+  {
+    "code": "81.05",
+    "name": "Seram Bagian Timur",
+    "province": "Maluku",
+    "latitude": -3.423159,
+    "longitude": 130.391092
+  },
+  {
+    "code": "82.01",
+    "name": "Halmahera Barat",
+    "province": "Maluku Utara",
+    "latitude": 1.363105,
+    "longitude": 127.573796
+  },
+  {
+    "code": "82.04",
+    "name": "Halmahera Selatan",
+    "province": "Maluku Utara",
+    "latitude": -1.53437,
+    "longitude": 127.716559
+  },
+  {
+    "code": "82.02",
+    "name": "Halmahera Tengah",
+    "province": "Maluku Utara",
+    "latitude": 0.388881,
+    "longitude": 128.583224
+  },
+  {
+    "code": "82.06",
+    "name": "Halmahera Timur",
+    "province": "Maluku Utara",
+    "latitude": 1.002785,
+    "longitude": 128.248794
+  },
+  {
+    "code": "82.03",
+    "name": "Halmahera Utara",
+    "province": "Maluku Utara",
+    "latitude": 1.61787,
+    "longitude": 127.858468
+  },
+  {
+    "code": "82.05",
+    "name": "Kepulauan Sula",
+    "province": "Maluku Utara",
+    "latitude": -1.862544,
+    "longitude": 125.830647
+  },
+  {
+    "code": "82.71",
+    "name": "Kota Ternate",
+    "province": "Maluku Utara",
+    "latitude": 0.835846,
+    "longitude": 127.355265
+  },
+  {
+    "code": "82.72",
+    "name": "Kota Tidore Kepulauan",
+    "province": "Maluku Utara",
+    "latitude": 0.751284,
+    "longitude": 127.412856
+  },
+  {
+    "code": "82.07",
+    "name": "Pulau Morotai",
+    "province": "Maluku Utara",
+    "latitude": 2.312923,
+    "longitude": 128.441856
+  },
+  {
+    "code": "82.08",
+    "name": "Pulau Taliabu",
+    "province": "Maluku Utara",
+    "latitude": -1.831476,
+    "longitude": 124.829979
+  },
+  {
+    "code": "52.06",
+    "name": "Bima",
+    "province": "Nusa Tenggara Barat",
+    "latitude": -8.564763,
+    "longitude": 118.762474
+  },
+  {
+    "code": "52.05",
+    "name": "Dompu",
+    "province": "Nusa Tenggara Barat",
+    "latitude": -8.516477,
+    "longitude": 118.331216
+  },
+  {
+    "code": "52.72",
+    "name": "Kota Bima",
+    "province": "Nusa Tenggara Barat",
+    "latitude": -8.449147,
+    "longitude": 118.765024
+  },
+  {
+    "code": "52.71",
+    "name": "Kota Mataram",
+    "province": "Nusa Tenggara Barat",
+    "latitude": -8.599383,
+    "longitude": 116.155596
+  },
+  {
+    "code": "52.01",
+    "name": "Lombok Barat",
+    "province": "Nusa Tenggara Barat",
+    "latitude": -8.671889,
+    "longitude": 116.122048
+  },
+  {
+    "code": "52.02",
+    "name": "Lombok Tengah",
+    "province": "Nusa Tenggara Barat",
+    "latitude": -8.703071,
+    "longitude": 116.289937
+  },
+  {
+    "code": "52.03",
+    "name": "Lombok Timur",
+    "province": "Nusa Tenggara Barat",
+    "latitude": -8.633093,
+    "longitude": 116.55877
+  },
+  {
+    "code": "52.08",
+    "name": "Lombok Utara",
+    "province": "Nusa Tenggara Barat",
+    "latitude": -8.357242,
+    "longitude": 116.160921
+  },
+  {
+    "code": "52.04",
+    "name": "Sumbawa",
+    "province": "Nusa Tenggara Barat",
+    "latitude": -8.594902,
+    "longitude": 117.271607
+  },
+  {
+    "code": "52.07",
+    "name": "Sumbawa Barat",
+    "province": "Nusa Tenggara Barat",
+    "latitude": -8.658515,
+    "longitude": 116.916184
+  },
+  {
+    "code": "53.05",
+    "name": "Alor",
+    "province": "Nusa Tenggara Timur",
+    "latitude": -8.291145,
+    "longitude": 124.777716
+  },
+  {
+    "code": "53.04",
+    "name": "Belu",
+    "province": "Nusa Tenggara Timur",
+    "latitude": -9.175972,
+    "longitude": 124.916354
+  },
+  {
+    "code": "53.08",
+    "name": "Ende",
+    "province": "Nusa Tenggara Timur",
+    "latitude": -8.672867,
+    "longitude": 121.692917
+  },
+  {
+    "code": "53.06",
+    "name": "Flores Timur",
+    "province": "Nusa Tenggara Timur",
+    "latitude": -8.318462,
+    "longitude": 123.165796
+  },
+  {
+    "code": "53.71",
+    "name": "Kota Kupang",
+    "province": "Nusa Tenggara Timur",
+    "latitude": -10.157564,
+    "longitude": 123.601735
+  },
+  {
+    "code": "53.01",
+    "name": "Kupang",
+    "province": "Nusa Tenggara Timur",
+    "latitude": -10.163221,
+    "longitude": 123.601776
+  },
+  {
+    "code": "53.13",
+    "name": "Lembata",
+    "province": "Nusa Tenggara Timur",
+    "latitude": -8.378144,
+    "longitude": 123.544627
+  },
+  {
+    "code": "53.21",
+    "name": "Malaka",
+    "province": "Nusa Tenggara Timur",
+    "latitude": -9.546017,
+    "longitude": 124.876353
+  },
+  {
+    "code": "53.1",
+    "name": "Manggarai",
+    "province": "Nusa Tenggara Timur",
+    "latitude": -8.548015,
+    "longitude": 120.438986
+  },
+  {
+    "code": "53.15",
+    "name": "Manggarai Barat",
+    "province": "Nusa Tenggara Timur",
+    "latitude": -8.574128,
+    "longitude": 120.061125
+  },
+  {
+    "code": "53.19",
+    "name": "Manggarai Timur",
+    "province": "Nusa Tenggara Timur",
+    "latitude": -8.573827,
+    "longitude": 120.686359
+  },
+  {
+    "code": "53.16",
+    "name": "Nagekeo",
+    "province": "Nusa Tenggara Timur",
+    "latitude": -8.675887,
+    "longitude": 121.270803
+  },
+  {
+    "code": "53.09",
+    "name": "Ngada",
+    "province": "Nusa Tenggara Timur",
+    "latitude": -8.649948,
+    "longitude": 120.986707
+  },
+  {
+    "code": "53.14",
+    "name": "Rote Ndao",
+    "province": "Nusa Tenggara Timur",
+    "latitude": -10.687029,
+    "longitude": 123.208435
+  },
+  {
+    "code": "53.2",
+    "name": "Sabu Raijua",
+    "province": "Nusa Tenggara Timur",
+    "latitude": -10.522231,
+    "longitude": 121.888458
+  },
+  {
+    "code": "53.07",
+    "name": "Sikka",
+    "province": "Nusa Tenggara Timur",
+    "latitude": -8.594684,
+    "longitude": 122.092635
+  },
+  {
+    "code": "53.12",
+    "name": "Sumba Barat",
+    "province": "Nusa Tenggara Timur",
+    "latitude": -9.585709,
+    "longitude": 119.443943
+  },
+  {
+    "code": "53.18",
+    "name": "Sumba Barat Daya",
+    "province": "Nusa Tenggara Timur",
+    "latitude": -9.537821,
+    "longitude": 119.162302
+  },
+  {
+    "code": "53.17",
+    "name": "Sumba Tengah",
+    "province": "Nusa Tenggara Timur",
+    "latitude": -9.593584,
+    "longitude": 119.666277
+  },
+  {
+    "code": "53.11",
+    "name": "Sumba Timur",
+    "province": "Nusa Tenggara Timur",
+    "latitude": -9.834258,
+    "longitude": 120.209419
+  },
+  {
+    "code": "53.02",
+    "name": "Timor Tengah Selatan",
+    "province": "Nusa Tenggara Timur",
+    "latitude": -9.823051,
+    "longitude": 124.435595
+  },
+  {
+    "code": "53.03",
+    "name": "Timor Tengah Utara",
+    "province": "Nusa Tenggara Timur",
+    "latitude": -9.340513,
+    "longitude": 124.610666
+  },
+  {
+    "code": "91.06",
+    "name": "Biak Numfor",
+    "province": "Papua",
+    "latitude": -0.942603,
+    "longitude": 135.941419
+  },
+  {
+    "code": "91.03",
+    "name": "Jayapura",
+    "province": "Papua",
+    "latitude": -2.538754,
+    "longitude": 140.703739
+  },
+  {
+    "code": "91.11",
+    "name": "Keerom",
+    "province": "Papua",
+    "latitude": -3.333592,
+    "longitude": 140.672662
+  },
+  {
+    "code": "91.05",
+    "name": "Kepulauan Yapen",
+    "province": "Papua",
+    "latitude": -1.755837,
+    "longitude": 136.366452
+  },
+  {
+    "code": "91.71",
+    "name": "Kota Jayapura",
+    "province": "Papua",
+    "latitude": -2.591487,
+    "longitude": 140.63519
+  },
+  {
+    "code": "91.2",
+    "name": "Mamberamo Raya",
+    "province": "Papua",
+    "latitude": -2.3957,
+    "longitude": 137.816884
+  },
+  {
+    "code": "91.1",
+    "name": "Sarmi",
+    "province": "Papua",
+    "latitude": -1.854689,
+    "longitude": 138.749264
+  },
+  {
+    "code": "91.19",
+    "name": "Supiori",
+    "province": "Papua",
+    "latitude": -0.753597,
+    "longitude": 135.634964
+  },
+  {
+    "code": "91.15",
+    "name": "Waropen",
+    "province": "Papua",
+    "latitude": -2.718796,
+    "longitude": 136.650411
+  },
+  {
+    "code": "92.03",
+    "name": "Fak Fak",
+    "province": "Papua Barat",
+    "latitude": -2.929817,
+    "longitude": 132.296161
+  },
+  {
+    "code": "92.08",
+    "name": "Kaimana",
+    "province": "Papua Barat",
+    "latitude": -3.515836,
+    "longitude": 134.316575
+  },
+  {
+    "code": "92.02",
+    "name": "Manokwari",
+    "province": "Papua Barat",
+    "latitude": -0.861446,
+    "longitude": 134.076732
+  },
+  {
+    "code": "92.11",
+    "name": "Manokwari Selatan",
+    "province": "Papua Barat",
+    "latitude": -1.525022,
+    "longitude": 134.071029
+  },
+  {
+    "code": "92.12",
+    "name": "Pegunungan Arfak",
+    "province": "Papua Barat",
+    "latitude": -1.261192,
+    "longitude": 133.649206
+  },
+  {
+    "code": "92.06",
+    "name": "Teluk Bintuni",
+    "province": "Papua Barat",
+    "latitude": -2.113885,
+    "longitude": 133.528775
+  },
+  {
+    "code": "92.07",
+    "name": "Teluk Wondama",
+    "province": "Papua Barat",
+    "latitude": -2.632525,
+    "longitude": 134.566147
+  },
+  {
+    "code": "96.71",
+    "name": "Kota Sorong",
+    "province": "Papua Barat Daya",
+    "latitude": -0.82164,
+    "longitude": 131.23626
+  },
+  {
+    "code": "96.1",
+    "name": "Maybrat",
+    "province": "Papua Barat Daya",
+    "latitude": -1.403944,
+    "longitude": 132.58715
+  },
+  {
+    "code": "96.05",
+    "name": "Raja Ampat",
+    "province": "Papua Barat Daya",
+    "latitude": -0.712555,
+    "longitude": 130.303447
+  },
+  {
+    "code": "96.01",
+    "name": "Sorong",
+    "province": "Papua Barat Daya",
+    "latitude": -0.86341,
+    "longitude": 131.25448
+  },
+  {
+    "code": "96.04",
+    "name": "Sorong Selatan",
+    "province": "Papua Barat Daya",
+    "latitude": -1.643052,
+    "longitude": 132.254953
+  },
+  {
+    "code": "96.09",
+    "name": "Tambrauw",
+    "province": "Papua Barat Daya",
+    "latitude": -0.850128,
+    "longitude": 132.724358
+  },
+  {
+    "code": "95.01",
+    "name": "Jayawijaya",
+    "province": "Papua Pegunungan",
+    "latitude": -4.115279,
+    "longitude": 138.965031
+  },
+  {
+    "code": "95.07",
+    "name": "Lanny Jaya",
+    "province": "Papua Pegunungan",
+    "latitude": -3.997735,
+    "longitude": 138.373116
+  },
+  {
+    "code": "95.05",
+    "name": "Mamberamo Tengah",
+    "province": "Papua Pegunungan",
+    "latitude": -3.533546,
+    "longitude": 139.017741
+  },
+  {
+    "code": "95.08",
+    "name": "Nduga",
+    "province": "Papua Pegunungan",
+    "latitude": -4.44312,
+    "longitude": 138.224838
+  },
+  {
+    "code": "95.02",
+    "name": "Pegunungan Bintang",
+    "province": "Papua Pegunungan",
+    "latitude": -4.475492,
+    "longitude": 140.557678
+  },
+  {
+    "code": "95.04",
+    "name": "Tolikara",
+    "province": "Papua Pegunungan",
+    "latitude": -3.44966,
+    "longitude": 138.349129
+  },
+  {
+    "code": "95.03",
+    "name": "Yahukimo",
+    "province": "Papua Pegunungan",
+    "latitude": -4.373946,
+    "longitude": 139.464816
+  },
+  {
+    "code": "95.06",
+    "name": "Yalimo",
+    "province": "Papua Pegunungan",
+    "latitude": -3.735331,
+    "longitude": 139.550582
+  },
+  {
+    "code": "93.04",
+    "name": "Asmat",
+    "province": "Papua Selatan",
+    "latitude": -5.531449,
+    "longitude": 138.789692
+  },
+  {
+    "code": "93.02",
+    "name": "Boven Digoel",
+    "province": "Papua Selatan",
+    "latitude": -6.105824,
+    "longitude": 140.313082
+  },
+  {
+    "code": "93.03",
+    "name": "Mappi",
+    "province": "Papua Selatan",
+    "latitude": -6.329553,
+    "longitude": 139.287731
+  },
+  {
+    "code": "93.01",
+    "name": "Merauke",
+    "province": "Papua Selatan",
+    "latitude": -7.792519,
+    "longitude": 140.018325
+  },
+  {
+    "code": "94.08",
+    "name": "Deiyai",
+    "province": "Papua Tengah",
+    "latitude": -4.187939,
+    "longitude": 136.445313
+  },
+  {
+    "code": "94.06",
+    "name": "Dogiyai",
+    "province": "Papua Tengah",
+    "latitude": -4.004751,
+    "longitude": 135.716696
+  },
+  {
+    "code": "94.07",
+    "name": "Intan Jaya",
+    "province": "Papua Tengah",
+    "latitude": -3.522988,
+    "longitude": 136.718466
+  },
+  {
+    "code": "94.04",
+    "name": "Mimika",
+    "province": "Papua Tengah",
+    "latitude": -4.587526,
+    "longitude": 136.947796
+  },
+  {
+    "code": "94.01",
+    "name": "Nabire",
+    "province": "Papua Tengah",
+    "latitude": -3.360285,
+    "longitude": 135.502365
+  },
+  {
+    "code": "94.03",
+    "name": "Paniai",
+    "province": "Papua Tengah",
+    "latitude": -3.742638,
+    "longitude": 136.377807
+  },
+  {
+    "code": "94.05",
+    "name": "Puncak",
+    "province": "Papua Tengah",
+    "latitude": -3.62565,
+    "longitude": 137.489247
+  },
+  {
+    "code": "94.02",
+    "name": "Puncak Jaya",
+    "province": "Papua Tengah",
+    "latitude": -4.078605,
+    "longitude": 137.158613
+  },
+  {
+    "code": "14.03",
+    "name": "Bengkalis",
+    "province": "Riau",
+    "latitude": 1.769723,
+    "longitude": 101.912438
+  },
+  {
+    "code": "14.04",
+    "name": "Indragiri Hilir",
+    "province": "Riau",
+    "latitude": -0.270885,
+    "longitude": 103.328457
+  },
+  {
+    "code": "14.02",
+    "name": "Indragiri Hulu",
+    "province": "Riau",
+    "latitude": -0.497898,
+    "longitude": 102.300814
+  },
+  {
+    "code": "14.01",
+    "name": "Kampar",
+    "province": "Riau",
+    "latitude": 0.319973,
+    "longitude": 101.061712
+  },
+  {
+    "code": "14.1",
+    "name": "Kepulauan Meranti",
+    "province": "Riau",
+    "latitude": 1.061305,
+    "longitude": 102.701882
+  },
+  {
+    "code": "14.72",
+    "name": "Kota Dumai",
+    "province": "Riau",
+    "latitude": 1.647572,
+    "longitude": 101.438344
+  },
+  {
+    "code": "14.71",
+    "name": "Kota Pekanbaru",
+    "province": "Riau",
+    "latitude": 0.664497,
+    "longitude": 101.525567
+  },
+  {
+    "code": "14.09",
+    "name": "Kuantan Singingi",
+    "province": "Riau",
+    "latitude": -0.493797,
+    "longitude": 101.489736
+  },
+  {
+    "code": "14.05",
+    "name": "Pelalawan",
+    "province": "Riau",
+    "latitude": 0.238401,
+    "longitude": 102.254913
+  },
+  {
+    "code": "14.07",
+    "name": "Rokan Hilir",
+    "province": "Riau",
+    "latitude": 2.159057,
+    "longitude": 100.687378
+  },
+  {
+    "code": "14.06",
+    "name": "Rokan Hulu",
+    "province": "Riau",
+    "latitude": 0.891946,
+    "longitude": 100.466516
+  },
+  {
+    "code": "14.08",
+    "name": "Siak",
+    "province": "Riau",
+    "latitude": 0.827534,
+    "longitude": 101.846194
+  },
+  {
+    "code": "76.05",
+    "name": "Majene",
+    "province": "Sulawesi Barat",
+    "latitude": -3.545929,
+    "longitude": 118.960744
+  },
+  {
+    "code": "76.03",
+    "name": "Mamasa",
+    "province": "Sulawesi Barat",
+    "latitude": -3.000366,
+    "longitude": 119.320909
+  },
+  {
+    "code": "76.02",
+    "name": "Mamuju",
+    "province": "Sulawesi Barat",
+    "latitude": -2.67563,
+    "longitude": 118.884795
+  },
+  {
+    "code": "76.06",
+    "name": "Mamuju Tengah",
+    "province": "Sulawesi Barat",
+    "latitude": -2.021442,
+    "longitude": 119.540545
+  },
+  {
+    "code": "76.01",
+    "name": "Pasangkayu (Mamuju Utara)",
+    "province": "Sulawesi Barat",
+    "latitude": -1.180728,
+    "longitude": 119.367341
+  },
+  {
+    "code": "76.04",
+    "name": "Polewali Mandar",
+    "province": "Sulawesi Barat",
+    "latitude": -3.30319,
+    "longitude": 119.145052
+  },
+  {
+    "code": "73.03",
+    "name": "Bantaeng",
+    "province": "Sulawesi Selatan",
+    "latitude": -5.470945,
+    "longitude": 119.987168
+  },
+  {
+    "code": "73.11",
+    "name": "Barru",
+    "province": "Sulawesi Selatan",
+    "latitude": -4.433734,
+    "longitude": 119.677827
+  },
+  {
+    "code": "73.08",
+    "name": "Bone",
+    "province": "Sulawesi Selatan",
+    "latitude": -4.680102,
+    "longitude": 120.094673
+  },
+  {
+    "code": "73.02",
+    "name": "Bulukumba",
+    "province": "Sulawesi Selatan",
+    "latitude": -5.454615,
+    "longitude": 120.245218
+  },
+  {
+    "code": "73.16",
+    "name": "Enrekang",
+    "province": "Sulawesi Selatan",
+    "latitude": -3.565718,
+    "longitude": 119.772411
+  },
+  {
+    "code": "73.06",
+    "name": "Gowa",
+    "province": "Sulawesi Selatan",
+    "latitude": -5.329087,
+    "longitude": 119.766028
+  },
+  {
+    "code": "73.04",
+    "name": "Jeneponto",
+    "province": "Sulawesi Selatan",
+    "latitude": -5.544489,
+    "longitude": 119.611973
+  },
+  {
+    "code": "73.01",
+    "name": "Kepulauan Selayar",
+    "province": "Sulawesi Selatan",
+    "latitude": -7.295818,
+    "longitude": 120.950499
+  },
+  {
+    "code": "73.71",
+    "name": "Kota Makassar",
+    "province": "Sulawesi Selatan",
+    "latitude": -5.148638,
+    "longitude": 119.264705
+  },
+  {
+    "code": "73.73",
+    "name": "Kota Palopo",
+    "province": "Sulawesi Selatan",
+    "latitude": -2.933896,
+    "longitude": 120.177132
+  },
+  {
+    "code": "73.72",
+    "name": "Kota Pare Pare",
+    "province": "Sulawesi Selatan",
+    "latitude": -4.030661,
+    "longitude": 119.64108
+  },
+  {
+    "code": "73.17",
+    "name": "Luwu",
+    "province": "Sulawesi Selatan",
+    "latitude": -3.347955,
+    "longitude": 120.221448
+  },
+  {
+    "code": "73.24",
+    "name": "Luwu Timur",
+    "province": "Sulawesi Selatan",
+    "latitude": -2.530483,
+    "longitude": 121.122421
+  },
+  {
+    "code": "73.22",
+    "name": "Luwu Utara",
+    "province": "Sulawesi Selatan",
+    "latitude": -2.403788,
+    "longitude": 120.130135
+  },
+  {
+    "code": "73.09",
+    "name": "Maros",
+    "province": "Sulawesi Selatan",
+    "latitude": -4.965502,
+    "longitude": 119.692843
+  },
+  {
+    "code": "73.1",
+    "name": "Pangkajene Kepulauan",
+    "province": "Sulawesi Selatan",
+    "latitude": -4.75445,
+    "longitude": 119.589311
+  },
+  {
+    "code": "73.15",
+    "name": "Pinrang",
+    "province": "Sulawesi Selatan",
+    "latitude": -3.793257,
+    "longitude": 119.652869
+  },
+  {
+    "code": "73.14",
+    "name": "Sidenreng Rappang",
+    "province": "Sulawesi Selatan",
+    "latitude": -3.807862,
+    "longitude": 120.045019
+  },
+  {
+    "code": "73.07",
+    "name": "Sinjai",
+    "province": "Sulawesi Selatan",
+    "latitude": -5.200667,
+    "longitude": 120.144187
+  },
+  {
+    "code": "73.12",
+    "name": "Soppeng",
+    "province": "Sulawesi Selatan",
+    "latitude": -4.31887,
+    "longitude": 119.918506
+  },
+  {
+    "code": "73.05",
+    "name": "Takalar",
+    "province": "Sulawesi Selatan",
+    "latitude": -5.406654,
+    "longitude": 119.537542
+  },
+  {
+    "code": "73.18",
+    "name": "Tana Toraja",
+    "province": "Sulawesi Selatan",
+    "latitude": -3.11694,
+    "longitude": 119.693764
+  },
+  {
+    "code": "73.26",
+    "name": "Toraja Utara",
+    "province": "Sulawesi Selatan",
+    "latitude": -2.861242,
+    "longitude": 119.842012
+  },
+  {
+    "code": "73.13",
+    "name": "Wajo",
+    "province": "Sulawesi Selatan",
+    "latitude": -3.965577,
+    "longitude": 120.127938
+  },
+  {
+    "code": "72.01",
+    "name": "Banggai",
+    "province": "Sulawesi Tengah",
+    "latitude": -0.921046,
+    "longitude": 122.697507
+  },
+  {
+    "code": "72.07",
+    "name": "Banggai Kepulauan",
+    "province": "Sulawesi Tengah",
+    "latitude": -1.351845,
+    "longitude": 123.180857
+  },
+  {
+    "code": "72.11",
+    "name": "Banggai Laut",
+    "province": "Sulawesi Tengah",
+    "latitude": -1.842794,
+    "longitude": 123.102608
+  },
+  {
+    "code": "72.05",
+    "name": "Buol",
+    "province": "Sulawesi Tengah",
+    "latitude": 1.012374,
+    "longitude": 121.312052
+  },
+  {
+    "code": "72.03",
+    "name": "Donggala",
+    "province": "Sulawesi Tengah",
+    "latitude": -1.04782,
+    "longitude": 119.675847
+  },
+  {
+    "code": "72.71",
+    "name": "Kota Palu",
+    "province": "Sulawesi Tengah",
+    "latitude": -0.88181,
+    "longitude": 119.886074
+  },
+  {
+    "code": "72.06",
+    "name": "Morowali",
+    "province": "Sulawesi Tengah",
+    "latitude": -2.715148,
+    "longitude": 121.88241
+  },
+  {
+    "code": "72.12",
+    "name": "Morowali Utara",
+    "province": "Sulawesi Tengah",
+    "latitude": -1.841884,
+    "longitude": 121.07717
+  },
+  {
+    "code": "72.08",
+    "name": "Parigi Moutong",
+    "province": "Sulawesi Tengah",
+    "latitude": -0.238361,
+    "longitude": 119.959931
+  },
+  {
+    "code": "72.02",
+    "name": "Poso",
+    "province": "Sulawesi Tengah",
+    "latitude": -1.656851,
+    "longitude": 120.542158
+  },
+  {
+    "code": "72.1",
+    "name": "Sigi",
+    "province": "Sulawesi Tengah",
+    "latitude": -1.321159,
+    "longitude": 119.998727
+  },
+  {
+    "code": "72.09",
+    "name": "Tojo Una Una",
+    "province": "Sulawesi Tengah",
+    "latitude": -1.213138,
+    "longitude": 121.619607
+  },
+  {
+    "code": "72.04",
+    "name": "Toli Toli",
+    "province": "Sulawesi Tengah",
+    "latitude": 0.970251,
+    "longitude": 120.880323
+  },
+  {
+    "code": "74.06",
+    "name": "Bombana",
+    "province": "Sulawesi Tenggara",
+    "latitude": -4.639256,
+    "longitude": 121.757211
+  },
+  {
+    "code": "74.04",
+    "name": "Buton",
+    "province": "Sulawesi Tenggara",
+    "latitude": -5.034658,
+    "longitude": 122.885442
+  },
+  {
+    "code": "74.15",
+    "name": "Buton Selatan",
+    "province": "Sulawesi Tenggara",
+    "latitude": -5.591391,
+    "longitude": 122.701895
+  },
+  {
+    "code": "74.14",
+    "name": "Buton Tengah",
+    "province": "Sulawesi Tenggara",
+    "latitude": -5.291808,
+    "longitude": 122.388278
+  },
+  {
+    "code": "74.1",
+    "name": "Buton Utara",
+    "province": "Sulawesi Tenggara",
+    "latitude": -4.756504,
+    "longitude": 122.948916
+  },
+  {
+    "code": "74.01",
+    "name": "Kolaka",
+    "province": "Sulawesi Tenggara",
+    "latitude": -4.121351,
+    "longitude": 121.692944
+  },
+  {
+    "code": "74.11",
+    "name": "Kolaka Timur",
+    "province": "Sulawesi Tenggara",
+    "latitude": -3.820732,
+    "longitude": 121.754199
+  },
+  {
+    "code": "74.08",
+    "name": "Kolaka Utara",
+    "province": "Sulawesi Tenggara",
+    "latitude": -3.260504,
+    "longitude": 121.093398
+  },
+  {
+    "code": "74.02",
+    "name": "Konawe",
+    "province": "Sulawesi Tenggara",
+    "latitude": -3.511669,
+    "longitude": 121.652329
+  },
+  {
+    "code": "74.12",
+    "name": "Konawe Kepulauan",
+    "province": "Sulawesi Tenggara",
+    "latitude": -4.119481,
+    "longitude": 123.098564
+  },
+  {
+    "code": "74.05",
+    "name": "Konawe Selatan",
+    "province": "Sulawesi Tenggara",
+    "latitude": -4.259918,
+    "longitude": 122.449852
+  },
+  {
+    "code": "74.09",
+    "name": "Konawe Utara",
+    "province": "Sulawesi Tenggara",
+    "latitude": -3.454958,
+    "longitude": 121.976257
+  },
+  {
+    "code": "74.72",
+    "name": "Kota Bau Bau",
+    "province": "Sulawesi Tenggara",
+    "latitude": -5.458037,
+    "longitude": 122.60198
+  },
+  {
+    "code": "74.71",
+    "name": "Kota Kendari",
+    "province": "Sulawesi Tenggara",
+    "latitude": -4.003436,
+    "longitude": 122.515609
+  },
+  {
+    "code": "74.03",
+    "name": "Muna",
+    "province": "Sulawesi Tenggara",
+    "latitude": -5.025869,
+    "longitude": 122.532576
+  },
+  {
+    "code": "74.13",
+    "name": "Muna Barat",
+    "province": "Sulawesi Tenggara",
+    "latitude": -4.803671,
+    "longitude": 122.451455
+  },
+  {
+    "code": "74.07",
+    "name": "Wakatobi",
+    "province": "Sulawesi Tenggara",
+    "latitude": -5.31567,
+    "longitude": 123.585044
+  },
+  {
+    "code": "71.01",
+    "name": "Bolaang Mongondow",
+    "province": "Sulawesi Utara",
+    "latitude": 0.72077,
+    "longitude": 123.987037
+  },
+  {
+    "code": "71.11",
+    "name": "Bolaang Mongondow Selatan",
+    "province": "Sulawesi Utara",
+    "latitude": 0.453336,
+    "longitude": 124.17963
+  },
+  {
+    "code": "71.1",
+    "name": "Bolaang Mongondow Timur",
+    "province": "Sulawesi Utara",
+    "latitude": 0.711565,
+    "longitude": 124.489521
+  },
+  {
+    "code": "71.08",
+    "name": "Bolaang Mongondow Utara",
+    "province": "Sulawesi Utara",
+    "latitude": 0.759911,
+    "longitude": 123.484938
+  },
+  {
+    "code": "71.03",
+    "name": "Kepulauan Sangihe",
+    "province": "Sulawesi Utara",
+    "latitude": 3.552708,
+    "longitude": 125.546565
+  },
+  {
+    "code": "71.04",
+    "name": "Kepulauan Talaud",
+    "province": "Sulawesi Utara",
+    "latitude": 4.269493,
+    "longitude": 126.81355
+  },
+  {
+    "code": "71.72",
+    "name": "Kota Bitung",
+    "province": "Sulawesi Utara",
+    "latitude": 1.462599,
+    "longitude": 125.242919
+  },
+  {
+    "code": "71.74",
+    "name": "Kota Kotamobagu",
+    "province": "Sulawesi Utara",
+    "latitude": 0.733657,
+    "longitude": 124.275077
+  },
+  {
+    "code": "71.71",
+    "name": "Kota Manado",
+    "province": "Sulawesi Utara",
+    "latitude": 1.487458,
+    "longitude": 124.856254
+  },
+  {
+    "code": "71.73",
+    "name": "Kota Tomohon",
+    "province": "Sulawesi Utara",
+    "latitude": 1.34717,
+    "longitude": 124.883656
+  },
+  {
+    "code": "71.02",
+    "name": "Minahasa",
+    "province": "Sulawesi Utara",
+    "latitude": 1.215168,
+    "longitude": 124.797888
+  },
+  {
+    "code": "71.05",
+    "name": "Minahasa Selatan",
+    "province": "Sulawesi Utara",
+    "latitude": 1.07031,
+    "longitude": 124.436162
+  },
+  {
+    "code": "71.07",
+    "name": "Minahasa Tenggara",
+    "province": "Sulawesi Utara",
+    "latitude": 0.988267,
+    "longitude": 124.730651
+  },
+  {
+    "code": "71.06",
+    "name": "Minahasa Utara",
+    "province": "Sulawesi Utara",
+    "latitude": 1.518365,
+    "longitude": 125.000426
+  },
+  {
+    "code": "13.06",
+    "name": "Agam",
+    "province": "Sumatera Barat",
+    "latitude": -0.254721,
+    "longitude": 100.170031
+  },
+  {
+    "code": "13.1",
+    "name": "Dharmasraya",
+    "province": "Sumatera Barat",
+    "latitude": -1.25863,
+    "longitude": 101.579906
+  },
+  {
+    "code": "13.09",
+    "name": "Kepulauan Mentawai",
+    "province": "Sumatera Barat",
+    "latitude": -1.358782,
+    "longitude": 98.895005
+  },
+  {
+    "code": "13.75",
+    "name": "Kota Bukittinggi",
+    "province": "Sumatera Barat",
+    "latitude": -0.308029,
+    "longitude": 100.396321
+  },
+  {
+    "code": "13.71",
+    "name": "Kota Padang",
+    "province": "Sumatera Barat",
+    "latitude": -0.845885,
+    "longitude": 100.321138
+  },
+  {
+    "code": "13.74",
+    "name": "Kota Padang Panjang",
+    "province": "Sumatera Barat",
+    "latitude": -0.466058,
+    "longitude": 100.403711
+  },
+  {
+    "code": "13.77",
+    "name": "Kota Pariaman",
+    "province": "Sumatera Barat",
+    "latitude": -0.608849,
+    "longitude": 100.158458
+  },
+  {
+    "code": "13.76",
+    "name": "Kota Payakumbuh",
+    "province": "Sumatera Barat",
+    "latitude": -0.247752,
+    "longitude": 100.634931
+  },
+  {
+    "code": "13.73",
+    "name": "Kota Sawahlunto",
+    "province": "Sumatera Barat",
+    "latitude": -0.638304,
+    "longitude": 100.783685
+  },
+  {
+    "code": "13.72",
+    "name": "Kota Solok",
+    "province": "Sumatera Barat",
+    "latitude": -0.754737,
+    "longitude": 100.656511
+  },
+  {
+    "code": "13.07",
+    "name": "Lima Puluh Kota",
+    "province": "Sumatera Barat",
+    "latitude": 0.027855,
+    "longitude": 100.591308
+  },
+  {
+    "code": "13.05",
+    "name": "Padang Pariaman",
+    "province": "Sumatera Barat",
+    "latitude": -0.569092,
+    "longitude": 100.277026
+  },
+  {
+    "code": "13.08",
+    "name": "Pasaman",
+    "province": "Sumatera Barat",
+    "latitude": 0.397405,
+    "longitude": 100.024979
+  },
+  {
+    "code": "13.12",
+    "name": "Pasaman Barat",
+    "province": "Sumatera Barat",
+    "latitude": 0.187538,
+    "longitude": 99.693516
+  },
+  {
+    "code": "13.01",
+    "name": "Pesisir Selatan",
+    "province": "Sumatera Barat",
+    "latitude": -1.718579,
+    "longitude": 100.927025
+  },
+  {
+    "code": "13.03",
+    "name": "Sijunjung",
+    "province": "Sumatera Barat",
+    "latitude": -0.696442,
+    "longitude": 100.99363
+  },
+  {
+    "code": "13.02",
+    "name": "Solok",
+    "province": "Sumatera Barat",
+    "latitude": -0.93103,
+    "longitude": 100.804328
+  },
+  {
+    "code": "13.11",
+    "name": "Solok Selatan",
+    "province": "Sumatera Barat",
+    "latitude": -1.557329,
+    "longitude": 101.239478
+  },
+  {
+    "code": "13.04",
+    "name": "Tanah Datar",
+    "province": "Sumatera Barat",
+    "latitude": -0.468996,
+    "longitude": 100.63616
+  },
+  {
+    "code": "16.07",
+    "name": "Banyuasin",
+    "province": "Sumatera Selatan",
+    "latitude": -2.393894,
+    "longitude": 104.754803
+  },
+  {
+    "code": "16.11",
+    "name": "Empat Lawang",
+    "province": "Sumatera Selatan",
+    "latitude": -3.715483,
+    "longitude": 102.932472
+  },
+  {
+    "code": "16.73",
+    "name": "Kota Lubuk Linggau",
+    "province": "Sumatera Selatan",
+    "latitude": -3.279927,
+    "longitude": 102.859109
+  },
+  {
+    "code": "16.72",
+    "name": "Kota Pagar Alam",
+    "province": "Sumatera Selatan",
+    "latitude": -4.142765,
+    "longitude": 103.222456
+  },
+  {
+    "code": "16.71",
+    "name": "Kota Palembang",
+    "province": "Sumatera Selatan",
+    "latitude": -2.964356,
+    "longitude": 104.774193
+  },
+  {
+    "code": "16.74",
+    "name": "Kota Prabumulih",
+    "province": "Sumatera Selatan",
+    "latitude": -3.516702,
+    "longitude": 104.207088
+  },
+  {
+    "code": "16.04",
+    "name": "Lahat",
+    "province": "Sumatera Selatan",
+    "latitude": -3.879346,
+    "longitude": 103.414086
+  },
+  {
+    "code": "16.03",
+    "name": "Muara Enim",
+    "province": "Sumatera Selatan",
+    "latitude": -3.846707,
+    "longitude": 103.961572
+  },
+  {
+    "code": "16.06",
+    "name": "Musi Banyuasin",
+    "province": "Sumatera Selatan",
+    "latitude": -2.490934,
+    "longitude": 103.704819
+  },
+  {
+    "code": "16.05",
+    "name": "Musi Rawas",
+    "province": "Sumatera Selatan",
+    "latitude": -3.175756,
+    "longitude": 103.250011
+  },
+  {
+    "code": "16.13",
+    "name": "Musi Rawas Utara",
+    "province": "Sumatera Selatan",
+    "latitude": -2.73515,
+    "longitude": 102.901465
+  },
+  {
+    "code": "16.1",
+    "name": "Ogan Ilir",
+    "province": "Sumatera Selatan",
+    "latitude": -3.398169,
+    "longitude": 104.6525
+  },
+  {
+    "code": "16.02",
+    "name": "Ogan Komering Ilir",
+    "province": "Sumatera Selatan",
+    "latitude": -3.328854,
+    "longitude": 105.399787
+  },
+  {
+    "code": "16.01",
+    "name": "Ogan Komering Ulu",
+    "province": "Sumatera Selatan",
+    "latitude": -4.110101,
+    "longitude": 104.008284
+  },
+  {
+    "code": "16.09",
+    "name": "Ogan Komering Ulu Selatan",
+    "province": "Sumatera Selatan",
+    "latitude": -4.57023,
+    "longitude": 103.924954
+  },
+  {
+    "code": "16.08",
+    "name": "Ogan Komering Ulu Timur",
+    "province": "Sumatera Selatan",
+    "latitude": -4.116009,
+    "longitude": 104.558481
+  },
+  {
+    "code": "16.12",
+    "name": "Penukal Abab Lematang Ilir",
+    "province": "Sumatera Selatan",
+    "latitude": -3.213995,
+    "longitude": 104.007694
+  },
+  {
+    "code": "12.09",
+    "name": "Asahan",
+    "province": "Sumatera Utara",
+    "latitude": 3.112764,
+    "longitude": 99.941692
+  },
+  {
+    "code": "12.19",
+    "name": "Batu Bara",
+    "province": "Sumatera Utara",
+    "latitude": 3.572329,
+    "longitude": 99.635344
+  },
+  {
+    "code": "12.11",
+    "name": "Dairi",
+    "province": "Sumatera Utara",
+    "latitude": 2.835321,
+    "longitude": 98.284502
+  },
+  {
+    "code": "12.07",
+    "name": "Deli Serdang",
+    "province": "Sumatera Utara",
+    "latitude": 3.695243,
+    "longitude": 98.831074
+  },
+  {
+    "code": "12.16",
+    "name": "Humbang Hasundutan",
+    "province": "Sumatera Utara",
+    "latitude": 2.247581,
+    "longitude": 98.60102
+  },
+  {
+    "code": "12.06",
+    "name": "Karo",
+    "province": "Sumatera Utara",
+    "latitude": 3.099875,
+    "longitude": 98.336971
+  },
+  {
+    "code": "12.75",
+    "name": "Kota Binjai",
+    "province": "Sumatera Utara",
+    "latitude": 3.60036,
+    "longitude": 98.492575
+  },
+  {
+    "code": "12.78",
+    "name": "Kota Gunungsitoli",
+    "province": "Sumatera Utara",
+    "latitude": 1.216977,
+    "longitude": 97.578245
+  },
+  {
+    "code": "12.71",
+    "name": "Kota Medan",
+    "province": "Sumatera Utara",
+    "latitude": 3.538745,
+    "longitude": 98.6351
+  },
+  {
+    "code": "12.77",
+    "name": "Kota Padangsidimpuan",
+    "province": "Sumatera Utara",
+    "latitude": 1.459893,
+    "longitude": 99.25403
+  },
+  {
+    "code": "12.72",
+    "name": "Kota Pematangsiantar",
+    "province": "Sumatera Utara",
+    "latitude": 2.93548,
+    "longitude": 99.063705
+  },
+  {
+    "code": "12.73",
+    "name": "Kota Sibolga",
+    "province": "Sumatera Utara",
+    "latitude": 1.73109,
+    "longitude": 98.789183
+  },
+  {
+    "code": "12.74",
+    "name": "Kota Tanjung Balai",
+    "province": "Sumatera Utara",
+    "latitude": 2.94621,
+    "longitude": 99.81987
+  },
+  {
+    "code": "12.76",
+    "name": "Kota Tebing Tinggi",
+    "province": "Sumatera Utara",
+    "latitude": 3.328947,
+    "longitude": 99.165171
+  },
+  {
+    "code": "12.1",
+    "name": "Labuhanbatu",
+    "province": "Sumatera Utara",
+    "latitude": 2.580818,
+    "longitude": 100.210453
+  },
+  {
+    "code": "12.22",
+    "name": "Labuhanbatu Selatan",
+    "province": "Sumatera Utara",
+    "latitude": 1.833653,
+    "longitude": 100.068372
+  },
+  {
+    "code": "12.23",
+    "name": "Labuhanbatu Utara",
+    "province": "Sumatera Utara",
+    "latitude": 2.463473,
+    "longitude": 99.722876
+  },
+  {
+    "code": "12.05",
+    "name": "Langkat",
+    "province": "Sumatera Utara",
+    "latitude": 3.829386,
+    "longitude": 98.24835
+  },
+  {
+    "code": "12.13",
+    "name": "Mandailing Natal",
+    "province": "Sumatera Utara",
+    "latitude": 0.745675,
+    "longitude": 99.218858
+  },
+  {
+    "code": "12.04",
+    "name": "Nias",
+    "province": "Sumatera Utara",
+    "latitude": 1.166679,
+    "longitude": 97.969292
+  },
+  {
+    "code": "12.25",
+    "name": "Nias Barat",
+    "province": "Sumatera Utara",
+    "latitude": 0.896487,
+    "longitude": 97.343327
+  },
+  {
+    "code": "12.14",
+    "name": "Nias Selatan",
+    "province": "Sumatera Utara",
+    "latitude": 0.068055,
+    "longitude": 98.262239
+  },
+  {
+    "code": "12.24",
+    "name": "Nias Utara",
+    "province": "Sumatera Utara",
+    "latitude": 1.374756,
+    "longitude": 97.144569
+  },
+  {
+    "code": "12.21",
+    "name": "Padang Lawas",
+    "province": "Sumatera Utara",
+    "latitude": 1.152763,
+    "longitude": 99.815477
+  },
+  {
+    "code": "12.2",
+    "name": "Padang Lawas Utara",
+    "province": "Sumatera Utara",
+    "latitude": 1.636405,
+    "longitude": 99.691038
+  },
+  {
+    "code": "12.15",
+    "name": "Pakpak Bharat",
+    "province": "Sumatera Utara",
+    "latitude": 2.529882,
+    "longitude": 98.267858
+  },
+  {
+    "code": "12.17",
+    "name": "Samosir",
+    "province": "Sumatera Utara",
+    "latitude": 2.544695,
+    "longitude": 98.571914
+  },
+  {
+    "code": "12.18",
+    "name": "Serdang Bedagai",
+    "province": "Sumatera Utara",
+    "latitude": 3.593115,
+    "longitude": 99.158331
+  },
+  {
+    "code": "12.08",
+    "name": "Simalungun",
+    "province": "Sumatera Utara",
+    "latitude": 2.950516,
+    "longitude": 98.783531
+  },
+  {
+    "code": "12.03",
+    "name": "Tapanuli Selatan",
+    "province": "Sumatera Utara",
+    "latitude": 1.551087,
+    "longitude": 99.211757
+  },
+  {
+    "code": "12.01",
+    "name": "Tapanuli Tengah",
+    "province": "Sumatera Utara",
+    "latitude": 1.823128,
+    "longitude": 98.279768
+  },
+  {
+    "code": "12.02",
+    "name": "Tapanuli Utara",
+    "province": "Sumatera Utara",
+    "latitude": 1.99806,
+    "longitude": 99.064766
+  },
+  {
+    "code": "12.12",
+    "name": "Toba",
+    "province": "Sumatera Utara",
+    "latitude": 2.385459,
+    "longitude": 99.331465
+  }
+]

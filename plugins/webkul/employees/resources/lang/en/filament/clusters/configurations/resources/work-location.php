@@ -14,10 +14,10 @@ return [
         'location-type'      => 'Location Type',
         'location-number'    => 'Location Number',
         'city'               => 'City',
-        'city-help'          => 'City label shown on the Welcome placement map.',
+        'city-help'          => 'Choose an Indonesian city/regency. Map coordinates fill automatically (you can still adjust them).',
         'latitude'           => 'Latitude',
         'longitude'          => 'Longitude',
-        'coordinates-help'   => 'Optional. Required for the Welcome map (employee placement). Attendance geofence still uses Work sites.',
+        'coordinates-help'   => 'Filled from the city. Required for the Welcome map. Attendance geofence still uses Work sites.',
         'status'             => 'Status',
     ],
 

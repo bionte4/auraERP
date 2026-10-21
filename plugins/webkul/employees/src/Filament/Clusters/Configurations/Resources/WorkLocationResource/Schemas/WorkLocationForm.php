@@ -6,7 +6,10 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\ToggleButtons;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
+use Webkul\Employee\Data\IndonesianCities;
 use Webkul\Employee\Enums\WorkLocation as WorkLocationEnum;
 
 class WorkLocationForm
@@ -26,10 +29,27 @@ class WorkLocationForm
                     ->required(),
                 TextInput::make('location_number')
                     ->label(__('employees::filament/clusters/configurations/resources/work-location.form.location-number')),
-                TextInput::make('city')
+                Select::make('city')
                     ->label(__('employees::filament/clusters/configurations/resources/work-location.form.city'))
                     ->helperText(__('employees::filament/clusters/configurations/resources/work-location.form.city-help'))
-                    ->maxLength(255),
+                    ->options(fn (Get $get): array => IndonesianCities::options($get('city')))
+                    ->searchable()
+                    ->preload()
+                    ->live()
+                    ->afterStateUpdated(function (Set $set, mixed $state): void {
+                        if (! filled($state)) {
+                            return;
+                        }
+
+                        $coordinates = IndonesianCities::coordinates((string) $state);
+
+                        if ($coordinates === null) {
+                            return;
+                        }
+
+                        $set('latitude', $coordinates['latitude']);
+                        $set('longitude', $coordinates['longitude']);
+                    }),
                 TextInput::make('latitude')
                     ->label(__('employees::filament/clusters/configurations/resources/work-location.form.latitude'))
                     ->helperText(__('employees::filament/clusters/configurations/resources/work-location.form.coordinates-help'))

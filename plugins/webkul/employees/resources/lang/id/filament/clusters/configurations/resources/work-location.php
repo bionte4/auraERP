@@ -14,10 +14,10 @@ return [
         'location-type'      => 'Tipe Lokasi',
         'location-number'    => 'Nomor Lokasi',
         'city'               => 'Kota',
-        'city-help'          => 'Label kota yang ditampilkan di peta penempatan Welcome.',
+        'city-help'          => 'Pilih kabupaten/kota Indonesia. Koordinat peta Welcome terisi otomatis (bisa disesuaikan).',
         'latitude'           => 'Latitude',
         'longitude'          => 'Longitude',
-        'coordinates-help'   => 'Opsional. Diperlukan agar muncul di peta Welcome (penempatan karyawan). Absensi geofence tetap memakai Lokasi kerja (Attendance Sites).',
+        'coordinates-help'   => 'Terisi dari kota. Diperlukan agar muncul di peta Welcome. Absensi geofence tetap memakai Lokasi kerja (Attendance Sites).',
         'status'             => 'Status',
     ],
 
