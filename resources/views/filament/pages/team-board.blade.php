@@ -11,13 +11,15 @@
                 <p>{{ $board['subtitle'] }}</p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
-                <button
-                    type="button"
-                    wire:click="setViewMode('cards')"
-                    class="rounded-lg px-3 py-1.5 text-sm {{ ($board['viewMode'] ?? 'cards') === 'cards' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200' }}"
-                >
-                    {{ $labels['mode-cards'] }}
-                </button>
+                @foreach (['cards', 'compact', 'list'] as $mode)
+                    <button
+                        type="button"
+                        wire:click="setViewMode('{{ $mode }}')"
+                        class="rounded-lg px-3 py-1.5 text-sm {{ ($board['viewMode'] ?? 'cards') === $mode ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200' }}"
+                    >
+                        {{ $labels['mode-'.$mode] }}
+                    </button>
+                @endforeach
                 @if ($board['manages'])
                     <button
                         type="button"
@@ -26,6 +28,14 @@
                     >
                         {{ $labels['mode-kanban'] }}
                     </button>
+                @endif
+                @if (($board['viewMode'] ?? 'cards') !== 'kanban')
+                    <input
+                        type="text"
+                        wire:model.live.debounce.300ms="search"
+                        placeholder="{{ $labels['search-placeholder'] }}"
+                        class="block w-full rounded-lg border-gray-300 text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 sm:max-w-[220px]"
+                    >
                 @endif
                 @if ($board['action'])
                     <a class="team-board-add" href="{{ $board['action']['href'] }}">+ {{ $board['action']['label'] }}</a>
@@ -87,11 +97,64 @@
                 </div>
             @endif
         @elseif ($board['cards'] === [])
-            <div class="team-empty">{{ $board['empty'] }}</div>
+            <div class="team-empty">{{ ($board['searching'] ?? false) ? $labels['no-results'] : $board['empty'] }}</div>
+        @elseif (($board['viewMode'] ?? 'cards') === 'list')
+            @php $showValue = collect($board['cards'])->contains(fn ($c) => ($c['value'] ?? null) !== null); @endphp
+            <div class="overflow-x-auto rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-800">
+                        <tr>
+                            @foreach (['team', 'members', 'projects', 'tasks', ...($showValue ? ['value'] : []), 'status', 'updated', 'details'] as $column)
+                                <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                    {{ $labels[$column] }}
+                                </th>
+                            @endforeach
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        @foreach ($board['cards'] as $card)
+                            <tr wire:key="team-row-{{ $card['name'] }}">
+                                <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">
+                                    <a href="{{ $card['href'] }}" class="hover:underline">{{ $card['name'] }}</a>
+                                    @if ($card['is_new'])
+                                        <span class="team-badge">{{ $labels['new'] }}</span>
+                                    @endif
+                                </td>
+                                <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                    <span class="inline-flex items-center gap-1">
+                                        @foreach ($card['members'] as $member)
+                                            <span class="team-avatar" style="background: {{ $member['color'] }}" title="{{ $member['name'] }}">{{ $member['initials'] }}</span>
+                                        @endforeach
+                                        @if ($card['extra_members'] > 0)
+                                            <span class="team-avatar is-more">+{{ $card['extra_members'] }}</span>
+                                        @endif
+                                        <span class="ml-1">{{ $card['member_count'] }}</span>
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{{ $card['project_count'] }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{{ $card['task_count'] }}</td>
+                                @if ($showValue)
+                                    <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{{ $card['value'] ?? '—' }}</td>
+                                @endif
+                                <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                    <div class="flex items-center gap-2">
+                                        <div class="team-progress-bar" style="min-width: 70px"><i style="width: {{ $card['progress'] }}%"></i></div>
+                                        <span>{{ $card['progress'] }}%</span>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{{ $card['updated'] }}</td>
+                                <td class="px-4 py-3 text-sm">
+                                    <a href="{{ $card['href'] }}" class="text-primary-600 hover:underline dark:text-primary-400">{{ $labels['details'] }}</a>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         @else
-            <div class="team-board-grid">
+            <div class="team-board-grid {{ ($board['viewMode'] ?? 'cards') === 'compact' ? 'is-compact' : '' }}">
                 @foreach ($board['cards'] as $card)
-                    <article class="team-card" x-data="{ membersOpen: false }">
+                    <article class="team-card {{ ($board['viewMode'] ?? 'cards') === 'compact' ? 'is-compact' : '' }}" x-data="{ membersOpen: false }">
                         <header class="team-card-head">
                             <h3><a href="{{ $card['href'] }}">{{ $card['name'] }}</a></h3>
                             @if ($card['is_new'])

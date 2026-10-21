@@ -49,6 +49,8 @@ Saat membuat atau mengedit User di **Settings → Users**, terdapat pengaturan *
    - **Anggota**: Manajer Proyek + karyawan yang di-assign ke proyek (nama Tim = nama Proyek).
    - **Total N anggota** dapat diklik → membuka daftar karyawan terlibat (peran + nama proyek).
    - **Daftar proyek yang dapat diklik** menuju detail masing-masing proyek.
+   - **Pilihan tampilan (layout)** di header papan: **Cards** (default, kartu penuh), **Compact** (kartu ringkas — muat lebih banyak tim per layar, tanpa blok *About team*), dan **List** (satu baris per tim dalam tabel: Tim, Anggota, Proyek, Task, Nilai (hanya untuk yang berhak melihat nilai kontrak), Status, Diperbarui, Details). Pilihan tersimpan otomatis per sesi login. **Project kanban** (Admin/OM) tetap tersedia dan tidak berubah.
+   - **Pencarian** di header memfilter kartu menurut **nama tim atau nama proyek** (ketik langsung, hasil terfilter live) — berguna saat jumlah tim/proyek sudah banyak.
 6. **Menghapus tim:** Team Board tidak punya aksi hapus (hanya *Details* ke Settings → Teams). Di **Settings → Teams**, tombol **Delete** selalu tampil bagi yang berhak (`delete_security_team`, praktisnya Admin); bila tim masih punya anggota, modal konfirmasi menyebutkan jumlah anggotanya — anggota dilepas dari tim dulu, lalu tim dihapus, dalam satu alur. Tim janggal (mis. bernama orang dan tidak tertaut proyek — tim resmi sistem selalu bernama sama dengan proyeknya) bersihkan dengan cara ini; tidak perlu mengosongkan anggota manual lebih dulu.
 
 ### D. Audit Trail (khusus Admin — Security Access)

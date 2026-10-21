@@ -1097,6 +1097,44 @@ html.fi .team-board-grid {
     }
 }
 
+/* Compact density: more, smaller cards per row for large boards. */
+html.fi .team-board-grid.is-compact {
+    gap: 0.6rem;
+}
+
+@media (min-width: 860px) {
+    html.fi .team-board-grid.is-compact {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1400px) {
+    html.fi .team-board-grid.is-compact {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+html.fi .team-card.is-compact {
+    padding: 0.7rem 0.8rem 0.6rem;
+    border-radius: 0.7rem;
+}
+
+html.fi .team-card.is-compact .team-card-head h3 {
+    font-size: 0.85rem;
+}
+
+html.fi .team-card.is-compact .team-about {
+    display: none;
+}
+
+html.fi .team-card.is-compact .team-progress {
+    margin-top: 0.55rem;
+}
+
+html.fi .team-card.is-compact .team-card-foot {
+    margin-top: 0.55rem;
+}
+
 html.fi .team-card,
 html.fi .team-empty {
     min-width: 0;

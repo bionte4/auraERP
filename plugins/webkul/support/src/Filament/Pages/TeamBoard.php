@@ -32,6 +32,8 @@ class TeamBoard extends Page
 
     public string $viewMode = 'cards';
 
+    public string $search = '';
+
     public static function canAccess(): bool
     {
         $user = auth()->user();
@@ -68,9 +70,18 @@ class TeamBoard extends Page
         return 'heroicon-o-user-group';
     }
 
+    public function mount(): void
+    {
+        $saved = (string) session('team-board.view-mode', 'cards');
+
+        $this->viewMode = in_array($saved, ['cards', 'compact', 'list', 'kanban'], true) ? $saved : 'cards';
+    }
+
     public function setViewMode(string $mode): void
     {
-        $this->viewMode = in_array($mode, ['cards', 'kanban'], true) ? $mode : 'cards';
+        $this->viewMode = in_array($mode, ['cards', 'compact', 'list', 'kanban'], true) ? $mode : 'cards';
+
+        session(['team-board.view-mode' => $this->viewMode]);
     }
 
     public function moveEmployeeOnKanban(int $employeeId, int $fromProjectId, int $toProjectId): void
@@ -110,7 +121,7 @@ class TeamBoard extends Page
     {
         $indonesian = str_starts_with((string) app()->getLocale(), 'id');
         $manages = static::managesTeams();
-        $cards = $this->cardsFor(auth()->user());
+        $cards = $this->filterCards($this->cardsFor(auth()->user()));
 
         return [
             'manages'  => $manages,
@@ -121,13 +132,14 @@ class TeamBoard extends Page
                 : ($indonesian ? 'Tim Saya' : 'My Team'),
             'subtitle' => $manages
                 ? ($indonesian
-                    ? 'Pantau anggota, proyek berjalan, dan nilai proyek pada tim yang Anda kelola. Mode Kanban: seret karyawan antar proyek.'
-                    : 'Track members, active projects, and project value for the teams you manage. Kanban: drag employees between projects.')
+                    ? 'Pantau anggota, proyek berjalan, dan kemajuan tim yang Anda kelola. Mode Kanban: seret karyawan antar proyek.'
+                    : 'Track members, active projects, and progress for the teams you manage. Kanban: drag employees between projects.')
                 : ($indonesian
                     ? 'Proyek dan kemajuan tim tempat Anda menjadi anggota.'
                     : 'Projects and progress for the team you belong to.'),
             'action'   => $this->headerAction($indonesian),
             'cards'    => $cards,
+            'searching' => filled($this->search),
             'empty'    => $manages
                 ? ($indonesian
                     ? 'Belum ada tim. Buat tim, atau pastikan nama Tim sama dengan nama Proyek agar anggota tersinkron.'
@@ -152,10 +164,45 @@ class TeamBoard extends Page
                 'new'               => $indonesian ? 'Baru' : 'New',
                 'open'              => $indonesian ? 'Buka' : 'Open',
                 'mode-cards'        => $indonesian ? 'Kartu Tim' : 'Team cards',
+                'mode-compact'      => $indonesian ? 'Ringkas' : 'Compact',
+                'mode-list'         => $indonesian ? 'Daftar' : 'List',
                 'mode-kanban'       => $indonesian ? 'Kanban Proyek' : 'Project kanban',
                 'drop-here'         => $indonesian ? 'Lepas di sini' : 'Drop here',
+                'team'              => $indonesian ? 'Tim' : 'Team',
+                'search-placeholder' => $indonesian ? 'Cari tim atau proyek…' : 'Search teams or projects…',
+                'no-results'        => $indonesian ? 'Tidak ada tim yang cocok dengan pencarian.' : 'No teams match your search.',
             ],
         ];
+    }
+
+    /**
+     * Filter team cards by the board search box (team name or any of
+     * its project names).
+     *
+     * @param  array<int, array<string, mixed>>  $cards
+     * @return array<int, array<string, mixed>>
+     */
+    protected function filterCards(array $cards): array
+    {
+        $needle = mb_strtolower(trim($this->search));
+
+        if ($needle === '') {
+            return $cards;
+        }
+
+        return array_values(array_filter($cards, function (array $card) use ($needle): bool {
+            if (str_contains(mb_strtolower((string) ($card['name'] ?? '')), $needle)) {
+                return true;
+            }
+
+            foreach ($card['projects'] ?? [] as $project) {
+                if (str_contains(mb_strtolower((string) ($project['name'] ?? '')), $needle)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }));
     }
 
     /**
