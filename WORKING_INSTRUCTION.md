@@ -289,6 +289,7 @@ Buka menu **Employees → Performance Plans → Evaluations** (`/admin/evaluatio
    - **4 Kartu KPI:** *Total Evaluasi (PKWT vs Outsource)*, *Status Evaluasi Berjalan (`In Progress` vs `Completed`)*, *Rata-rata Poin D (Manajemen Kerja)*, dan *Kelayakan Pengangkatan Tetap*.
    - **2 Grafik Visual:** Grafik Batang *Distribusi Jenis & Periode Evaluasi* dan Grafik Doughnut *Komposisi Rekomendasi Keputusan (Poin I)*.
    - **Tabel Monitoring Approval Berjenjang (`L1 -> Karyawan -> L2`)** dilengkapi tombol hijau **`Download Excel (.xlsx)`** untuk mengunduh rekapitulasi lengkap 22 kolom dalam format Microsoft Excel.
+   - **Scope OM:** untuk Operation Manager seluruh angka/grafik/tabel hanya menghitung karyawan dalam scope operasionalnya (anggota proyeknya + rantai approval L1/L2-nya) — termasuk hitungan *Program Goal* pada kartu Kelayakan; Admin & HRD melihat semua. Bila muncul toast *Error while loading page* khusus untuk OM, itu gejala regresi scope pada widget statistik (query rencana kinerja tidak boleh memakai kolom approval khas tabel evaluasi) — sudah diperbaiki; laporkan bila berulang setelah deploy terbaru.
 
 ---
 

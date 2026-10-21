@@ -92,7 +92,9 @@ class EvaluationStatsOverviewWidget extends BaseWidget
 
         if (Package::isPluginInstalled('performance') && class_exists(PerformancePlan::class)) {
             $planQuery = PerformancePlan::query();
-            $this->applyEvaluationScope($planQuery);
+            // performance_plans has employee_id but no reviewer/approver
+            // columns, so scope by employee only (no approver chain).
+            $this->applyEvaluationScope($planQuery, false);
             $plansCount = $planQuery->count();
         }
 

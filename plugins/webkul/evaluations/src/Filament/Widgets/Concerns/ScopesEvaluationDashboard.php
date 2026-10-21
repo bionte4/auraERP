@@ -63,12 +63,23 @@ trait ScopesEvaluationDashboard
         ];
     }
 
-    protected function applyEvaluationScope(Builder $query): Builder
+    /**
+     * Constrain a query to the dashboard scope. The approver chain
+     * (reviewer / gm / director columns) only exists on the
+     * evaluations table — queries on other employee-owned models
+     * (e.g. performance plans) must pass $includeApproverChain: false
+     * or SQL fails on the missing columns for scoped viewers.
+     */
+    protected function applyEvaluationScope(Builder $query, bool $includeApproverChain = true): Builder
     {
         $scope = static::evaluationDashboardScope();
 
         if ($scope === null) {
             return $query;
+        }
+
+        if (! $includeApproverChain) {
+            return $query->whereIn('employee_id', $scope['employeeIds'] ?: [0]);
         }
 
         if ($scope['employeeIds'] === [] && $scope['approverIds'] === []) {
