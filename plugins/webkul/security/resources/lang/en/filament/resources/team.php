@@ -9,14 +9,16 @@ return [
 
     'form' => [
         'fields' => [
-            'name'            => 'Name',
-            'project'         => 'Linked project',
-            'project-help'    => 'Optional explicit link. When set, team membership syncs from this project (preferred over name matching).',
-            'members'         => 'Members (employees)',
-            'members-help'    => 'Select employees, including those without a login account (marked No login). Saving assigns them to the linked project. Employees who have a Related User are also mirrored into team login membership for Group scope.',
-            'members-search'  => 'Search employees…',
-            'members-note'    => 'Employees without a login can still be assigned to the project. They cannot sign in until a Related User is created (Project → Assign Employees).',
-            'no-login'        => 'No login',
+            'name'                  => 'Name',
+            'project'               => 'Linked project',
+            'project-help'          => 'Optional explicit link. When set, team membership syncs from this project (preferred over name matching).',
+            'members'               => 'Add / remove members',
+            'members-help'          => 'The list above shows employees already on the project. Check to add or remove. Type a name in search to find other employees (including those without a login).',
+            'members-search'        => 'Search employees to add…',
+            'members-note'          => 'Employees without a login can still be assigned to the project. They cannot sign in until a Related User is created (Project → Assign Employees).',
+            'current-members'       => 'Employees already on this project',
+            'current-members-empty' => 'No employees on this project yet. Search below to add some.',
+            'no-login'              => 'No login',
         ],
     ],
 

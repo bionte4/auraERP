@@ -9,14 +9,16 @@ return [
 
     'form' => [
         'fields' => [
-            'name'            => 'Nama',
-            'project'         => 'Proyek terkait',
-            'project-help'    => 'Opsional. Jika diisi, sinkron anggota memakai proyek ini (lebih diutamakan daripada cocok nama).',
-            'members'         => 'Anggota (karyawan)',
-            'members-help'    => 'Pilih karyawan, termasuk yang belum punya akun login (bertanda Tanpa login). Menyimpan daftar ini menugaskan mereka ke proyek terkait. Karyawan yang punya Related User juga masuk keanggotaan Tim untuk hak akses Group.',
-            'members-search'  => 'Cari karyawan…',
-            'members-note'    => 'Karyawan tanpa login tetap bisa ditugaskan ke proyek. Mereka belum bisa masuk aplikasi sampai Related User dibuat (Project → Tugaskan Karyawan).',
-            'no-login'        => 'Tanpa login',
+            'name'                    => 'Nama',
+            'project'                 => 'Proyek terkait',
+            'project-help'            => 'Opsional. Jika diisi, sinkron anggota memakai proyek ini (lebih diutamakan daripada cocok nama).',
+            'members'                 => 'Tambah / lepas anggota',
+            'members-help'            => 'Daftar di atas adalah karyawan yang sudah di proyek. Centang untuk menambah atau melepas. Ketik nama di pencarian untuk menemukan karyawan lain (termasuk yang belum punya login).',
+            'members-search'          => 'Cari karyawan untuk ditambahkan…',
+            'members-note'            => 'Karyawan tanpa login tetap bisa ditugaskan ke proyek. Mereka belum bisa masuk aplikasi sampai Related User dibuat (Project → Tugaskan Karyawan).',
+            'current-members'         => 'Karyawan sudah di proyek ini',
+            'current-members-empty'   => 'Belum ada karyawan di proyek ini. Cari nama di bawah untuk menambahkan.',
+            'no-login'                => 'Tanpa login',
         ],
     ],
 
