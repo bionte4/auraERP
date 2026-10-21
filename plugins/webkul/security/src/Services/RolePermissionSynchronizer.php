@@ -140,6 +140,7 @@ class RolePermissionSynchronizer
                 'page_attendance_clock_page',
                 'widget_project_operation_manager_workload_widget',
                 'widget_project_operation_manager_actions_widget',
+                'widget_project_operational_budget_widget',
                 'widget_project_attendance_presence_widget',
                 'widget_project_expiring_projects_widget',
                 'page_employee_people_dashboard',
@@ -270,6 +271,7 @@ class RolePermissionSynchronizer
                 'view_time_off_my::allocation',
                 'view_any_project_project',
                 'view_project_project',
+                'widget_project_operational_budget_widget',
                 'view_any_project_task',
                 'view_project_task',
                 'update_project_task',
@@ -288,7 +290,7 @@ class RolePermissionSynchronizer
         // Hard revoke admin-only security features from every non-Admin role.
         $adminOnlyPermissions = $allPermissions->whereIn('name', AdminAccess::adminOnlyPermissionNames());
 
-        foreach ([$hrdRole, $operationManagerRole, $accountingRole, $kasirRole, $staffRole, $teamLeaderRole] as $nonAdminRole) {
+        foreach ([$hrdRole, $operationManagerRole, $accountingRole, $accountingManagerRole, $kasirRole, $staffRole, $teamLeaderRole] as $nonAdminRole) {
             if ($adminOnlyPermissions->isNotEmpty()) {
                 $nonAdminRole->revokePermissionTo($adminOnlyPermissions);
             }

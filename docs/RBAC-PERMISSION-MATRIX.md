@@ -4,7 +4,7 @@ Dokumen ini menjelaskan arti angka **Permissions** pada daftar **Pengaturan → 
 
 | Field | Nilai |
 | :--- | :--- |
-| **Versi dokumen** | 1.6 |
+| **Versi dokumen** | 1.7 |
 | **Tanggal** | 2026-10-21 |
 | **Status** | Live (sesuai hasil sync di production) |
 
@@ -14,7 +14,7 @@ Dokumen ini menjelaskan arti angka **Permissions** pada daftar **Pengaturan → 
 
 Angka tersebut adalah **jumlah permission yang saat ini dimiliki role** (baris aktif di tabel `role_has_permissions`). Cara membacanya:
 
-- Total “pool” permission di sistem ditentukan oleh plugin yang ter-install. Di production saat ini pool-nya **1.368 permission** (bertambah 1 permission halaman `page_project_project_budget_control`) — itulah sebabnya **Admin = 1.368** (Admin selalu menerima seluruh pool).
+- Total “pool” permission di sistem ditentukan oleh plugin yang ter-install. Di production saat ini pool-nya **1.369 permission** (bertambah widget `widget_project_operational_budget_widget`) — itulah sebabnya **Admin = 1.369** (Admin selalu menerima seluruh pool).
 - Angka role lain adalah hasil irisan pool dengan aturan role-nya (lihat §3). Angka **bukan skor/nilai tetap**: ia naik/turun mengikuti jumlah plugin & resource yang ter-install, jadi wajar bila di server lokal (plugin sebagian) angkanya lebih kecil dengan pola yang sama.
 - Rincian persisnya terlihat di **Roles → Edit**: checkbox tercentang pada section **Resources / Pages / Widgets**. Total centang = angka di daftar.
 - Daftar nama permission sebuah role juga bisa dilihat via server:
@@ -50,11 +50,11 @@ Baseline disusun dari dua mekanisme di `RolePermissionSynchronizer`:
 - **`contains`** — role menerima semua permission yang namanya mengandung kata kunci tertentu (menyapu lintas resource/plugin).
 - **`exact`** — daftar nama permission spesifik yang diberikan satu per satu.
 
-Hasil snapshot production (2026-10-21, pool 1.368; jumlah Accounting Manager & Accounting staff final terkonfirmasi setelah `security:sync-rbac --shield` pertama pasca-deploy v1.5):
+Hasil snapshot production (2026-10-21, pool 1.369; jumlah Accounting Manager & Accounting staff final terkonfirmasi setelah `security:sync-rbac --shield` pertama pasca-deploy v1.5):
 
 | Role | Jml. | Mekanisme utama | Profil akses |
 | :--- | ---: | :--- | :--- |
-| **Admin** | 1.368 | Seluruh pool | Akses penuh termasuk fitur admin-only (Audit Trail, Database Backups, Blocked IPs, Sync RBAC, **Atur Project Manager** via `page_project_assign_project_managers`, **Kontrol Anggaran Proyek**). |
+| **Admin** | 1.369 | Seluruh pool | Akses penuh termasuk fitur admin-only (Audit Trail, Database Backups, Blocked IPs, Sync RBAC, **Atur Project Manager** via `page_project_assign_project_managers`, **Kontrol Anggaran Proyek**). |
 | **Accounting Manager** | ±545 | `contains`: invoice, account, payment, bill, partner, contact, product + `exact` (termasuk `page_project_project_budget_control`) | Manajer akunting: seluruh hak Accounting **termasuk hapus/restore/force-delete dokumen keuangan**, kontrol anggaran proyek **se-perusahaan** (tanpa scope tim), My Day bundle accounting. Diberikan manual ke manajer akunting via **Settings → Users** — user Accounting lama tidak otomatis naik. |
 | **Accounting** *(staff)* | 544 − hak hapus | `contains` yang sama, lalu permission **delete finansial ditolak** (`isFinanceDeletePermission`: nama mengandung `delete` + invoice/bill/payment/account) + `exact` yang sama | Staff akunting: buat/ubah invoice, bill, payment & mitra/produk; **tidak bisa menghapus** dokumen keuangan. Kontrol Anggaran Proyek terbatas **proyek timnya** (scope `AccountingTeamInsights`; tanpa tim = fallback seluruh perusahaan seperti Hari Saya). Dapat melihat proyek (view saja) + dashboard proyek. **Tidak** mengelola karyawan/proyek. |
 | **HRD** | 343 | `contains`: employee, attendance, performance, evaluation, time_off, recruitment | Domain SDM penuh: karyawan, absensi, cuti, evaluasi, rekrutmen + People Dashboard. Tanpa widget OM dan tanpa laporan proyek klien. |
@@ -82,7 +82,8 @@ Memiliki permission `view/update` tidak otomatis berarti bisa mengakses semua re
 | **Pembatasan hapus OM** | OM hanya `delete` per record (soft-delete). `delete_any`, `force_delete*`, `restore*` untuk karyawan **tidak diberikan** — pemulihan & penghapusan permanen tetap wewenang Admin/HRD. |
 | **Team Leader scope** | User ber-role Team Leader (tanpa role OM/Admin/HRD) hanya melihat **satu proyek yang ia pimpin**: daftar proyek, task, timesheet, widget operasional, dan data karyawan terscope ke proyek tersebut (`OperationalScope::teamLeaderProjectIds`). Satu karyawan hanya boleh memimpin **satu proyek aktif** — ditegakkan validasi model + partial unique index Postgres. Team Leader otomatis menjadi anggota proyeknya. Struktur pimpinan proyek terlihat di tab **Struktur Organisasi** pada detail proyek (PM → Team Leader → Anggota). |
 | **Penghapusan role berpelindung** | Role baseline (Admin, HRD, Operation Manager, Accounting, Accounting Manager, Kasir, Staff, Team Leader guard `web`) **tidak bisa dihapus** dari UI; role yang masih dipakai user juga ditolak untuk dihapus. Modal konfirmasi menampilkan guard, jumlah permission, dan jumlah user terkait. |
-| **Scope Kontrol Anggaran Proyek** | Halaman **Project → Kontrol Anggaran Proyek** (`page_project_project_budget_control`): Admin & **Accounting Manager** melihat semua proyek; **Accounting staff** dibatasi proyek timnya (`AccountingTeamInsights::teamScope` — link `teams.project_id` + kecocokan nama tim/proyek + proyek yang di-PM anggota tim; tanpa tim berlaku fallback tidak terscope). Realisasi dihitung dari invoice/bill **posted** yang terhubung `accounts_account_moves.project_id` (field **Proyek** di form invoice/bill); serapan = biaya vendor ÷ `operational_cost` proyek. Admin & Accounting Manager juga dapat **mengatur `operational_cost`** langsung dari tabel halaman ini (satu-satunya pengecualian edit untuk finance — role ini sengaja tidak diberi `update_project_project` agar tidak dapat mengubah nilai kontrak/PM/tanggal proyek); Accounting staff read-only. |
+| **Scope Kontrol Anggaran Proyek** | Halaman **Project → Kontrol Anggaran Proyek** (`page_project_project_budget_control`): Admin & **Accounting Manager** melihat semua proyek; **Accounting staff** dibatasi proyek timnya (`AccountingTeamInsights::teamScope` — link `teams.project_id` + kecocokan nama tim/proyek + proyek yang di-PM anggota tim; tanpa tim berlaku fallback tidak terscope). Realisasi dihitung dari invoice/bill **posted** yang terhubung `accounts_account_moves.project_id` (field **Proyek** di form invoice/bill); serapan = biaya vendor ÷ `operational_cost` proyek. Admin & Accounting Manager juga dapat **mengatur `operational_cost` dan nilai kontrak `project_value`** langsung dari tabel halaman ini (satu-satunya pengecualian edit untuk finance — role ini sengaja tidak diberi `update_project_project` agar tidak dapat mengubah nama/PM/tanggal proyek; perubahan nilai kontrak tercatat di activity log proyek); Accounting staff read-only. |
+| **Kerahasiaan Nilai Kontrak** | Nilai kontrak proyek (`project_value`) adalah data finansial: hanya **Admin, Accounting & Accounting Manager** yang boleh melihatnya — satu gerbang `OperationalScope::canViewProjectValue()`. Untuk role lain nilai disembunyikan di: badge & filter daftar Projects, View/Edit Project (field tidak dirender sehingga tidak ikut tersimpan saat OM mengedit), detail Customer (total & daftar nilai + kolom relasi), agregat kartu Team Board, Ringkasan 360 karyawan, notifikasi pengingat proyek (varian isi tanpa nilai), konteks auraAI, dan API proyek (field tidak dikirim). OM/Team Leader sebagai gantinya melihat **anggaran operasional, biaya vendor aktual, sisa & serapan** pada proyeknya lewat widget **Anggaran Operasional & Realisasi Opex** di Project Dashboard (`widget_project_operational_budget_widget`, scope `OperationalScope::projectIds`) — tanpa nilai kontrak dan tanpa data penagihan. |
 
 ## 5. Tata kelola perubahan
 

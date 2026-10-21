@@ -80,6 +80,25 @@ class OperationalScope
     }
 
     /**
+     * True when the user may see a project's contract value
+     * (project_value). Company policy: contract values are financial
+     * data known only to Admin and the budget-control team
+     * (Accounting / Accounting Manager). Operational roles (OM, Team
+     * Leader, Staff, HRD, Kasir) work with the operational budget and
+     * its realization instead — never the contract value.
+     */
+    public function canViewProjectValue(?User $user = null): bool
+    {
+        $user ??= auth()->user();
+
+        if (! $user instanceof User) {
+            return false;
+        }
+
+        return AdminAccess::check($user) || $this->hasFinanceRole($user);
+    }
+
+    /**
      * True when the model's OwnershipScope global scope must not cut
      * down the Projects/Tasks lists for this user: unscoped roles
      * (Admin/HRD) and finance, whose full list comes from

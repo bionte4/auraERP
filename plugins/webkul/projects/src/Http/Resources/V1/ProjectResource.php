@@ -5,6 +5,7 @@ namespace Webkul\Project\Http\Resources\V1;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Webkul\Partner\Http\Resources\V1\PartnerResource;
+use Webkul\Project\Services\OperationalScope;
 use Webkul\Security\Http\Resources\V1\UserResource;
 use Webkul\Support\Http\Resources\V1\CompanyResource;
 
@@ -12,6 +13,11 @@ class ProjectResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        // Contract values are financial data: only Admin and the
+        // budget-control team (Accounting / Accounting Manager)
+        // receive them via the API as well.
+        $canViewProjectValue = app(OperationalScope::class)->canViewProjectValue();
+
         return [
             'id'                      => $this->id,
             'name'                    => $this->name,
@@ -22,7 +28,7 @@ class ProjectResource extends JsonResource
             'sort'                    => $this->sort,
             'start_date'              => $this->start_date,
             'end_date'                => $this->end_date,
-            'project_value'           => (float) ($this->project_value ?? 0),
+            'project_value'           => $this->when($canViewProjectValue, fn (): float => (float) ($this->project_value ?? 0)),
             'operational_cost'        => (float) ($this->operational_cost ?? 0),
             'allocated_hours'         => (float) $this->allocated_hours,
             'allow_timesheets'        => (bool) $this->allow_timesheets,

@@ -12,6 +12,7 @@ use Illuminate\Contracts\Support\Htmlable;
 use Webkul\Partner\Models\Partner;
 use Webkul\Project\Filament\Widgets\AttendancePresenceWidget;
 use Webkul\Project\Filament\Widgets\ExpiringProjectsWidget;
+use Webkul\Project\Filament\Widgets\OperationalBudgetWidget;
 use Webkul\Project\Filament\Widgets\OperationManagerActionsWidget;
 use Webkul\Project\Filament\Widgets\OperationManagerWorkloadWidget;
 use Webkul\Project\Filament\Widgets\StatsOverviewWidget;
@@ -175,6 +176,7 @@ class Dashboard extends BaseDashboard
             ExpiringProjectsWidget::class,
             AttendancePresenceWidget::class,
             OperationManagerWorkloadWidget::class,
+            OperationalBudgetWidget::class,
             TaskByStageChart::class,
             TaskByStateChart::class,
             TopAssigneesWidget::class,

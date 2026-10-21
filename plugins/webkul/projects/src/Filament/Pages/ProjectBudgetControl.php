@@ -34,6 +34,10 @@ class ProjectBudgetControl extends Page
 
     public string $budgetAmount = '';
 
+    public ?int $editingValueProjectId = null;
+
+    public string $valueAmount = '';
+
     protected static function getPagePermission(): ?string
     {
         return 'page_project_project_budget_control';
@@ -95,8 +99,71 @@ class ProjectBudgetControl extends Page
         }
 
         $this->editingBudgetProjectId = $project->id;
-        $this->budgetAmount = rtrim(rtrim(number_format((float) ($project->operational_cost ?? 0), 2, '.', ''), '0'), '.');
-        $this->budgetAmount = $this->budgetAmount === '' || $this->budgetAmount === '-0' ? '0' : $this->budgetAmount;
+        $this->budgetAmount = $this->formatAmount((float) ($project->operational_cost ?? 0));
+    }
+
+    public function startEditValue(int $projectId): void
+    {
+        if (! $this->canEditBudgets() || ! $this->projectInScope($projectId)) {
+            return;
+        }
+
+        $project = $this->findProject($projectId);
+
+        if (! $project) {
+            return;
+        }
+
+        $this->editingValueProjectId = $project->id;
+        $this->valueAmount = $this->formatAmount((float) ($project->project_value ?? 0));
+    }
+
+    public function cancelEditValue(): void
+    {
+        $this->editingValueProjectId = null;
+        $this->valueAmount = '';
+    }
+
+    public function saveValue(): void
+    {
+        if (! $this->canEditBudgets() || $this->editingValueProjectId === null) {
+            return;
+        }
+
+        $this->validate([
+            'valueAmount' => ['required', 'numeric', 'min:0'],
+        ]);
+
+        if (! $this->projectInScope($this->editingValueProjectId)) {
+            return;
+        }
+
+        $project = $this->findProject($this->editingValueProjectId);
+
+        if (! $project) {
+            $this->cancelEditValue();
+
+            return;
+        }
+
+        // Only the contract value is touched. Changes are recorded in
+        // the project's activity log (project_value is a logged
+        // attribute), so value changes stay auditable.
+        $project->forceFill(['project_value' => (float) $this->valueAmount])->save();
+
+        $this->cancelEditValue();
+
+        Notification::make()
+            ->success()
+            ->title(__('projects::filament/pages/project-budget-control.notifications.value-saved'))
+            ->send();
+    }
+
+    protected function formatAmount(float $amount): string
+    {
+        $formatted = rtrim(rtrim(number_format($amount, 2, '.', ''), '0'), '.');
+
+        return $formatted === '' || $formatted === '-0' ? '0' : $formatted;
     }
 
     public function cancelEditBudget(): void

@@ -500,7 +500,16 @@ class AuraAiAssistantService
             $period = ($project->start_date && $project->end_date)
                 ? ' | '.$project->start_date->format('d M Y').' - '.$project->end_date->format('d M Y')
                 : '';
-            $val = (float) ($project->project_value ?? 0) > 0
+            // Contract values are financial data (Admin + budget-control
+            // team only) — omit them from AI context for other roles.
+            $canViewProjectValue = false;
+            $scopeClass = 'Webkul\\Project\\Services\\OperationalScope';
+
+            if (class_exists($scopeClass)) {
+                $canViewProjectValue = app($scopeClass)->canViewProjectValue();
+            }
+
+            $val = $canViewProjectValue && (float) ($project->project_value ?? 0) > 0
                 ? ' | '.$project->formattedProjectValue()
                 : '';
             $stage = $project->expiryReminderStage();

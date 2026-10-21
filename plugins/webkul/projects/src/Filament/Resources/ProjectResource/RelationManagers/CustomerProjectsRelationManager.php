@@ -61,6 +61,7 @@ class CustomerProjectsRelationManager extends RelationManager
 
                 TextColumn::make('project_value')
                     ->label(__('projects::filament/resources/project.table.columns.project-value'))
+                    ->visible(fn (): bool => app(\Webkul\Project\Services\OperationalScope::class)->canViewProjectValue())
                     ->formatStateUsing(fn (Project $record): string => $record->formattedProjectValue())
                     ->sortable(),
 

@@ -155,10 +155,12 @@
                                 <span>{{ $labels['tasks'] }}</span>
                                 <strong>{{ $card['task_count'] }}</strong>
                             </div>
-                            <div>
-                                <span>{{ $labels['value'] }}</span>
-                                <strong>{{ $card['value'] }}</strong>
-                            </div>
+                            @if (($card['value'] ?? null) !== null)
+                                <div>
+                                    <span>{{ $labels['value'] }}</span>
+                                    <strong>{{ $card['value'] }}</strong>
+                                </div>
+                            @endif
                         </div>
 
                         @if (($card['projects'] ?? []) !== [])

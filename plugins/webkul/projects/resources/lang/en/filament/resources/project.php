@@ -227,13 +227,15 @@ return [
         ],
 
         'project-expiring' => [
-            'title' => ':stage: Project :name is ending soon',
-            'body'  => '[:stage] Project :name (Customer: :customer | Value: :value) ends in :days day(s) on :date.',
+            'title'         => ':stage: Project :name is ending soon',
+            'body'          => '[:stage] Project :name (Customer: :customer | Value: :value) ends in :days day(s) on :date.',
+            'body-no-value' => '[:stage] Project :name (Customer: :customer) ends in :days day(s) on :date.',
         ],
 
         'project-expired' => [
-            'title' => 'Project Period Ended: :name',
-            'body'  => 'Project :name (Customer: :customer | Value: :value) passed its end date on :date.',
+            'title'         => 'Project Period Ended: :name',
+            'body'          => 'Project :name (Customer: :customer | Value: :value) passed its end date on :date.',
+            'body-no-value' => 'Project :name (Customer: :customer) passed its end date on :date.',
         ],
     ],
 ];

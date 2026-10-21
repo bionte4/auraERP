@@ -227,13 +227,15 @@ return [
         ],
 
         'project-expiring' => [
-            'title' => ':stage: Proyek :name akan segera berakhir',
-            'body'  => '[:stage] Proyek :name (Customer: :customer | Nilai: :value) akan berakhir dalam :days hari pada :date.',
+            'title'         => ':stage: Proyek :name akan segera berakhir',
+            'body'          => '[:stage] Proyek :name (Customer: :customer | Nilai: :value) akan berakhir dalam :days hari pada :date.',
+            'body-no-value' => '[:stage] Proyek :name (Customer: :customer) akan berakhir dalam :days hari pada :date.',
         ],
 
         'project-expired' => [
-            'title' => 'Periode Proyek Berakhir: :name',
-            'body'  => 'Proyek :name (Customer: :customer | Nilai: :value) telah melewati tanggal akhir pada :date.',
+            'title'         => 'Periode Proyek Berakhir: :name',
+            'body'          => 'Proyek :name (Customer: :customer | Nilai: :value) telah melewati tanggal akhir pada :date.',
+            'body-no-value' => 'Proyek :name (Customer: :customer) telah melewati tanggal akhir pada :date.',
         ],
     ],
 ];

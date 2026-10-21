@@ -472,6 +472,15 @@ class TeamBoard extends Page
             }
         }
 
+        // Contract values are financial data: only Admin and the
+        // budget-control team see the aggregate value on team cards.
+        $canViewProjectValue = false;
+        $scopeClass = 'Webkul\\Project\\Services\\OperationalScope';
+
+        if (class_exists($scopeClass)) {
+            $canViewProjectValue = app($scopeClass)->canViewProjectValue();
+        }
+
         $lead = $projects->first();
         $about = trim(strip_tags((string) ($lead?->description ?: '')));
 
@@ -499,7 +508,7 @@ class TeamBoard extends Page
             'project_count' => $projects->count(),
             'projects'      => $projectLinks,
             'task_count'    => $totalTasks,
-            'value'         => $value > 0 ? 'Rp '.number_format($value, 0, ',', '.') : '—',
+            'value'         => $canViewProjectValue ? ($value > 0 ? 'Rp '.number_format($value, 0, ',', '.') : '—') : null,
             'progress'      => $totalTasks > 0 ? (int) round(($doneTasks / $totalTasks) * 100) : 0,
             'updated'       => $latest?->locale(app()->getLocale())->diffForHumans() ?? '—',
             'href'          => url('/admin/teams'),

@@ -110,6 +110,11 @@ class ProjectForm
                                     ->minValue(0)
                                     ->default(0)
                                     ->helperText(__('projects::filament/resources/project.form.sections.additional.fields.project-value-helper-text'))
+                                    // Contract value is financial data (Admin +
+                                    // budget-control team only). Hidden fields are
+                                    // not dehydrated, so operational roles editing
+                                    // a project never see or overwrite the value.
+                                    ->visible(fn (): bool => app(\Webkul\Project\Services\OperationalScope::class)->canViewProjectValue())
                                     ->rules(['nullable', 'numeric', 'min:0']),
                                 TextInput::make('operational_cost')
                                     ->label(__('projects::filament/resources/project.form.sections.additional.fields.operational-cost'))

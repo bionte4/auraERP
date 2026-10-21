@@ -78,7 +78,32 @@
                                         {{ $row['customer'] }}
                                     </td>
                                     <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
-                                        {{ $money($row['contract_value']) }}
+                                        @if ($this->canEditBudgets() && $editingValueProjectId === $row['id'])
+                                            <div class="flex items-center gap-1">
+                                                <input type="number" wire:model="valueAmount" min="0" step="any"
+                                                    class="block w-36 rounded-lg border-gray-300 text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-white/10 dark:bg-white/5 dark:text-gray-100">
+                                                <button type="button" wire:click="saveValue"
+                                                    class="rounded-lg bg-primary-600 px-2 py-1.5 text-xs font-medium text-white">
+                                                    {{ __($lang.'.actions.save') }}
+                                                </button>
+                                                <button type="button" wire:click="cancelEditValue"
+                                                    class="rounded-lg bg-gray-100 px-2 py-1.5 text-xs font-medium text-gray-700 dark:bg-white/10 dark:text-gray-200">
+                                                    {{ __($lang.'.actions.cancel') }}
+                                                </button>
+                                            </div>
+                                            @error('valueAmount')
+                                                <p class="mt-1 text-xs text-danger-600 dark:text-danger-400">{{ $message }}</p>
+                                            @enderror
+                                        @else
+                                            {{ $money($row['contract_value']) }}
+                                            @if ($this->canEditBudgets())
+                                                <button type="button" wire:click="startEditValue({{ $row['id'] }})"
+                                                    title="{{ __($lang.'.actions.set-value') }}"
+                                                    class="ml-1 rounded bg-gray-100 px-1.5 py-0.5 text-xs font-medium text-primary-700 hover:bg-gray-200 dark:bg-white/10 dark:text-primary-300 dark:hover:bg-white/20">
+                                                    {{ $row['contract_value'] > 0 ? __($lang.'.actions.edit-value') : __($lang.'.actions.set-value') }}
+                                                </button>
+                                            @endif
+                                        @endif
                                     </td>
                                     <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
                                         {{ $money($row['invoiced']) }}

@@ -88,10 +88,15 @@ class ManageOverview extends Page
             'label'    => '—',
         ];
 
+        // Contract values are financial data (Admin + budget-control
+        // team only) — the employee overview must not leak them to
+        // operational roles.
+        $canViewProjectValue = app(\Webkul\Project\Services\OperationalScope::class)->canViewProjectValue();
+
         $projects = app(ProjectEmployeeAssigner::class)->assignedProjects($employee)
             ->map(fn ($project): array => [
                 'name'  => $project->name,
-                'value' => method_exists($project, 'formattedProjectValue') ? $project->formattedProjectValue() : '—',
+                'value' => $canViewProjectValue && method_exists($project, 'formattedProjectValue') ? $project->formattedProjectValue() : '—',
                 'href'  => url('/admin/project/projects/'.$project->id),
             ])
             ->all();

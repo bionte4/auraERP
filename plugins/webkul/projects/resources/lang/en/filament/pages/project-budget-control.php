@@ -45,11 +45,14 @@ return [
         'export'      => 'Export Excel',
         'set-budget'  => 'Set budget',
         'edit-budget' => 'Edit',
+        'set-value'   => 'Set value',
+        'edit-value'  => 'Edit',
         'save'        => 'Save',
         'cancel'      => 'Cancel',
     ],
 
     'notifications' => [
         'budget-saved' => 'Operational budget updated.',
+        'value-saved'  => 'Contract value updated.',
     ],
 ];

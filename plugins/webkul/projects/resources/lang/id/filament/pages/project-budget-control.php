@@ -45,11 +45,14 @@ return [
         'export'      => 'Ekspor Excel',
         'set-budget'  => 'Atur Anggaran',
         'edit-budget' => 'Ubah',
+        'set-value'   => 'Atur Nilai',
+        'edit-value'  => 'Ubah',
         'save'        => 'Simpan',
         'cancel'      => 'Batal',
     ],
 
     'notifications' => [
         'budget-saved' => 'Anggaran operasional diperbarui.',
+        'value-saved'  => 'Nilai kontrak diperbarui.',
     ],
 ];

@@ -93,22 +93,6 @@ class ProjectExpiryNotifier
                 'name'  => $project->name,
             ]);
 
-        $body = $stage === 'expired'
-            ? __('projects::filament/resources/project.notifications.project-expired.body', [
-                'name'     => $project->name,
-                'customer' => $customerName,
-                'value'    => $formattedValue,
-                'date'     => $formattedDate,
-            ])
-            : __('projects::filament/resources/project.notifications.project-expiring.body', [
-                'stage'    => $stageLabel,
-                'name'     => $project->name,
-                'customer' => $customerName,
-                'value'    => $formattedValue,
-                'days'     => $days,
-                'date'     => $formattedDate,
-            ]);
-
         $url = $this->projectViewUrl($project);
 
         $color = match ($stage) {
@@ -123,6 +107,26 @@ class ProjectExpiryNotifier
             if ($this->alreadyNotified($recipient, $project->id, $endDateString, $stage)) {
                 continue;
             }
+
+            // Contract values are financial data: recipients outside
+            // Admin / budget-control get the value-free body variant.
+            $withValue = app(OperationalScope::class)->canViewProjectValue($recipient);
+
+            $body = $stage === 'expired'
+                ? __('projects::filament/resources/project.notifications.project-expired.'.($withValue ? 'body' : 'body-no-value'), [
+                    'name'     => $project->name,
+                    'customer' => $customerName,
+                    'value'    => $formattedValue,
+                    'date'     => $formattedDate,
+                ])
+                : __('projects::filament/resources/project.notifications.project-expiring.'.($withValue ? 'body' : 'body-no-value'), [
+                    'stage'    => $stageLabel,
+                    'name'     => $project->name,
+                    'customer' => $customerName,
+                    'value'    => $formattedValue,
+                    'days'     => $days,
+                    'date'     => $formattedDate,
+                ]);
 
             $notification = Notification::make()
                 ->title($title)

@@ -74,6 +74,7 @@ class ProjectInfolist
                                         TextEntry::make('project_value')
                                             ->label(__('projects::filament/resources/project.infolist.sections.additional.entries.project-value'))
                                             ->icon('heroicon-o-banknotes')
+                                            ->visible(fn (): bool => app(\Webkul\Project\Services\OperationalScope::class)->canViewProjectValue())
                                             ->state(fn (Project $record): string => $record->formattedProjectValue()),
 
                                         TextEntry::make('operational_cost')

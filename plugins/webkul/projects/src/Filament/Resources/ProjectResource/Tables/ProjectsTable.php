@@ -40,6 +40,12 @@ class ProjectsTable
 {
     public static function configure(Table $table, array $customColumns = [], array $customConstraints = []): Table
     {
+        // Contract values are financial data: only Admin and the
+        // budget-control team (Accounting / Accounting Manager) see
+        // the value badge and the value filter. See
+        // OperationalScope::canViewProjectValue().
+        $canViewProjectValue = app(\Webkul\Project\Services\OperationalScope::class)->canViewProjectValue();
+
         return $table
             ->columns(array_merge([
                 Stack::make([
@@ -83,7 +89,7 @@ class ProjectsTable
                             ->state(fn (Project $record): string => $record->formattedProjectValue())
                             ->tooltip(__('projects::filament/resources/project.table.columns.project-value')),
                     ])
-                        ->visible(fn (Project $record): bool => (float) ($record->project_value ?? 0) > 0),
+                        ->visible(fn (Project $record): bool => $canViewProjectValue && (float) ($record->project_value ?? 0) > 0),
                     Stack::make([
                         TextColumn::make('operational_cost')
                             ->label(__('projects::filament/resources/project.table.columns.operational-cost'))
@@ -190,9 +196,11 @@ class ProjectsTable
                             ->label(__('projects::filament/resources/project.table.filters.start-date')),
                         DateConstraint::make('end_date')
                             ->label(__('projects::filament/resources/project.table.filters.end-date')),
-                        NumberConstraint::make('project_value')
-                            ->label(__('projects::filament/resources/project.table.filters.project-value'))
-                            ->icon('heroicon-o-banknotes'),
+                        ...($canViewProjectValue ? [
+                            NumberConstraint::make('project_value')
+                                ->label(__('projects::filament/resources/project.table.filters.project-value'))
+                                ->icon('heroicon-o-banknotes'),
+                        ] : []),
                         NumberConstraint::make('operational_cost')
                             ->label(__('projects::filament/resources/project.table.filters.operational-cost'))
                             ->icon('heroicon-o-currency-dollar'),
