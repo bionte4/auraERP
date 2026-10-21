@@ -12,11 +12,13 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\HtmlString;
 use Throwable;
 use Webkul\Project\Filament\Resources\ProjectResource;
+use Webkul\Project\Filament\Widgets\Concerns\AppliesDashboardFilters;
 use Webkul\Project\Models\Project;
 use Webkul\Security\Models\User;
 
 class OperationManagerWorkloadWidget extends BaseWidget
 {
+    use AppliesDashboardFilters;
     use HasWidgetShield;
 
     protected static bool $isLazy = false;
@@ -108,8 +110,16 @@ class OperationManagerWorkloadWidget extends BaseWidget
             return User::query()->whereRaw('1 = 0');
         }
 
-        return User::query()
+        $query = User::query()
             ->where('is_active', true)
             ->whereHas('roles', fn (Builder $query) => $query->where('name', 'Operation Manager'));
+
+        // Scoped viewers (an OM looking at the dashboard) only see their
+        // own workload row; Admin/HRD keep the full overview.
+        if ($this->operationalProjectIds() !== null && auth()->id()) {
+            $query->whereKey(auth()->id());
+        }
+
+        return $query;
     }
 }

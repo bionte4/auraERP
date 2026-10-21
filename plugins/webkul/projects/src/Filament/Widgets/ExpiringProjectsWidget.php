@@ -157,6 +157,8 @@ class ExpiringProjectsWidget extends BaseWidget
             ->whereNotNull('end_date')
             ->whereDate('end_date', '<=', $cutoffDate);
 
+        $this->applyOperationalProjectScope($query, $query->getModel()->getTable().'.id');
+
         $selectedProjects = $this->selectedFilterIds('selectedProjects');
         $selectedPartners = $this->selectedFilterIds('selectedPartners');
 

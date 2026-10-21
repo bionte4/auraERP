@@ -10,12 +10,21 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('projects_projects', function (Blueprint $table) {
-            $table->foreignId('team_leader_employee_id')
+            $table->unsignedBigInteger('team_leader_employee_id')
                 ->nullable()
-                ->after('user_id')
-                ->constrained('employees_employees')
-                ->nullOnDelete();
+                ->after('user_id');
         });
+
+        // The employees plugin may not be installed yet in minimal
+        // setups; only add the FK when its table is actually there.
+        if (Schema::hasTable('employees_employees')) {
+            Schema::table('projects_projects', function (Blueprint $table) {
+                $table->foreign('team_leader_employee_id')
+                    ->references('id')
+                    ->on('employees_employees')
+                    ->nullOnDelete();
+            });
+        }
 
         // One team leader may only lead one active project at a time.
         if (DB::connection()->getDriverName() === 'pgsql') {
@@ -34,7 +43,11 @@ return new class extends Migration
         }
 
         Schema::table('projects_projects', function (Blueprint $table) {
-            $table->dropConstrainedForeignId('team_leader_employee_id');
+            if (Schema::hasTable('employees_employees')) {
+                $table->dropForeign(['team_leader_employee_id']);
+            }
+
+            $table->dropColumn('team_leader_employee_id');
         });
     }
 };

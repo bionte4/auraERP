@@ -42,6 +42,7 @@ class TaskByStateChart extends ChartWidget
 
         foreach (TaskState::cases() as $state) {
             $query = Task::query();
+            $this->applyOperationalProjectScope($query);
 
             $selectedProjects = $this->selectedFilterIds('selectedProjects');
             $selectedAssignees = $this->selectedFilterIds('selectedAssignees');

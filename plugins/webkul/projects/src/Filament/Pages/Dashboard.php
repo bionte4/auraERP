@@ -90,7 +90,20 @@ class Dashboard extends BaseDashboard
     {
         // Native <select> only — Filament disables native mode when multiple/searchable
         // is enabled, and those Alpine selects are failing to initialize on this page.
-        $projectOptions = Project::query()->orderBy('name')->pluck('name', 'id')->all();
+        // Scoped users (OM/Team Leader/Staff) only get filter options for
+        // projects assigned to them; Admin/HRD see everything.
+        $operationalScope = app(\Webkul\Project\Services\OperationalScope::class);
+        $scopedProjectIds = $operationalScope->isUnscoped() ? null : $operationalScope->projectIds();
+
+        $projectQuery = Project::query()->orderBy('name');
+
+        if ($scopedProjectIds !== null) {
+            $scopedProjectIds === []
+                ? $projectQuery->whereRaw('1 = 0')
+                : $projectQuery->whereIn('id', $scopedProjectIds);
+        }
+
+        $projectOptions = $projectQuery->pluck('name', 'id')->all();
         $assigneeOptions = User::query()->orderBy('name')->pluck('name', 'id')->all();
         $tagOptions = Tag::query()->orderBy('name')->pluck('name', 'id')->all();
         // Same external-customer filter as Project form — raw Partner::all() includes
@@ -99,6 +112,9 @@ class Dashboard extends BaseDashboard
         $projectPartnerIds = Project::query()
             ->whereNotNull('partner_id')
             ->distinct()
+            ->when($scopedProjectIds !== null, fn ($query) => $scopedProjectIds === []
+                ? $query->whereRaw('1 = 0')
+                : $query->whereIn('id', $scopedProjectIds))
             ->pluck('partner_id');
 
         $partnerQuery = Project::filterExternalCustomersQuery(Partner::query());

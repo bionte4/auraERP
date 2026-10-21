@@ -40,6 +40,7 @@ class TopAssigneesWidget extends BaseWidget
     public function table(Table $table): Table
     {
         $query = Timesheet::query();
+        $this->applyOperationalProjectScope($query);
 
         $selectedProjects = $this->selectedFilterIds('selectedProjects');
         $selectedAssignees = $this->selectedFilterIds('selectedAssignees');

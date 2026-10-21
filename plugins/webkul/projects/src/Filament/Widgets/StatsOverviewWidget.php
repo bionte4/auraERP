@@ -32,6 +32,7 @@ class StatsOverviewWidget extends BaseWidget
     protected function getData(): array
     {
         $query = Task::query();
+        $this->applyOperationalProjectScope($query);
 
         $selectedProjects = $this->selectedFilterIds('selectedProjects');
         $selectedAssignees = $this->selectedFilterIds('selectedAssignees');

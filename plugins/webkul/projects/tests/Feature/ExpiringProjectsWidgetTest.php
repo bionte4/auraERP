@@ -12,6 +12,7 @@ require_once __DIR__.'/../../../support/tests/Helpers/SecurityHelper.php';
 require_once __DIR__.'/../../../support/tests/Helpers/TestBootstrapHelper.php';
 
 beforeEach(function (): void {
+    TestBootstrapHelper::ensurePluginInstalled('employees');
     TestBootstrapHelper::ensurePluginInstalled('projects');
     SecurityHelper::disableUserEvents();
 });
@@ -40,11 +41,13 @@ it('lists expiring and expired active projects with clickable links, sorted by e
         'end_date'  => now()->addDays(3)->toDateString(),
     ]);
 
-    FilamentHelper::actingAs([
+    $admin = FilamentHelper::actingAs([
         'widget_project_expiring_projects_widget',
         'view_project_project',
         'view_any_project_project',
     ]);
+    $adminRole = Role::query()->firstOrCreate(['name' => 'Admin', 'guard_name' => 'web']);
+    $admin->syncRoles([$adminRole]);
 
     Livewire::test(ExpiringProjectsWidget::class)
         ->assertOk()

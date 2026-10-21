@@ -13,6 +13,7 @@ require_once __DIR__.'/../../../support/tests/Helpers/SecurityHelper.php';
 require_once __DIR__.'/../../../support/tests/Helpers/TestBootstrapHelper.php';
 
 beforeEach(function (): void {
+    TestBootstrapHelper::ensurePluginInstalled('employees');
     TestBootstrapHelper::ensurePluginInstalled('projects');
     SecurityHelper::disableUserEvents();
 });
@@ -54,11 +55,13 @@ it('lists operation managers with managed project counts and clickable project l
         'is_active' => true,
     ]);
 
-    FilamentHelper::actingAs([
+    $admin = FilamentHelper::actingAs([
         'widget_project_operation_manager_workload_widget',
         'view_project_project',
         'view_any_project_project',
     ]);
+    $adminRole = Role::query()->firstOrCreate(['name' => 'Admin', 'guard_name' => 'web']);
+    $admin->syncRoles([$adminRole]);
 
     Livewire::test(OperationManagerWorkloadWidget::class)
         ->assertOk()

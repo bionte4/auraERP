@@ -47,6 +47,7 @@ class TaskByStageChart extends ChartWidget
             }
 
             $query = Task::query();
+            $this->applyOperationalProjectScope($query);
 
             $selectedProjects = $this->selectedFilterIds('selectedProjects');
             $selectedAssignees = $this->selectedFilterIds('selectedAssignees');
