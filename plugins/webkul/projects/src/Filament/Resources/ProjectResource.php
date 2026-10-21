@@ -104,19 +104,16 @@ class ProjectResource extends Resource
     {
         $query = parent::getEloquentQuery();
 
-        // Team Leaders only see the single project they lead; plain
-        // Staff only see projects they are assigned to. Operation
-        // Manager and Accounting keep the full list on purpose.
+        // Operation Managers, Team Leaders, and plain Staff only see
+        // projects assigned to them (see OperationalScope::
+        // projectListScopeIds); Admin/HRD and Accounting keep the
+        // full list.
         $user = auth()->user();
 
         if ($user && static::getModel() && class_exists(\Webkul\Project\Services\OperationalScope::class)) {
-            $scope = app(\Webkul\Project\Services\OperationalScope::class);
+            $projectIds = app(\Webkul\Project\Services\OperationalScope::class)->projectListScopeIds($user);
 
-            if ($scope->isTeamLeaderOnly($user)) {
-                $projectIds = $scope->teamLeaderProjectIds($user);
-            } elseif ($scope->isStaffOnly($user)) {
-                $projectIds = $scope->projectIds($user);
-            } else {
+            if ($projectIds === null) {
                 return $query;
             }
 

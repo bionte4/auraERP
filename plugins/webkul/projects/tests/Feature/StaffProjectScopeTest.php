@@ -65,19 +65,32 @@ it('scopes project and task lists to assigned projects for plain staff', functio
         ->not->toContain($otherTask->id);
 });
 
-it('keeps the full project list for staff who are also operation managers or accounting', function (): void {
-    foreach (['Operation Manager', 'Accounting'] as $extraRole) {
-        $user = FilamentHelper::actingAs([
-            'view_any_project_project',
-            'view_project_project',
-        ]);
-        $staffRole = Role::query()->firstOrCreate(['name' => 'Staff', 'guard_name' => 'web']);
-        $broaderRole = Role::query()->firstOrCreate(['name' => $extraRole, 'guard_name' => 'web']);
-        $user->syncRoles([$staffRole, $broaderRole]);
+it('scopes staff who are also operation managers to their assigned projects', function (): void {
+    $user = FilamentHelper::actingAs([
+        'view_any_project_project',
+        'view_project_project',
+    ]);
+    $staffRole = Role::query()->firstOrCreate(['name' => 'Staff', 'guard_name' => 'web']);
+    $omRole = Role::query()->firstOrCreate(['name' => 'Operation Manager', 'guard_name' => 'web']);
+    $user->syncRoles([$staffRole, $omRole]);
 
-        $project = Project::factory()->create();
+    $project = Project::factory()->create();
 
-        expect(ProjectResource::getEloquentQuery()->pluck('id')->all())
-            ->toContain($project->id);
-    }
+    expect(ProjectResource::getEloquentQuery()->pluck('id')->all())
+        ->not->toContain($project->id);
+});
+
+it('keeps the full project list for staff who are also accounting', function (): void {
+    $user = FilamentHelper::actingAs([
+        'view_any_project_project',
+        'view_project_project',
+    ]);
+    $staffRole = Role::query()->firstOrCreate(['name' => 'Staff', 'guard_name' => 'web']);
+    $accountingRole = Role::query()->firstOrCreate(['name' => 'Accounting', 'guard_name' => 'web']);
+    $user->syncRoles([$staffRole, $accountingRole]);
+
+    $project = Project::factory()->create();
+
+    expect(ProjectResource::getEloquentQuery()->pluck('id')->all())
+        ->toContain($project->id);
 });

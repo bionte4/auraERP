@@ -64,6 +64,47 @@ class OperationalScope
     }
 
     /**
+     * Project IDs the Projects/Tasks lists are restricted to for the
+     * given user, or null when the lists stay unrestricted.
+     *
+     * Admin/HRD are unscoped. Accounting keeps the full list for
+     * billing context unless they also operate as Operation Manager.
+     * Team Leaders only see the project they lead; Operation Managers
+     * and plain Staff only see projects assigned to them (as Project
+     * Manager or via their linked employee).
+     *
+     * @return array<int, int>|null
+     */
+    public function projectListScopeIds(?User $user = null): ?array
+    {
+        $user ??= auth()->user();
+
+        if (! $user instanceof User) {
+            return null;
+        }
+
+        if ($this->isUnscoped($user)) {
+            return null;
+        }
+
+        $hasRole = method_exists($user, 'hasRole');
+
+        if ($hasRole && $user->hasRole('Accounting') && ! $user->hasRole('Operation Manager')) {
+            return null;
+        }
+
+        if ($this->isTeamLeaderOnly($user)) {
+            return $this->teamLeaderProjectIds($user);
+        }
+
+        if (($hasRole && $user->hasRole('Operation Manager')) || $this->isStaffOnly($user)) {
+            return $this->projectIds($user);
+        }
+
+        return null;
+    }
+
+    /**
      * Project IDs where the user (via their employee record) is Team Leader.
      *
      * @return array<int, int>

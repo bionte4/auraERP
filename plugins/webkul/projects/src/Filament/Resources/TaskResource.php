@@ -69,18 +69,16 @@ class TaskResource extends Resource
     {
         $query = parent::getEloquentQuery();
 
-        // Team Leaders only see tasks of the single project they lead;
-        // plain Staff only see tasks of projects they are assigned to.
+        // Tasks follow the same project scope as the Projects list:
+        // Operation Managers, Team Leaders, and plain Staff only see
+        // tasks of projects assigned to them; Admin/HRD and
+        // Accounting keep the full list.
         $user = auth()->user();
 
         if ($user && class_exists(\Webkul\Project\Services\OperationalScope::class)) {
-            $scope = app(\Webkul\Project\Services\OperationalScope::class);
+            $projectIds = app(\Webkul\Project\Services\OperationalScope::class)->projectListScopeIds($user);
 
-            if ($scope->isTeamLeaderOnly($user)) {
-                $projectIds = $scope->teamLeaderProjectIds($user);
-            } elseif ($scope->isStaffOnly($user)) {
-                $projectIds = $scope->projectIds($user);
-            } else {
+            if ($projectIds === null) {
                 return $query;
             }
 

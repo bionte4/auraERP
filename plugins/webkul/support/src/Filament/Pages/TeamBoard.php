@@ -285,6 +285,20 @@ class TeamBoard extends Page
         }
 
         $projectsByTeam = $this->projectsGroupedByTeam($teams);
+
+        // Scoped viewers (Operation Manager, Team Leader, Staff) only
+        // see their own assigned projects on team cards — not every
+        // project owned by fellow team members. Admin sees all.
+        $allowedProjectIds = $this->assignedProjectIdsFor($user);
+
+        if ($allowedProjectIds !== null) {
+            $projectsByTeam = $projectsByTeam->map(
+                fn (Collection $projects): Collection => $projects
+                    ->filter(fn (Project $project): bool => in_array((int) $project->id, $allowedProjectIds, true))
+                    ->values()
+            );
+        }
+
         $allProjectIds = $projectsByTeam->flatten(1)->pluck('id')->unique()->all();
         $taskStats = $this->taskStats($allProjectIds);
 
@@ -293,6 +307,32 @@ class TeamBoard extends Page
 
             return $this->presentCard($team, $teamProjects, $taskStats, str_starts_with((string) app()->getLocale(), 'id'));
         })->all();
+    }
+
+    /**
+     * Project IDs the board viewer is restricted to, or null when
+     * unrestricted (Admin). Delegates to the projects plugin's
+     * OperationalScope so the board matches the Projects list scope.
+     *
+     * @return array<int, int>|null
+     */
+    protected function assignedProjectIdsFor(User $user): ?array
+    {
+        $adminRole = config('filament-shield.panel_user.name', 'Admin');
+
+        if (method_exists($user, 'hasRole') && $user->hasRole($adminRole)) {
+            return null;
+        }
+
+        $scopeClass = 'Webkul\\Project\\Services\\OperationalScope';
+
+        if (! class_exists($scopeClass)) {
+            return null;
+        }
+
+        $ids = app($scopeClass)->projectListScopeIds($user);
+
+        return $ids === null ? null : array_map('intval', $ids);
     }
 
     /**
@@ -344,6 +384,7 @@ class TeamBoard extends Page
         }
 
         $projects = $projectsQuery->with($with)->get();
+
 
         $teamsByName = $teams->keyBy(fn (Team $team): string => mb_strtolower(trim($team->name)));
         $teamsByProjectId = Schema::hasColumn('teams', 'project_id')
