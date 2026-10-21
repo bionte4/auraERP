@@ -3,9 +3,9 @@
 | Field | Nilai |
 | :--- | :--- |
 | **Produk** | auraERP — customisasi operasional Opsora |
-| **Versi dokumen** | 1.3 |
-| **Tanggal** | 2026-10-20 |
-| **Revisi** | UI Roles berbasis section permission (SEC-07), OM kelola karyawan terscope PM (EMP-07), sidebar expanded + badge navigasi |
+| **Versi dokumen** | 1.4 |
+| **Tanggal** | 2026-10-21 |
+| **Revisi** | UI Roles berbasis section permission (SEC-07), OM kelola karyawan terscope PM (EMP-07), sidebar expanded + badge navigasi, pemisahan Accounting/Accounting Manager + Kontrol Anggaran Proyek (SEC-08, PRJ-14/15), kerahasiaan nilai kontrak (PRJ-16), hapus tim beranggotakan dengan konfirmasi (SEC-09), Team Board multi-layout + pencarian + sortir (PRJ-17) |
 | **Status** | Baseline produk (fitur utama sudah live / di-deploy) |
 | **Pemilik produk** | Opsora / auraERP ops |
 | **Referensi operasional** | [WORKING_INSTRUCTION.md](../WORKING_INSTRUCTION.md) |
@@ -93,6 +93,7 @@ ID memakai prefiks modul. Prioritas: **P0** harus ada / sudah ada; **P1** pentin
 | SEC-05 | Resource Permission Global/Group/Individual diterapkan pada resource ber-policy | P0 | Done |
 | SEC-06 | Setelah sync RBAC, user harus logout/login agar cache Spatie segar | P0 | Operasional |
 | SEC-07 | UI pengelolaan Role (`/admin/shield/roles`) menampilkan section permission Resources/Pages/Widgets dengan checkbox per entitas; baseline role bawaan bersumber dari kode (`RolePermissionSynchronizer`) dan ter-reset saat sync, role custom tidak disentuh sync | P0 | Done |
+| SEC-09 | **Hapus tim yang masih beranggotakan:** tombol Delete di `Settings → Teams` selalu tampil bagi pemegang `delete_security_team` (praktisnya Admin; OM tetap tanpa hak hapus). Menghapus tim beranggotakan wajib lewat modal konfirmasi yang menyebutkan jumlah anggota; anggota dilepas dari tim lalu tim dihapus dalam satu alur — tidak perlu mengosongkan tim manual lebih dulu. Team Board sendiri tidak menyediakan aksi hapus | P0 | Done |
 
 ### 5.2 Karyawan & organisasi — `EMP`
 
@@ -155,6 +156,7 @@ ID memakai prefiks modul. Prioritas: **P0** harus ada / sudah ada; **P1** pentin
 | PRJ-14 | **Kontrol Anggaran Proyek** (`/admin/project/budget-control`, `page_project_project_budget_control`): per proyek nilai kontrak vs terinvoice/belum terbayar (invoice posted), anggaran operasional vs biaya vendor posted (serapan % terhitung otomatis dan tidak dapat diedit manual, sisa anggaran, status Aman <80% / Waspada ≥80% / Over budget ≥100% / Belum ada anggaran), pencarian + filter status + ringkasan total + ekspor Excel. Scope: Admin & Accounting Manager se-perusahaan, Accounting staff proyek timnya (`ProjectBudgetControlData`). Admin & Accounting Manager dapat mengatur `operational_cost` per proyek langsung dari tabel (tanpa `update_project_project`); staff read-only | P0 | Done |
 | PRJ-15 | **Pengaitan dokumen keuangan ke proyek:** kolom `accounts_account_moves.project_id` (nullable, FK null-on-delete) + field **Proyek** pada form Invoice pelanggan & Bill vendor (invoice memfilter proyek sesuai customer terpilih; non-editable saat posted/cancel) sebagai dasar realisasi anggaran per proyek (PRJ-14) | P0 | Done |
 | PRJ-16 | **Kerahasiaan nilai kontrak proyek:** `project_value` hanya terlihat oleh Admin & tim budget-control (Accounting/Accounting Manager) via satu gerbang `OperationalScope::canViewProjectValue()` — disembunyikan dari daftar/View/Edit proyek (field tidak dirender untuk non-finance), detail Customer, kartu Team Board, Ringkasan 360 karyawan, notifikasi pengingat proyek (isi tanpa nilai), konteks auraAI, dan API proyek. Accounting Manager dapat mengedit nilai kontrak dari halaman Budget Control (tercatat di activity log). OM/Team Leader memantau opex proyeknya lewat widget **Anggaran Operasional & Realisasi Opex** (`widget_project_operational_budget_widget`: anggaran, biaya vendor aktual, sisa, serapan — tanpa nilai kontrak/invoice) | P0 | Done |
+| PRJ-17 | **Team Board untuk skala banyak tim/proyek:** pilihan tampilan **Cards** (default) / **Compact** (kartu ringkas tanpa blok About) / **List** (satu baris per tim: anggota, proyek, task, nilai, status, diperbarui, Details) — Project kanban tetap khusus Admin/OM; **pencarian live** menurut nama tim atau nama proyek; **sortir** Nama A–Z/Z–A, anggota/proyek/task terbanyak, progress tertinggi/terendah, terakhir diperbarui, dan nilai terbesar (opsi & kolom nilai tunduk pada gerbang PRJ-16). Pilihan tampilan & sortir divalidasi server, tersimpan per sesi, dan scope kartu tetap mengikuti penugasan viewer (PRJ-13) | P1 | Done |
 
 ### 5.7 Laporan proyek — `RPT`
 

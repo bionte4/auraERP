@@ -359,7 +359,7 @@ Buka menu **Employees → Performance Plans → Evaluations** (`/admin/evaluatio
    - Daftar **Projects**: kolom **Kesehatan** (progress task, anggota, overdue, sisa hari).
    - **Tugaskan Karyawan**: opsi karyawan menampilkan kapasitas (`N proyek · X jam/minggu`); tombol **Buat Related User yang hilang**. Checkbox penugasan disinkronkan Livewire saat ganti proyek.
    - **Employee → Ringkasan 360** (`…/overview`) — proyek, kapasitas, cuti, aset, evaluasi, buat Related User 1-klik.
-   - **Team Board**: mode **Kanban Proyek** (seret karyawan antar proyek) untuk Admin/OM.
+   - **Team Board** (`/admin/team-board`): pilihan tampilan **Kartu Tim / Ringkas / Daftar** + **pencarian** nama tim/proyek + **sortir** (nama, anggota, proyek, task, progress, nilai, terakhir diperbarui) yang tersimpan per sesi, plus mode **Kanban Proyek** (seret karyawan antar proyek) untuk Admin/OM — rinciannya di Bagian 1.C poin 5.
    - Permission terkait (setelah `security:sync-rbac`): `page_support_my_day_dashboard`, `page_project_weekly_operations_report`, `page_project_customer_project_weekly_report`, `widget_project_attendance_presence_widget`, widget OM.
 6. **Link Tim ↔ Proyek eksplisit:** di **Settings → Teams** pilih **Proyek terkait**. Sinkron anggota & Team Board mengutamakan link ini; jika kosong, fallback cocok nama. Melepas karyawan dari proyek juga melepaskan mereka dari task terbuka proyek tersebut.
 7. **Reminder Berjenjang 3, 2, dan 1 Bulan Sebelum `End Date` Proyek:**
