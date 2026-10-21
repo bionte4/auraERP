@@ -4,13 +4,17 @@ namespace Webkul\Project\Filament\Pages;
 
 use BackedEnum;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
+use Filament\Actions\Action;
+use Filament\Forms\Components\FileUpload;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Webkul\Project\Models\Project;
+use Webkul\Project\Services\ProjectManagerBulkImportService;
 use Webkul\Project\Services\TeamMembershipSynchronizer;
 use Webkul\Security\Models\User;
 use Webkul\Support\Enums\NavigationGroup;
@@ -77,6 +81,60 @@ class AssignProjectManagers extends Page
     public function setManagerFilter(string $value): void
     {
         $this->managerFilter = $value;
+    }
+
+    protected function getHeaderActions(): array
+    {
+        $lang = 'projects::filament/pages/assign-project-managers';
+
+        return [
+            Action::make('downloadTemplate')
+                ->label(__($lang.'.actions.template'))
+                ->icon('heroicon-o-arrow-down-tray')
+                ->color('gray')
+                ->action(fn () => app(ProjectManagerBulkImportService::class)->downloadTemplate()),
+
+            Action::make('bulkImport')
+                ->label(__($lang.'.actions.import'))
+                ->icon('heroicon-o-arrow-up-tray')
+                ->color('gray')
+                ->modalHeading(__($lang.'.actions.import-heading'))
+                ->modalDescription(__($lang.'.actions.import-description'))
+                ->schema([
+                    FileUpload::make('file')
+                        ->label(__($lang.'.actions.import-file'))
+                        ->disk('local')
+                        ->directory('imports/project-managers')
+                        ->acceptedFileTypes([
+                            'text/csv',
+                            'text/plain',
+                            'application/vnd.ms-excel',
+                            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                        ])
+                        ->required(),
+                ])
+                ->action(function (array $data) use ($lang): void {
+                    $relativePath = (string) ($data['file'] ?? '');
+                    $fullPath = Storage::disk('local')->path($relativePath);
+
+                    $result = app(ProjectManagerBulkImportService::class)->importFromPath($fullPath);
+
+                    Storage::disk('local')->delete($relativePath);
+
+                    $body = __($lang.'.notifications.imported.body', $result);
+
+                    if ($result['errors'] !== []) {
+                        $body .= ' '.implode(' ', array_slice($result['errors'], 0, 8));
+                    }
+
+                    Notification::make()
+                        ->success()
+                        ->title(__($lang.'.notifications.imported.title'))
+                        ->body($body)
+                        ->persistent()
+                        ->send();
+                }),
+        ];
     }
 
     /**

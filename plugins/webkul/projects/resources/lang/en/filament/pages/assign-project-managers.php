@@ -28,6 +28,14 @@ return [
 
     'note' => 'Clearing or replacing a manager does not remove the previous manager from the team members — remove them manually in Teams if needed.',
 
+    'actions' => [
+        'template'           => 'Download Template',
+        'import'             => 'Import Excel / CSV',
+        'import-heading'     => 'Bulk assign Project Managers',
+        'import-description' => 'Download the template first: it is prefilled with every project and its current manager email. Edit the new_manager_email column (leave empty to clear a manager), then upload the file back. Projects are matched by project_id, managers by email, and only Operation Managers are accepted. The second sheet lists valid manager emails.',
+        'import-file'        => 'Template file (.xlsx / .csv)',
+    ],
+
     'notifications' => [
         'saved' => [
             'title'       => 'Project Manager saved',
@@ -36,6 +44,10 @@ return [
         ],
         'invalid-manager' => [
             'title' => 'Selected user is not an Operation Manager',
+        ],
+        'imported' => [
+            'title' => 'Project Manager import finished',
+            'body'  => ':updated updated, :unchanged unchanged, :skipped skipped.',
         ],
     ],
 ];
