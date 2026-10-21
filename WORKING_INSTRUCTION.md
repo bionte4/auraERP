@@ -119,6 +119,9 @@ sudo -u www-data php artisan optimize:clear
 - Bila suatu saat daftar permission di form Role kosong: generate dulu permission Shield lalu sync: `sudo -u www-data php artisan shield:generate --all --option=permissions --panel=admin` dilanjutkan `sudo -u www-data php artisan security:sync-rbac --shield`, lalu `optimize:clear` + hard refresh.
 - **Operation Manager & karyawan:** OM dapat tambah/edit/hapus (soft-delete per record saja, tanpa bulk/force-delete) karyawan, dengan scope: lihat = proyek yang ia ikuti + diri sendiri + bawahan langsung + karyawan buatannya; edit/hapus hanya di proyek di mana ia **Project Manager** (+ karyawan buatannya). Di luar scope, record tidak terlihat (akses URL langsung = 404/403).
 
+### J. Audit & Penautan User OM ↔ Karyawan (Scope Kosong: Dashboard/Teams Kosong)
+Scope OM dihitung dari `Project Manager` proyek (berbasis user) **dan** karyawan tertaut (`employees_employees.user_id`) yang di-assign ke proyek. User impor sering belum tertaut ke karyawan (email karyawan hasil impor kerap email pribadi) sehingga dashboard & Teams-nya kosong walau role sudah benar. Panduan audit, penautan massal berbasis email persis, pencarian nama, verifikasi duplikat, hingga penetapan PM: [docs/OM-USER-EMPLOYEE-LINKING.md](docs/OM-USER-EMPLOYEE-LINKING.md).
+
 *(Untuk menyinkronkan ulang seluruh Role & Permission kapan saja: `sudo -u www-data php artisan security:sync-rbac`)*
 
 ---
