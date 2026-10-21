@@ -3,6 +3,7 @@
 use Livewire\Livewire;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Webkul\Project\Filament\Widgets\OperationalBudgetWidget;
 use Webkul\Project\Filament\Widgets\OperationManagerWorkloadWidget;
 use Webkul\Project\Models\Project;
 use Webkul\Security\Models\User;
@@ -89,4 +90,23 @@ it('grants operation manager workload widget permission to admin and operation m
 
     $staffRole = Role::query()->where('name', 'Staff')->firstOrFail();
     expect($staffRole->hasPermissionTo($permission))->toBeFalse();
+});
+
+it('paginates operation managers independently from the opex budget table', function (): void {
+    FilamentHelper::actingAs([
+        'widget_project_operation_manager_workload_widget',
+        'widget_project_operational_budget_widget',
+        'view_project_project',
+        'view_any_project_project',
+    ]);
+
+    $workload = Livewire::test(OperationManagerWorkloadWidget::class);
+    $budget = Livewire::test(OperationalBudgetWidget::class);
+
+    expect($workload->instance()->getTablePaginationPageName())
+        ->toBe('omWorkloadPage')
+        ->and($budget->instance()->getTablePaginationPageName())
+        ->toBe('opexBudgetPage')
+        ->and($workload->instance()->getTablePaginationPageName())
+        ->not->toBe($budget->instance()->getTablePaginationPageName());
 });

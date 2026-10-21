@@ -88,6 +88,7 @@ class TopProjectsWidget extends BaseWidget
 
         return $table
             ->query($query)
+            ->queryStringIdentifier('topProjects')
             ->defaultKeySort(false)
             ->defaultPaginationPageOption(5)
             ->columns([

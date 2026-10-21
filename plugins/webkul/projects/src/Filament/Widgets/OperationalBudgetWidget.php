@@ -54,6 +54,7 @@ class OperationalBudgetWidget extends BaseWidget
 
         return $table
             ->query($this->projectsQuery())
+            ->queryStringIdentifier('opexBudget')
             ->defaultSort('name', 'asc')
             ->defaultPaginationPageOption(5)
             ->paginationPageOptions([5, 10, 25])
@@ -86,10 +87,10 @@ class OperationalBudgetWidget extends BaseWidget
                     ->badge()
                     ->state(fn (Project $record): string => $this->statusLabel($this->budgetRow($record)['status']))
                     ->color(fn (Project $record): string => match ($this->budgetRow($record)['status']) {
-                        ProjectBudgetControlData::STATUS_OVER => 'danger',
+                        ProjectBudgetControlData::STATUS_OVER    => 'danger',
                         ProjectBudgetControlData::STATUS_WARNING => 'warning',
-                        ProjectBudgetControlData::STATUS_OK => 'success',
-                        default => 'gray',
+                        ProjectBudgetControlData::STATUS_OK      => 'success',
+                        default                                  => 'gray',
                     })
                     ->formatStateUsing(fn (string $state, Project $record): string => $this->budgetRow($record)['absorption_pct'] !== null
                         ? $this->budgetRow($record)['absorption_pct'].'% · '.$state

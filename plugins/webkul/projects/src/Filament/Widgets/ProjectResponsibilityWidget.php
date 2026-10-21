@@ -49,6 +49,7 @@ class ProjectResponsibilityWidget extends BaseWidget
     {
         return $table
             ->query($this->projectsQuery())
+            ->queryStringIdentifier('responsibility')
             ->defaultSort('name', 'asc')
             ->defaultPaginationPageOption(5)
             ->paginationPageOptions([5, 10, 25])

@@ -81,6 +81,7 @@ class TopAssigneesWidget extends BaseWidget
 
         return $table
             ->query($query)
+            ->queryStringIdentifier('topAssignees')
             ->defaultKeySort(false)
             ->defaultPaginationPageOption(5)
             ->columns([

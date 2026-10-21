@@ -52,7 +52,9 @@ class OperationManagerWorkloadWidget extends BaseWidget
                     ])
                     ->orderBy('name')
             )
+            ->queryStringIdentifier('omWorkload')
             ->defaultPaginationPageOption(10)
+            ->paginationPageOptions([5, 10, 25])
             ->columns([
                 TextColumn::make('name')
                     ->label(__('projects::filament/widgets/operation-manager-workload.table-columns.operation-manager'))

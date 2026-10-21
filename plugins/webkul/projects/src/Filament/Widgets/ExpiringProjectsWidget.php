@@ -43,6 +43,7 @@ class ExpiringProjectsWidget extends BaseWidget
     {
         return $table
             ->query($this->expiringProjectsQuery())
+            ->queryStringIdentifier('expiringProjects')
             ->defaultSort('end_date', 'asc')
             ->defaultPaginationPageOption(5)
             ->paginationPageOptions([5, 10, 25])
