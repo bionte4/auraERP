@@ -9,11 +9,13 @@ use Illuminate\Database\Eloquent\Builder;
 use Webkul\Evaluation\Enums\EvaluationStatus;
 use Webkul\Evaluation\Models\Evaluation;
 use Webkul\Performance\Models\PerformancePlan;
+use Webkul\Evaluation\Filament\Widgets\Concerns\ScopesEvaluationDashboard;
 use Webkul\PluginManager\Package;
 
 class EvaluationStatsOverviewWidget extends BaseWidget
 {
     use InteractsWithPageFilters;
+    use ScopesEvaluationDashboard;
 
     protected ?string $pollingInterval = '30s';
 
@@ -55,7 +57,7 @@ class EvaluationStatsOverviewWidget extends BaseWidget
             $query->whereDate('period_end', '<=', $this->pageFilters['endDate']);
         }
 
-        return $query;
+        return $this->applyEvaluationScope($query);
     }
 
     protected function getStats(): array
@@ -89,7 +91,9 @@ class EvaluationStatsOverviewWidget extends BaseWidget
         $plansCount = 0;
 
         if (Package::isPluginInstalled('performance') && class_exists(PerformancePlan::class)) {
-            $plansCount = PerformancePlan::query()->count();
+            $planQuery = PerformancePlan::query();
+            $this->applyEvaluationScope($planQuery);
+            $plansCount = $planQuery->count();
         }
 
         return [

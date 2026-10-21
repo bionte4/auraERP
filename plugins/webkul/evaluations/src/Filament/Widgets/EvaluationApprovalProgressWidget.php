@@ -6,6 +6,7 @@ use Filament\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
+use Webkul\Evaluation\Filament\Widgets\Concerns\ScopesEvaluationDashboard;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
@@ -18,6 +19,7 @@ use Webkul\Evaluation\Models\Evaluation;
 class EvaluationApprovalProgressWidget extends BaseWidget
 {
     use InteractsWithPageFilters;
+    use ScopesEvaluationDashboard;
 
     protected static bool $isLazy = false;
 
@@ -53,7 +55,7 @@ class EvaluationApprovalProgressWidget extends BaseWidget
             $query->whereIn('employee_id', (array) $this->pageFilters['employee_id']);
         }
 
-        return $query->latest('updated_at');
+        return $this->applyEvaluationScope($query)->latest('updated_at');
     }
 
     public function table(Table $table): Table

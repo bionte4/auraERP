@@ -4,6 +4,7 @@ namespace Webkul\Evaluation\Filament\Widgets;
 
 use Filament\Widgets\ChartWidget;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
+use Webkul\Evaluation\Filament\Widgets\Concerns\ScopesEvaluationDashboard;
 use Illuminate\Contracts\Support\Htmlable;
 use Webkul\Evaluation\Enums\RecommendationDecision;
 use Webkul\Evaluation\Models\Evaluation;
@@ -11,6 +12,7 @@ use Webkul\Evaluation\Models\Evaluation;
 class EvaluationRecommendationChart extends ChartWidget
 {
     use InteractsWithPageFilters;
+    use ScopesEvaluationDashboard;
 
     protected ?string $maxHeight = '270px';
 
@@ -45,6 +47,8 @@ class EvaluationRecommendationChart extends ChartWidget
                 $query->whereIn('employee_id', (array) $this->pageFilters['employee_id']);
             }
 
+            $this->applyEvaluationScope($query);
+
             $labels[] = $decision->getLabel();
             $data[] = $query->count();
         }
@@ -54,6 +58,8 @@ class EvaluationRecommendationChart extends ChartWidget
         if (! empty($this->pageFilters['evaluation_type'])) {
             $undecidedQuery->whereIn('evaluation_type', (array) $this->pageFilters['evaluation_type']);
         }
+
+        $this->applyEvaluationScope($undecidedQuery);
 
         $labels[] = 'Belum Ditentukan';
         $data[] = $undecidedQuery->count();

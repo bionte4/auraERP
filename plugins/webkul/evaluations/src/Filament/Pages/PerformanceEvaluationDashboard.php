@@ -17,6 +17,7 @@ use Webkul\Employee\Models\Employee;
 use Webkul\Evaluation\Enums\EvaluationStatus;
 use Webkul\Evaluation\Enums\EvaluationType;
 use Webkul\Evaluation\Exports\EvaluationsMonitoringExport;
+use Webkul\Evaluation\Filament\Widgets\Concerns\ScopesEvaluationDashboard;
 use Webkul\Evaluation\Filament\Widgets\EvaluationApprovalProgressWidget;
 use Webkul\Evaluation\Filament\Widgets\EvaluationByTypeChart;
 use Webkul\Evaluation\Filament\Widgets\EvaluationRecommendationChart;
@@ -30,6 +31,7 @@ class PerformanceEvaluationDashboard extends BaseDashboard
 {
     use BaseDashboard\Concerns\HasFiltersForm;
     use HasPageShield;
+    use ScopesEvaluationDashboard;
 
     protected static string $routePath = 'performance-evaluation-dashboard';
 
@@ -62,6 +64,8 @@ class PerformanceEvaluationDashboard extends BaseDashboard
                     if ($ids = SelectedFilterIds::make($this->filters['employee_id'] ?? null)) {
                         $query->whereIn('employee_id', $ids);
                     }
+
+                    $this->applyEvaluationScope($query);
 
                     $filename = 'Monitoring-Evaluasi-Karyawan-'.now()->format('Y-m-d_His').'.xlsx';
 
@@ -175,7 +179,17 @@ class PerformanceEvaluationDashboard extends BaseDashboard
                         Select::make('employee_id')
                             ->label('Karyawan')
                             ->native()
-                            ->options(fn (): array => Employee::query()->orderBy('name')->pluck('name', 'id')->all())
+                            ->options(function (): array {
+                                $query = Employee::query()->orderBy('name');
+
+                                $scope = static::evaluationDashboardScope();
+
+                                if ($scope !== null) {
+                                    $query->whereIn('id', $scope['employeeIds'] ?: [0]);
+                                }
+
+                                return $query->pluck('name', 'id')->all();
+                            })
                             ->placeholder($allLabel),
                     ])
                     ->columnSpanFull(),

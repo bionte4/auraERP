@@ -4,6 +4,7 @@ namespace Webkul\Evaluation\Filament\Widgets;
 
 use Filament\Widgets\ChartWidget;
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
+use Webkul\Evaluation\Filament\Widgets\Concerns\ScopesEvaluationDashboard;
 use Illuminate\Contracts\Support\Htmlable;
 use Webkul\Evaluation\Enums\EvaluationType;
 use Webkul\Evaluation\Models\Evaluation;
@@ -11,6 +12,7 @@ use Webkul\Evaluation\Models\Evaluation;
 class EvaluationByTypeChart extends ChartWidget
 {
     use InteractsWithPageFilters;
+    use ScopesEvaluationDashboard;
 
     protected ?string $maxHeight = '270px';
 
@@ -48,6 +50,8 @@ class EvaluationByTypeChart extends ChartWidget
             if (! empty($this->pageFilters['endDate'])) {
                 $query->whereDate('period_end', '<=', $this->pageFilters['endDate']);
             }
+
+            $this->applyEvaluationScope($query);
 
             $labels[] = $type->getLabel();
             $data[] = $query->count();
