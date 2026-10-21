@@ -34,6 +34,12 @@ return [
             ],
 
             'delete' => [
+                'modal' => [
+                    'heading'            => 'Delete team?',
+                    'description'        => 'Team ":name" will be deleted. This cannot be undone.',
+                    'description-members' => 'Team ":name" still has :count member(s). They will be removed from the team first, then the team will be deleted. This cannot be undone.',
+                    'submit'             => 'Yes, delete team',
+                ],
                 'notification' => [
                     'title' => 'Team deleted',
                     'body'  => 'The team has been deleted successfully.',

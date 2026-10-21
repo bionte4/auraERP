@@ -47,14 +47,32 @@ class TeamsTable
                             ->title(__('security::filament/resources/team.table.actions.edit.notification.title'))
                             ->body(__('security::filament/resources/team.table.actions.edit.notification.body'))
                     ),
+                // Always visible to users allowed to delete (TeamPolicy).
+                // Deleting a team that still has members used to hide this
+                // action entirely, which looked like a bug even for Admin.
+                // Instead, confirm explicitly and detach members first.
                 DeleteAction::make()
-                    ->hidden(fn (Team $record): bool => $record->users?->isNotEmpty())
-                    ->successNotification(
+                    ->requiresConfirmation()
+                    ->modalHeading(__('security::filament/resources/team.table.actions.delete.modal.heading'))
+                    ->modalDescription(fn (Team $record): string => $record->users->isNotEmpty()
+                        ? __('security::filament/resources/team.table.actions.delete.modal.description-members', [
+                            'name'  => $record->name,
+                            'count' => $record->users->count(),
+                        ])
+                        : __('security::filament/resources/team.table.actions.delete.modal.description', [
+                            'name' => $record->name,
+                        ]))
+                    ->modalSubmitActionLabel(__('security::filament/resources/team.table.actions.delete.modal.submit'))
+                    ->action(function (Team $record): void {
+                        $record->users()->detach();
+                        $record->delete();
+
                         Notification::make()
                             ->success()
                             ->title(__('security::filament/resources/team.table.actions.delete.notification.title'))
                             ->body(__('security::filament/resources/team.table.actions.delete.notification.body'))
-                    ),
+                            ->send();
+                    }),
             ])
             ->emptyStateActions([
                 CreateAction::make()

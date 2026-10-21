@@ -49,6 +49,7 @@ Saat membuat atau mengedit User di **Settings → Users**, terdapat pengaturan *
    - **Anggota**: Manajer Proyek + karyawan yang di-assign ke proyek (nama Tim = nama Proyek).
    - **Total N anggota** dapat diklik → membuka daftar karyawan terlibat (peran + nama proyek).
    - **Daftar proyek yang dapat diklik** menuju detail masing-masing proyek.
+6. **Menghapus tim:** Team Board tidak punya aksi hapus (hanya *Details* ke Settings → Teams). Di **Settings → Teams**, tombol **Delete** selalu tampil bagi yang berhak (`delete_security_team`, praktisnya Admin); bila tim masih punya anggota, modal konfirmasi menyebutkan jumlah anggotanya — anggota dilepas dari tim dulu, lalu tim dihapus, dalam satu alur. Tim janggal (mis. bernama orang dan tidak tertaut proyek — tim resmi sistem selalu bernama sama dengan proyeknya) bersihkan dengan cara ini; tidak perlu mengosongkan anggota manual lebih dulu.
 
 ### D. Audit Trail (khusus Admin — Security Access)
 1. Menu **Settings → Audit Trail** (`/admin/audit-trail`) **hanya tampil dan dapat dibuka oleh role Admin** (hard-check role + policy; HRD/OM/Kasir/Staff ditolak).

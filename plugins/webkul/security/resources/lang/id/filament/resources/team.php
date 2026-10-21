@@ -34,6 +34,12 @@ return [
             ],
 
             'delete' => [
+                'modal' => [
+                    'heading'             => 'Hapus tim?',
+                    'description'         => 'Tim ":name" akan dihapus. Tindakan ini tidak dapat dibatalkan.',
+                    'description-members' => 'Tim ":name" masih memiliki :count anggota. Anggota akan dilepas dari tim terlebih dahulu, lalu tim dihapus. Tindakan ini tidak dapat dibatalkan.',
+                    'submit'              => 'Ya, hapus tim',
+                ],
                 'notification' => [
                     'title' => 'Tim dihapus',
                     'body'  => 'Tim berhasil dihapus.',
