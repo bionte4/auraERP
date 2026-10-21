@@ -47,7 +47,8 @@ Saat membuat atau mengedit User di **Settings → Users**, terdapat pengaturan *
    - **Karyawan tanpa Related User tidak dapat tersinkron** (tidak punya akun login). Mereka dilaporkan apa adanya: daftar namanya tampil di **Settings → Teams → Edit** pada tim terkait ("*Karyawan proyek yang tidak dapat tersinkron*"), dan di **Project → Assign Employees** karyawan semacam itu bertanda `(no login)` + ada tombol pembuatan Related User massal (badge di menu = jumlah karyawan aktif tanpa akun).
    - Dipicu saat simpan proyek, Assign Employees, atau simpan Tim. Backfill setelah deploy: `sudo -u www-data php artisan projects:sync-team-memberships` (output sekarang juga melaporkan jumlah keanggotaan karyawan basi yang dilepas).
 5. Papan **Dashboard → Team Board / Manage Teams** menampilkan:
-   - **Anggota**: Manajer Proyek + karyawan yang di-assign ke proyek (nama Tim = nama Proyek).
+   - **Anggota = karyawan proyek** (bukan akun login Tim). Karyawan tanpa Related User tetap tampil dengan badge **Tanpa login**. Akun login yang tidak punya record karyawan tidak dihitung sebagai anggota papan.
+   - Admin/OM dapat **Ubah anggota** di kartu: tambah karyawan ke proyek tertaut, atau **Lepas dari proyek** (ikut sinkron Tim). Manajer Proyek tidak dilepas dari sini — ubah di form proyek.
    - **Total N anggota** dapat diklik → membuka daftar karyawan terlibat (peran + nama proyek).
    - **Daftar proyek yang dapat diklik** menuju detail masing-masing proyek.
    - **Pilihan tampilan (layout)** di header papan: **Cards** (default, kartu penuh), **Compact** (kartu ringkas — muat lebih banyak tim per layar, tanpa blok *About team*), dan **List** (satu baris per tim dalam tabel: Tim, Anggota, Proyek, Task, Nilai (hanya untuk yang berhak melihat nilai kontrak), Status, Diperbarui, Details). Pilihan tersimpan otomatis per sesi login. **Project kanban** (Admin/OM) tetap tersedia dan tidak berubah.

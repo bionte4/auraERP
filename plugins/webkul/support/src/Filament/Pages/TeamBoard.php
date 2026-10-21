@@ -36,6 +36,10 @@ class TeamBoard extends Page
 
     public string $sortBy = 'name_asc';
 
+    public ?int $editingTeamId = null;
+
+    public ?int $addEmployeeId = null;
+
     /**
      * Sort options offered on the board (cards, compact, and list modes).
      *
@@ -144,6 +148,125 @@ class TeamBoard extends Page
             ->send();
     }
 
+    public function startEditingMembers(int $teamId): void
+    {
+        if (! static::managesTeams()) {
+            return;
+        }
+
+        $this->editingTeamId = $teamId;
+        $this->addEmployeeId = null;
+    }
+
+    public function stopEditingMembers(): void
+    {
+        $this->editingTeamId = null;
+        $this->addEmployeeId = null;
+    }
+
+    public function addEmployeeToTeam(): void
+    {
+        if (! static::managesTeams() || ! $this->editingTeamId || ! $this->addEmployeeId) {
+            return;
+        }
+
+        $indonesian = str_starts_with((string) app()->getLocale(), 'id');
+        $cards = $this->cardsFor(auth()->user());
+        $card = collect($cards)->firstWhere('id', $this->editingTeamId);
+
+        if ($card === null || ($card['primary_project_id'] ?? null) === null) {
+            Notification::make()
+                ->warning()
+                ->title($indonesian ? 'Tim belum tertaut proyek' : 'Team is not linked to a project')
+                ->body($indonesian
+                    ? 'Tautkan tim ke proyek atau samakan nama tim dengan nama proyek sebelum menambah karyawan.'
+                    : 'Link the team to a project or match the team name to a project name before adding employees.')
+                ->send();
+
+            return;
+        }
+
+        $project = Project::query()->withoutGlobalScopes()->find($card['primary_project_id']);
+        $employee = Employee::query()->find($this->addEmployeeId);
+
+        if (! $project instanceof Project || ! $employee instanceof Employee) {
+            return;
+        }
+
+        $assigner = app(ProjectEmployeeAssigner::class);
+        $ids = $assigner->assignedEmployees($project)->pluck('id')->push($employee->id)->unique()->values()->all();
+        $assigner->sync($project, $ids);
+
+        $this->addEmployeeId = null;
+
+        Notification::make()
+            ->success()
+            ->title($indonesian ? 'Karyawan ditambahkan' : 'Employee added')
+            ->body($employee->name)
+            ->send();
+    }
+
+    public function removeEmployeeFromTeam(int $teamId, int $employeeId): void
+    {
+        if (! static::managesTeams()) {
+            return;
+        }
+
+        $indonesian = str_starts_with((string) app()->getLocale(), 'id');
+        $cards = $this->cardsFor(auth()->user());
+        $card = collect($cards)->firstWhere('id', $teamId);
+
+        if ($card === null) {
+            return;
+        }
+
+        $employee = Employee::query()->find($employeeId);
+
+        if (! $employee instanceof Employee) {
+            return;
+        }
+
+        $assigner = app(ProjectEmployeeAssigner::class);
+        $removedFrom = [];
+
+        foreach ($card['projects'] ?? [] as $projectLink) {
+            $projectId = (int) ($projectLink['id'] ?? 0);
+            $project = $projectId > 0 ? Project::query()->withoutGlobalScopes()->find($projectId) : null;
+
+            if (! $project instanceof Project) {
+                continue;
+            }
+
+            $currentIds = $assigner->assignedEmployees($project)->pluck('id')->map(fn ($id): int => (int) $id);
+            $nextIds = $currentIds->reject(fn (int $id): bool => $id === $employeeId)->values()->all();
+
+            if (count($nextIds) === $currentIds->count()) {
+                continue;
+            }
+
+            $assigner->sync($project, $nextIds);
+            $removedFrom[] = $project->name;
+        }
+
+        if ($removedFrom === []) {
+            Notification::make()
+                ->warning()
+                ->title($indonesian ? 'Anggota tidak dapat dihapus' : 'Member cannot be removed')
+                ->body($indonesian
+                    ? 'Manajer Proyek tanpa penugasan karyawan tidak dihapus dari roster di sini. Ubah Manajer Proyek di form proyek.'
+                    : 'A Project Manager who is not an assigned employee is not removed here. Change the Project Manager on the project form.')
+                ->send();
+
+            return;
+        }
+
+        Notification::make()
+            ->success()
+            ->title($indonesian ? 'Karyawan dilepas dari proyek' : 'Employee unassigned from project')
+            ->body($employee->name.' — '.implode(', ', $removedFrom))
+            ->send();
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -151,7 +274,8 @@ class TeamBoard extends Page
     {
         $indonesian = str_starts_with((string) app()->getLocale(), 'id');
         $manages = static::managesTeams();
-        $cards = $this->sortCards($this->filterCards($this->cardsFor(auth()->user())));
+        $rawCards = $this->cardsFor(auth()->user());
+        $cards = $this->sortCards($this->filterCards($rawCards));
 
         $canViewValue = false;
         $scopeClass = 'Webkul\\Project\\Services\\OperationalScope';
@@ -161,12 +285,12 @@ class TeamBoard extends Page
         }
 
         return [
-            'manages'  => $manages,
-            'viewMode' => $this->viewMode,
-            'sortBy'   => $this->sortBy,
+            'manages'      => $manages,
+            'viewMode'     => $this->viewMode,
+            'sortBy'       => $this->sortBy,
             'canViewValue' => $canViewValue,
-            'kanban'   => $this->viewMode === 'kanban' ? $this->kanbanColumns(auth()->user()) : [],
-            'title'    => $manages
+            'kanban'       => $this->viewMode === 'kanban' ? $this->kanbanColumns(auth()->user()) : [],
+            'title'        => $manages
                 ? ($indonesian ? 'Kelola Tim' : 'Manage Teams')
                 : ($indonesian ? 'Tim Saya' : 'My Team'),
             'subtitle' => $manages
@@ -176,10 +300,10 @@ class TeamBoard extends Page
                 : ($indonesian
                     ? 'Proyek dan kemajuan tim tempat Anda menjadi anggota.'
                     : 'Projects and progress for the team you belong to.'),
-            'action'   => $this->headerAction($indonesian),
-            'cards'    => $cards,
+            'action'    => $this->headerAction($indonesian),
+            'cards'     => $cards,
             'searching' => filled($this->search),
-            'empty'    => $manages
+            'empty'     => $manages
                 ? ($indonesian
                     ? 'Belum ada tim. Buat tim, atau pastikan nama Tim sama dengan nama Proyek agar anggota tersinkron.'
                     : 'No team yet. Create a team, or match the team name to a project name so members sync.')
@@ -187,40 +311,49 @@ class TeamBoard extends Page
                     ? 'Anda belum masuk ke sebuah tim. Minta Operation Manager menambahkan Anda.'
                     : 'You are not on a team yet. Ask an Operation Manager to add you.'),
             'labels'   => [
-                'members'           => $indonesian ? 'anggota' : 'members',
-                'members-click'     => $indonesian ? 'Klik untuk melihat daftar karyawan' : 'Click to view employees',
-                'members-list'      => $indonesian ? 'Karyawan terlibat' : 'Involved employees',
-                'role-manager'      => $indonesian ? 'Manajer Proyek' : 'Project Manager',
-                'role-assigned'     => $indonesian ? 'Ditugaskan ke proyek' : 'Assigned to project',
-                'role-team'         => $indonesian ? 'Anggota tim' : 'Team member',
-                'about'             => $indonesian ? 'Tentang tim' : 'About team',
-                'projects'          => $indonesian ? 'Proyek' : 'Projects',
-                'tasks'             => $indonesian ? 'Tugas' : 'Tasks',
-                'value'             => $indonesian ? 'Nilai' : 'Value',
-                'status'            => $indonesian ? 'Status proyek berjalan' : 'Status of current projects',
-                'updated'           => $indonesian ? 'Diperbarui' : 'Updated',
-                'details'           => $indonesian ? 'Detail' : 'Details',
-                'new'               => $indonesian ? 'Baru' : 'New',
-                'open'              => $indonesian ? 'Buka' : 'Open',
-                'mode-cards'        => $indonesian ? 'Kartu Tim' : 'Team cards',
-                'mode-compact'      => $indonesian ? 'Ringkas' : 'Compact',
-                'mode-list'         => $indonesian ? 'Daftar' : 'List',
-                'mode-kanban'       => $indonesian ? 'Kanban Proyek' : 'Project kanban',
-                'drop-here'         => $indonesian ? 'Lepas di sini' : 'Drop here',
-                'team'              => $indonesian ? 'Tim' : 'Team',
+                'members'            => $indonesian ? 'anggota' : 'members',
+                'members-click'      => $indonesian ? 'Klik untuk melihat daftar karyawan' : 'Click to view employees',
+                'members-list'       => $indonesian ? 'Karyawan terlibat' : 'Involved employees',
+                'role-manager'       => $indonesian ? 'Manajer Proyek' : 'Project Manager',
+                'role-assigned'      => $indonesian ? 'Ditugaskan ke proyek' : 'Assigned to project',
+                'role-team'          => $indonesian ? 'Anggota tim' : 'Team member',
+                'about'              => $indonesian ? 'Tentang tim' : 'About team',
+                'projects'           => $indonesian ? 'Proyek' : 'Projects',
+                'tasks'              => $indonesian ? 'Tugas' : 'Tasks',
+                'value'              => $indonesian ? 'Nilai' : 'Value',
+                'status'             => $indonesian ? 'Status proyek berjalan' : 'Status of current projects',
+                'updated'            => $indonesian ? 'Diperbarui' : 'Updated',
+                'details'            => $indonesian ? 'Detail' : 'Details',
+                'new'                => $indonesian ? 'Baru' : 'New',
+                'open'               => $indonesian ? 'Buka' : 'Open',
+                'mode-cards'         => $indonesian ? 'Kartu Tim' : 'Team cards',
+                'mode-compact'       => $indonesian ? 'Ringkas' : 'Compact',
+                'mode-list'          => $indonesian ? 'Daftar' : 'List',
+                'mode-kanban'        => $indonesian ? 'Kanban Proyek' : 'Project kanban',
+                'drop-here'          => $indonesian ? 'Lepas di sini' : 'Drop here',
+                'team'               => $indonesian ? 'Tim' : 'Team',
                 'search-placeholder' => $indonesian ? 'Cari tim atau proyek…' : 'Search teams or projects…',
-                'no-results'        => $indonesian ? 'Tidak ada tim yang cocok dengan pencarian.' : 'No teams match your search.',
-                'sort'              => $indonesian ? 'Urutkan' : 'Sort',
-                'sort-name_asc'     => $indonesian ? 'Nama A–Z' : 'Name A–Z',
-                'sort-name_desc'    => $indonesian ? 'Nama Z–A' : 'Name Z–A',
-                'sort-members_desc' => $indonesian ? 'Anggota terbanyak' : 'Most members',
+                'no-results'         => $indonesian ? 'Tidak ada tim yang cocok dengan pencarian.' : 'No teams match your search.',
+                'sort'               => $indonesian ? 'Urutkan' : 'Sort',
+                'sort-name_asc'      => $indonesian ? 'Nama A–Z' : 'Name A–Z',
+                'sort-name_desc'     => $indonesian ? 'Nama Z–A' : 'Name Z–A',
+                'sort-members_desc'  => $indonesian ? 'Anggota terbanyak' : 'Most members',
                 'sort-projects_desc' => $indonesian ? 'Proyek terbanyak' : 'Most projects',
-                'sort-tasks_desc'   => $indonesian ? 'Task terbanyak' : 'Most tasks',
+                'sort-tasks_desc'    => $indonesian ? 'Task terbanyak' : 'Most tasks',
                 'sort-progress_desc' => $indonesian ? 'Progress tertinggi' : 'Highest progress',
-                'sort-progress_asc' => $indonesian ? 'Progress terendah' : 'Lowest progress',
-                'sort-value_desc'   => $indonesian ? 'Nilai terbesar' : 'Highest value',
-                'sort-updated_desc' => $indonesian ? 'Terakhir diperbarui' : 'Recently updated',
+                'sort-progress_asc'  => $indonesian ? 'Progress terendah' : 'Lowest progress',
+                'sort-value_desc'    => $indonesian ? 'Nilai terbesar' : 'Highest value',
+                'sort-updated_desc'  => $indonesian ? 'Terakhir diperbarui' : 'Recently updated',
+                'no-login'           => $indonesian ? 'Tanpa login' : 'No login',
+                'edit-members'       => $indonesian ? 'Ubah anggota' : 'Edit members',
+                'done-editing'       => $indonesian ? 'Selesai' : 'Done',
+                'add-member'         => $indonesian ? 'Tambah karyawan' : 'Add employee',
+                'add'                => $indonesian ? 'Tambah' : 'Add',
+                'remove-member'      => $indonesian ? 'Lepas dari proyek' : 'Unassign from project',
+                'choose-employee'    => $indonesian ? 'Pilih karyawan…' : 'Choose an employee…',
             ],
+            'candidateEmployees' => $this->candidateEmployeesForEditor($rawCards),
+            'editingTeamId'      => $this->editingTeamId,
         ];
     }
 
@@ -265,15 +398,15 @@ class TeamBoard extends Page
     protected function sortCards(array $cards): array
     {
         $sorted = match ($this->sortBy) {
-            'name_desc' => collect($cards)->sortByDesc(fn (array $card): string => mb_strtolower((string) ($card['name'] ?? ''))),
-            'members_desc' => collect($cards)->sortByDesc(fn (array $card): int => (int) ($card['member_count'] ?? 0)),
+            'name_desc'     => collect($cards)->sortByDesc(fn (array $card): string => mb_strtolower((string) ($card['name'] ?? ''))),
+            'members_desc'  => collect($cards)->sortByDesc(fn (array $card): int => (int) ($card['member_count'] ?? 0)),
             'projects_desc' => collect($cards)->sortByDesc(fn (array $card): int => (int) ($card['project_count'] ?? 0)),
-            'tasks_desc' => collect($cards)->sortByDesc(fn (array $card): int => (int) ($card['task_count'] ?? 0)),
+            'tasks_desc'    => collect($cards)->sortByDesc(fn (array $card): int => (int) ($card['task_count'] ?? 0)),
             'progress_desc' => collect($cards)->sortByDesc(fn (array $card): int => (int) ($card['progress'] ?? 0)),
-            'progress_asc' => collect($cards)->sortBy(fn (array $card): int => (int) ($card['progress'] ?? 0)),
-            'value_desc' => collect($cards)->sortByDesc(fn (array $card): float => (float) ($card['value_amount'] ?? -1)),
-            'updated_desc' => collect($cards)->sortByDesc(fn (array $card): int => (int) ($card['updated_ts'] ?? 0)),
-            default => collect($cards)->sortBy(fn (array $card): string => mb_strtolower((string) ($card['name'] ?? ''))),
+            'progress_asc'  => collect($cards)->sortBy(fn (array $card): int => (int) ($card['progress'] ?? 0)),
+            'value_desc'    => collect($cards)->sortByDesc(fn (array $card): float => (float) ($card['value_amount'] ?? -1)),
+            'updated_desc'  => collect($cards)->sortByDesc(fn (array $card): int => (int) ($card['updated_ts'] ?? 0)),
+            default         => collect($cards)->sortBy(fn (array $card): string => mb_strtolower((string) ($card['name'] ?? ''))),
         };
 
         return $sorted->values()->all();
@@ -316,11 +449,12 @@ class TeamBoard extends Page
                 'href'      => $this->projectViewUrl($project),
                 'employees' => $project->employees->map(function (Employee $employee, int $i) use ($palette): array {
                     return [
-                        'id'       => $employee->id,
-                        'name'     => $employee->name,
-                        'initials' => Str::upper(Str::substr($employee->name, 0, 1)),
-                        'color'    => $palette[$i % count($palette)],
-                        'href'     => $this->employeeViewUrl($employee),
+                        'id'        => $employee->id,
+                        'name'      => $employee->name,
+                        'initials'  => Str::upper(Str::substr($employee->name, 0, 1)),
+                        'color'     => $palette[$i % count($palette)],
+                        'href'      => $this->employeeViewUrl($employee),
+                        'has_login' => filled($employee->user_id),
                     ];
                 })->values()->all(),
             ];
@@ -506,7 +640,6 @@ class TeamBoard extends Page
 
         $projects = $projectsQuery->with($with)->get();
 
-
         $teamsByName = $teams->keyBy(fn (Team $team): string => mb_strtolower(trim($team->name)));
         $teamsByProjectId = Schema::hasColumn('teams', 'project_id')
             ? $teams->filter(fn (Team $team): bool => filled($team->project_id))->keyBy('project_id')
@@ -619,58 +752,70 @@ class TeamBoard extends Page
         ])->values()->all();
 
         return [
-            'name'          => $team->name,
-            'is_new'        => $team->created_at instanceof Carbon && $team->created_at->gte(now()->subDays(14)),
-            'member_count'  => count($members),
-            'extra_members' => max(count($members) - 6, 0),
-            'members'       => array_slice($members, 0, 6),
-            'members_all'   => $members,
-            'about'         => Str::limit($about, 180),
-            'project_count' => $projects->count(),
-            'projects'      => $projectLinks,
-            'task_count'    => $totalTasks,
-            'value'         => $canViewProjectValue ? ($value > 0 ? 'Rp '.number_format($value, 0, ',', '.') : '—') : null,
-            'value_amount'  => $canViewProjectValue ? $value : null,
-            'progress'      => $totalTasks > 0 ? (int) round(($doneTasks / $totalTasks) * 100) : 0,
-            'updated'       => $latest?->locale(app()->getLocale())->diffForHumans() ?? '—',
-            'updated_ts'    => $latest?->getTimestamp() ?? 0,
-            'href'          => url('/admin/teams'),
+            'id'                 => $team->id,
+            'name'               => $team->name,
+            'is_new'             => $team->created_at instanceof Carbon && $team->created_at->gte(now()->subDays(14)),
+            'member_count'       => count($members),
+            'extra_members'      => max(count($members) - 6, 0),
+            'members'            => array_slice($members, 0, 6),
+            'members_all'        => $members,
+            'about'              => Str::limit($about, 180),
+            'project_count'      => $projects->count(),
+            'projects'           => $projectLinks,
+            'primary_project_id' => $lead?->id,
+            'can_edit_members'   => static::managesTeams() && $projects->isNotEmpty(),
+            'task_count'         => $totalTasks,
+            'value'              => $canViewProjectValue ? ($value > 0 ? 'Rp '.number_format($value, 0, ',', '.') : '—') : null,
+            'value_amount'       => $canViewProjectValue ? $value : null,
+            'progress'           => $totalTasks > 0 ? (int) round(($doneTasks / $totalTasks) * 100) : 0,
+            'updated'            => $latest?->locale(app()->getLocale())->diffForHumans() ?? '—',
+            'updated_ts'         => $latest?->getTimestamp() ?? 0,
+            'href'               => url('/admin/teams'),
         ];
     }
 
     /**
+     * Roster for the board is employees on linked projects (including those
+     * without a Related User). A Project Manager is shown only if they have
+     * an employee record. Login-only team accounts are not listed here.
+     *
      * @param  Collection<int, Project>  $projects
-     * @return array<int, array{name: string, initials: string, color: string, role: string, href: ?string, projects: string}>
+     * @return array<int, array{employee_id: ?int, name: string, initials: string, color: string, role: string, href: ?string, projects: string, has_login: bool, can_remove: bool}>
      */
     protected function presentMembers(Team $team, Collection $projects, bool $indonesian): array
     {
         $palette = ['#6366f1', '#0ea5e9', '#14b8a6', '#f59e0b', '#ec4899', '#8b5cf6'];
         $roleManager = $indonesian ? 'Manajer Proyek' : 'Project Manager';
         $roleAssigned = $indonesian ? 'Ditugaskan ke proyek' : 'Assigned to project';
-        $roleTeam = $indonesian ? 'Anggota tim' : 'Team member';
         $seen = [];
         $members = [];
+        $canEdit = static::managesTeams() && $projects->isNotEmpty();
 
         foreach ($projects as $project) {
             if ($project->user instanceof User) {
-                $key = 'user:'.$project->user->id;
+                $managerEmployee = $this->employeeForUser((int) $project->user->id);
 
-                if (! isset($seen[$key])) {
-                    $seen[$key] = count($members);
-                    $members[] = $this->memberChip(
-                        $project->user->name,
-                        count($members),
-                        $palette,
-                        $roleManager,
-                        null,
-                        [$project->name],
-                    );
-                } else {
-                    $members[$seen[$key]]['projects'] = $this->appendProjectLabel(
-                        $members[$seen[$key]]['projects'],
-                        $project->name,
-                    );
-                    if ($members[$seen[$key]]['role'] !== $roleManager) {
+                if ($managerEmployee instanceof Employee) {
+                    $key = 'employee:'.$managerEmployee->id;
+
+                    if (! isset($seen[$key])) {
+                        $seen[$key] = count($members);
+                        $members[] = $this->memberChip(
+                            $managerEmployee->name,
+                            count($members),
+                            $palette,
+                            $roleManager,
+                            $this->employeeViewUrl($managerEmployee),
+                            [$project->name],
+                            $managerEmployee->id,
+                            filled($managerEmployee->user_id),
+                            false,
+                        );
+                    } else {
+                        $members[$seen[$key]]['projects'] = $this->appendProjectLabel(
+                            $members[$seen[$key]]['projects'],
+                            $project->name,
+                        );
                         $members[$seen[$key]]['role'] = $roleManager;
                     }
                 }
@@ -681,9 +826,8 @@ class TeamBoard extends Page
                     continue;
                 }
 
-                $key = $employee->user_id
-                    ? 'user:'.$employee->user_id
-                    : 'employee:'.$employee->id;
+                $key = 'employee:'.$employee->id;
+                $isManager = $project->user_id && (int) $employee->user_id === (int) $project->user_id;
 
                 if (! isset($seen[$key])) {
                     $seen[$key] = count($members);
@@ -691,35 +835,21 @@ class TeamBoard extends Page
                         $employee->name,
                         count($members),
                         $palette,
-                        $roleAssigned,
+                        $isManager ? $roleManager : $roleAssigned,
                         $this->employeeViewUrl($employee),
                         [$project->name],
+                        $employee->id,
+                        filled($employee->user_id),
+                        $canEdit && ! $isManager,
                     );
                 } else {
                     $members[$seen[$key]]['projects'] = $this->appendProjectLabel(
                         $members[$seen[$key]]['projects'],
                         $project->name,
                     );
+                    $members[$seen[$key]]['can_remove'] = $canEdit && $members[$seen[$key]]['role'] !== $roleManager;
                 }
             }
-        }
-
-        foreach ($team->users as $member) {
-            $key = 'user:'.$member->id;
-
-            if (isset($seen[$key])) {
-                continue;
-            }
-
-            $seen[$key] = count($members);
-            $members[] = $this->memberChip(
-                $member->name,
-                count($members),
-                $palette,
-                $roleTeam,
-                null,
-                [],
-            );
         }
 
         return $members;
@@ -728,7 +858,7 @@ class TeamBoard extends Page
     /**
      * @param  array<int, string>  $palette
      * @param  array<int, string>  $projectNames
-     * @return array{name: string, initials: string, color: string, role: string, href: ?string, projects: string}
+     * @return array{employee_id: ?int, name: string, initials: string, color: string, role: string, href: ?string, projects: string, has_login: bool, can_remove: bool}
      */
     protected function memberChip(
         string $name,
@@ -737,6 +867,9 @@ class TeamBoard extends Page
         string $role,
         ?string $href,
         array $projectNames,
+        ?int $employeeId = null,
+        bool $hasLogin = true,
+        bool $canRemove = false,
     ): array {
         $parts = preg_split('/\s+/', trim($name)) ?: [];
         $initials = '';
@@ -746,13 +879,63 @@ class TeamBoard extends Page
         }
 
         return [
-            'name'     => $name,
-            'initials' => $initials !== '' ? $initials : '?',
-            'color'    => $palette[$index % count($palette)],
-            'role'     => $role,
-            'href'     => $href,
-            'projects' => implode(', ', array_values(array_unique($projectNames))),
+            'employee_id' => $employeeId,
+            'name'        => $name,
+            'initials'    => $initials !== '' ? $initials : '?',
+            'color'       => $palette[$index % count($palette)],
+            'role'        => $role,
+            'href'        => $href,
+            'projects'    => implode(', ', array_values(array_unique($projectNames))),
+            'has_login'   => $hasLogin,
+            'can_remove'  => $canRemove,
         ];
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $cards
+     * @return array<int, array{id: int, name: string, has_login: bool}>
+     */
+    protected function candidateEmployeesForEditor(array $cards): array
+    {
+        if (! static::managesTeams() || ! $this->editingTeamId || ! class_exists(Employee::class)) {
+            return [];
+        }
+
+        $card = collect($cards)->firstWhere('id', $this->editingTeamId);
+
+        if ($card === null) {
+            return [];
+        }
+
+        $assignedIds = collect($card['members_all'] ?? [])
+            ->pluck('employee_id')
+            ->filter()
+            ->map(fn ($id): int => (int) $id)
+            ->all();
+
+        return Employee::query()
+            ->where('is_active', true)
+            ->when($assignedIds !== [], fn ($query) => $query->whereNotIn('id', $assignedIds))
+            ->orderBy('name')
+            ->limit(200)
+            ->get(['id', 'name', 'user_id'])
+            ->map(fn (Employee $employee): array => [
+                'id'        => $employee->id,
+                'name'      => $employee->name,
+                'has_login' => filled($employee->user_id),
+            ])
+            ->all();
+    }
+
+    protected function employeeForUser(int $userId): ?Employee
+    {
+        if (! class_exists(Employee::class) || $userId < 1) {
+            return null;
+        }
+
+        return Employee::query()
+            ->where('user_id', $userId)
+            ->first(['id', 'name', 'user_id']);
     }
 
     protected function appendProjectLabel(string $current, string $projectName): string

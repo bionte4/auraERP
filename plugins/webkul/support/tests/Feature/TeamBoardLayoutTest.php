@@ -1,6 +1,10 @@
 <?php
 
+use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
+use Webkul\Employee\Models\Employee;
+use Webkul\Project\Models\Project;
+use Webkul\Project\Services\ProjectEmployeeAssigner;
 use Webkul\Security\Models\Team;
 use Webkul\Support\Filament\Pages\TeamBoard;
 
@@ -60,7 +64,7 @@ it('renders the board in cards, compact, and list modes with live search', funct
     $teamName = 'Render Layout Team '.$suffix;
     Team::query()->create(['name' => $teamName]);
 
-    \Livewire\Livewire::test(TeamBoard::class)
+    Livewire::test(TeamBoard::class)
         ->assertOk()
         ->assertSee($teamName)
         ->call('setViewMode', 'compact')
@@ -79,9 +83,11 @@ it('sorts team cards by name and member count and persists the sort choice', fun
     boardAdminViewer();
 
     $suffix = substr(uniqid(), -6);
-    $zulu = Team::query()->create(['name' => 'Sort Zulu '.$suffix]);
+    Team::query()->create(['name' => 'Sort Zulu '.$suffix]);
     $alpha = Team::query()->create(['name' => 'Sort Alpha '.$suffix]);
-    $alpha->users()->attach(auth()->id());
+    $employee = Employee::create(['name' => 'Sort Member '.$suffix, 'is_active' => true]);
+    $project = Project::factory()->create(['name' => 'Sort Alpha '.$suffix]);
+    app(ProjectEmployeeAssigner::class)->sync($project, [$employee->id], auth()->id());
 
     $page = new TeamBoard;
 
@@ -99,7 +105,7 @@ it('sorts team cards by name and member count and persists the sort choice', fun
         ->and(session('team-board.sort'))->toBe('name_desc')
         ->and($ownNames($page))->toBe(['Sort Zulu '.$suffix, 'Sort Alpha '.$suffix]);
 
-    // Alpha has one attached member, Zulu none.
+    // Alpha has one assigned employee, Zulu none.
     $page->setSortBy('members_desc');
     expect($ownNames($page))->toBe(['Sort Alpha '.$suffix, 'Sort Zulu '.$suffix]);
 

@@ -99,6 +99,9 @@
                                             @else
                                                 <span class="font-medium text-gray-900 dark:text-gray-100">{{ $employee['name'] }}</span>
                                             @endif
+                                            @if (empty($employee['has_login']) && isset($employee['has_login']))
+                                                <span class="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800">{{ $labels['no-login'] }}</span>
+                                            @endif
                                         </div>
                                     </div>
                                 @empty
@@ -126,7 +129,7 @@
                     </thead>
                     <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                         @foreach ($board['cards'] as $card)
-                            <tr wire:key="team-row-{{ $card['name'] }}">
+                            <tr wire:key="team-row-{{ $card['id'] ?? $card['name'] }}">
                                 <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">
                                     <a href="{{ $card['href'] }}" class="hover:underline">{{ $card['name'] }}</a>
                                     @if ($card['is_new'])
@@ -167,7 +170,7 @@
         @else
             <div class="team-board-grid {{ ($board['viewMode'] ?? 'cards') === 'compact' ? 'is-compact' : '' }}">
                 @foreach ($board['cards'] as $card)
-                    <article class="team-card {{ ($board['viewMode'] ?? 'cards') === 'compact' ? 'is-compact' : '' }}" x-data="{ membersOpen: false }">
+                    <article class="team-card {{ ($board['viewMode'] ?? 'cards') === 'compact' ? 'is-compact' : '' }}" x-data="{ membersOpen: {{ ($board['editingTeamId'] ?? null) === ($card['id'] ?? null) ? 'true' : 'false' }} }">
                         <header class="team-card-head">
                             <h3><a href="{{ $card['href'] }}">{{ $card['name'] }}</a></h3>
                             @if ($card['is_new'])
@@ -204,16 +207,60 @@
                                         <li>
                                             <span class="team-member-dot" style="background: {{ $member['color'] }}"></span>
                                             <div>
-                                                @if (! empty($member['href']))
-                                                    <a href="{{ $member['href'] }}">{{ $member['name'] }}</a>
-                                                @else
-                                                    <span class="team-member-name">{{ $member['name'] }}</span>
-                                                @endif
+                                                <div class="flex flex-wrap items-center gap-2">
+                                                    @if (! empty($member['href']))
+                                                        <a href="{{ $member['href'] }}">{{ $member['name'] }}</a>
+                                                    @else
+                                                        <span class="team-member-name">{{ $member['name'] }}</span>
+                                                    @endif
+                                                    @if (empty($member['has_login']))
+                                                        <span class="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">{{ $labels['no-login'] }}</span>
+                                                    @endif
+                                                </div>
                                                 <em>{{ $member['role'] }}@if (! empty($member['projects'])) — {{ $member['projects'] }}@endif</em>
                                             </div>
+                                            @if ($board['manages'] && ($board['editingTeamId'] ?? null) === ($card['id'] ?? null) && ! empty($member['can_remove']) && ! empty($member['employee_id']))
+                                                <button
+                                                    type="button"
+                                                    wire:click="removeEmployeeFromTeam({{ (int) $card['id'] }}, {{ (int) $member['employee_id'] }})"
+                                                    wire:confirm="{{ $labels['remove-member'] }}: {{ $member['name'] }}?"
+                                                    class="text-xs text-danger-600 hover:underline dark:text-danger-400"
+                                                >
+                                                    {{ $labels['remove-member'] }}
+                                                </button>
+                                            @endif
                                         </li>
                                     @endforeach
                                 </ul>
+                            @endif
+                            @if ($board['manages'] && ($card['can_edit_members'] ?? false))
+                                <div class="mt-3 space-y-2">
+                                    @if (($board['editingTeamId'] ?? null) === ($card['id'] ?? null))
+                                        <div class="flex flex-wrap items-center gap-2">
+                                            <select
+                                                wire:model="addEmployeeId"
+                                                class="block w-full max-w-xs rounded-lg border-gray-300 text-sm dark:border-gray-700 dark:bg-gray-800"
+                                            >
+                                                <option value="">{{ $labels['choose-employee'] }}</option>
+                                                @foreach ($board['candidateEmployees'] ?? [] as $candidate)
+                                                    <option value="{{ $candidate['id'] }}">
+                                                        {{ $candidate['name'] }}{{ empty($candidate['has_login']) ? ' ('.$labels['no-login'].')' : '' }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            <button type="button" wire:click="addEmployeeToTeam" class="rounded-lg bg-primary-600 px-3 py-1.5 text-sm text-white">
+                                                {{ $labels['add'] }}
+                                            </button>
+                                            <button type="button" wire:click="stopEditingMembers" class="rounded-lg px-3 py-1.5 text-sm text-gray-600 hover:underline dark:text-gray-300">
+                                                {{ $labels['done-editing'] }}
+                                            </button>
+                                        </div>
+                                    @else
+                                        <button type="button" wire:click="startEditingMembers({{ (int) $card['id'] }})" class="text-sm text-primary-600 hover:underline dark:text-primary-400">
+                                            {{ $labels['edit-members'] }}
+                                        </button>
+                                    @endif
+                                </div>
                             @endif
                         </div>
 
