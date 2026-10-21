@@ -12,11 +12,11 @@ return [
 
     'header-actions' => [
         'template' => [
-            'label' => 'Download Template',
+            'label' => 'Project Import Template',
         ],
 
         'import' => [
-            'label'             => 'Import Excel / CSV',
+            'label'             => 'Import Projects Excel / CSV',
             'modal-heading'     => 'Bulk Import Projects',
             'modal-description' => 'Upload an .xlsx or .csv file matching the template columns (name, customer, project_manager, stage, start_date, end_date, project_value, operational_cost, allocated_hours, visibility, description). One customer can have multiple project rows.',
             'file-label'        => 'Excel (.xlsx) or CSV (.csv) File',

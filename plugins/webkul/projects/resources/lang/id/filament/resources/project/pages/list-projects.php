@@ -12,11 +12,11 @@ return [
 
     'header-actions' => [
         'template' => [
-            'label' => 'Unduh Template',
+            'label' => 'Template Impor Proyek',
         ],
 
         'import' => [
-            'label'             => 'Impor Excel / CSV',
+            'label'             => 'Impor Proyek Excel / CSV',
             'modal-heading'     => 'Bulk Import Proyek',
             'modal-description' => 'Unggah file .xlsx atau .csv sesuai format template (kolom: name, customer, project_manager, stage, start_date, end_date, project_value, operational_cost, allocated_hours, visibility, description). Satu customer dapat memiliki banyak baris proyek.',
             'file-label'        => 'File Excel (.xlsx) atau CSV (.csv)',

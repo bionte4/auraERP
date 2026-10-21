@@ -327,7 +327,7 @@ Buka menu **Employees → Performance Plans → Evaluations** (`/admin/evaluatio
 3. **Assign / Unassign Manajer Proyek (`Project Manager`) — satu orang per proyek:**
    - Field di form proyek: **Manajer Proyek (`Project Manager`)** → kolom DB `projects_projects.user_id` (relasi ke **User**, biasanya user dengan role **Operation Manager**).
    - **Cara massal (disarankan):** **Project → Atur Project Manager** (`/admin/project/assign-project-managers`, khusus Admin; permission `page_project_assign_project_managers`) — semua proyek dalam satu tabel, ganti PM lewat dropdown per baris (pilihan hanya user berperan **Operation Manager**), langsung tersimpan dan tersinkron ke tim proyek. Chip di atas tabel menampilkan jumlah proyek per OM; filter **Belum ada manajer** + badge menu (jumlah proyek tanpa PM) memudahkan memburu proyek yatim. Mengganti/mengosongkan PM tidak menghapus PM lama dari anggota tim.
-   - **Bulk via Excel/CSV (di halaman yang sama):** tombol **Unduh Template** menghasilkan `template-assign-project-managers.xlsx` yang **sudah terisi semua proyek + email PM saat ini** (sheet kedua: daftar email OM yang valid). Ubah kolom `new_manager_email` (kosongkan = lepas PM), lalu **Impor Excel / CSV**. Proyek dicocokkan via `project_id` (cadangan: nama persis), manajer via email dan wajib berperan Operation Manager; hasil impor menampilkan hitungan diperbarui/tidak berubah/dilewati beserta daftar baris bermasalah.
+   - **Bulk via Excel/CSV (di halaman yang sama):** tombol **Template Project Manager** menghasilkan `template-assign-project-managers.xlsx` yang **sudah terisi semua proyek + email PM saat ini** (sheet kedua: daftar email OM yang valid). Ubah kolom `new_manager_email` (kosongkan = lepas PM), lalu **Impor Excel / CSV**. (Jangan tertukar dengan tombol **Template Impor Proyek** di halaman daftar Projects — itu template impor proyek umum.) Proyek dicocokkan via `project_id` (cadangan: nama persis), manajer via email dan wajib berperan Operation Manager; hasil impor menampilkan hitungan diperbarui/tidak berubah/dilewati beserta daftar baris bermasalah.
    - **Assign / ganti:**
      1. Buka **Project → Projects** (`/admin/project/projects`) → Edit proyek.
      2. Di bagian **Additional / tambahan**, pilih user pada **Manajer Proyek**.
@@ -359,7 +359,7 @@ Buka menu **Employees → Performance Plans → Evaluations** (`/admin/evaluatio
 7. **Reminder Berjenjang 3, 2, dan 1 Bulan Sebelum `End Date` Proyek:**
    - Sistem memberi badge peringatan dan notifikasi otomatis pada sisa waktu `61–90 hari` (**3 Bulan**), `31–60 hari` (**2 Bulan**), `0–30 hari` (**1 Bulan**), dan saat **Berakhir** (`php artisan projects:notify-expiring-projects`).
 8. **Bulk Import Proyek:**
-   - Klik **`Unduh Template`** (`template-import-projects.xlsx`) di halaman **Projects**, lalu unggah melalui tombol **`Impor Excel / CSV`**.
+   - Klik **`Template Impor Proyek`** (`template-import-projects.xlsx`) di halaman **Projects**, lalu unggah melalui tombol **`Impor Proyek Excel / CSV`**.
 
 ---
 

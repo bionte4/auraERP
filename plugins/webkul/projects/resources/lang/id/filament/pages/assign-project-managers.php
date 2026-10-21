@@ -29,7 +29,7 @@ return [
     'note' => 'Mengosongkan atau mengganti manajer tidak menghapus manajer lama dari anggota tim — hapus manual di Teams bila perlu.',
 
     'actions' => [
-        'template'           => 'Unduh Template',
+        'template'           => 'Template Project Manager',
         'import'             => 'Impor Excel / CSV',
         'import-heading'     => 'Penetapan Project Manager massal',
         'import-description' => 'Unduh template terlebih dahulu: isinya sudah memuat semua proyek beserta email manajer saat ini. Ubah kolom new_manager_email (kosongkan untuk melepas manajer), lalu unggah kembali berkasnya. Proyek dicocokkan via project_id, manajer via email, dan hanya Operation Manager yang diterima. Sheet kedua berisi daftar email manajer yang valid.',

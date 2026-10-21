@@ -84,7 +84,7 @@ Buat lewat UI agar field wajib terisi dengan benar:
 
 Penautan karyawan saja tidak memberi hak kelola. Untuk proyek yang memang dipimpin OM tersebut:
 
-1. Tetapkan sebagai Project Manager — paling cepat secara massal lewat **Project → Atur Project Manager** (`/admin/project/assign-project-managers`, khusus Admin): pilih user OM pada dropdown baris proyeknya, langsung tersimpan dan tersinkron ke tim proyek. Untuk penetapan banyak proyek sekaligus tersedia **Unduh Template** (template Excel terisi semua proyek + email PM saat ini; ubah kolom `new_manager_email`) lalu **Impor Excel / CSV** di halaman yang sama. Cara satuan: **Project → Edit proyek → Project Manager = user yang bersangkutan** → simpan. Seketika proyek muncul di dashboard-nya dan tim proyek menjadi bisa ia edit.
+1. Tetapkan sebagai Project Manager — paling cepat secara massal lewat **Project → Atur Project Manager** (`/admin/project/assign-project-managers`, khusus Admin): pilih user OM pada dropdown baris proyeknya, langsung tersimpan dan tersinkron ke tim proyek. Untuk penetapan banyak proyek sekaligus tersedia **Template Project Manager** (template Excel terisi semua proyek + email PM saat ini; ubah kolom `new_manager_email`) lalu **Impor Excel / CSV** di halaman yang sama. Cara satuan: **Project → Edit proyek → Project Manager = user yang bersangkutan** → simpan. Seketika proyek muncul di dashboard-nya dan tim proyek menjadi bisa ia edit.
 2. Untuk proyek di mana ia hanya anggota: **Project → Assign Employees** → tambahkan karyawannya (hak lihat saja).
 
 ## Langkah 7 — Penutup & verifikasi
