@@ -159,6 +159,8 @@ class User extends BaseUser implements FilamentUser, HasAppAuthentication, HasAp
 
         $partner = $user->partner()->create([
             ...$partnerAttributes,
+            'name'       => $user->name,
+            'email'      => $user->email,
             'creator_id' => Auth::user()->id ?? $user->id,
             'company_id' => $user->default_company_id,
             'user_id'    => $user->id,
@@ -177,6 +179,8 @@ class User extends BaseUser implements FilamentUser, HasAppAuthentication, HasAp
             ['id' => $user->partner_id],
             [
                 ...$partnerAttributes,
+                'name'       => $user->name,
+                'email'      => $user->email,
                 'creator_id' => Auth::user()->id ?? $user->id,
                 'company_id' => $user->default_company_id,
                 'user_id'    => $user->id,

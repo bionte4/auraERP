@@ -2,8 +2,10 @@
 
 return [
     'notification' => [
-        'title' => 'User updated',
-        'body'  => 'The user has been updated successfully.',
+        'title'       => 'User updated',
+        'body'        => 'The user has been updated successfully.',
+        'error-title' => 'User could not be saved',
+        'error-body'  => 'The form could not be saved. Try searching teams instead of listing all of them, then save again.',
     ],
 
     'header-actions' => [

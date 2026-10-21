@@ -2,8 +2,10 @@
 
 return [
     'notification' => [
-        'title' => 'Pengguna diperbarui',
-        'body'  => 'Pengguna berhasil diperbarui.',
+        'title'       => 'Pengguna diperbarui',
+        'body'        => 'Pengguna berhasil diperbarui.',
+        'error-title' => 'Pengguna tidak dapat disimpan',
+        'error-body'  => 'Form gagal disimpan. Cari tim yang dibutuhkan, jangan tampilkan semua sekaligus, lalu simpan lagi.',
     ],
 
     'header-actions' => [

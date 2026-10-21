@@ -2,7 +2,6 @@
 
 namespace Webkul\Security\Filament\Resources\UserResource\Schemas;
 
-use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Closure;
 use Filament\Actions\Action;
 use Filament\Forms\Components\CheckboxList;
@@ -22,6 +21,7 @@ use Webkul\Security\Enums\PermissionType;
 use Webkul\Security\Filament\Resources\CompanyResource;
 use Webkul\Security\Filament\Resources\UserResource;
 use Webkul\Security\Models\User;
+use Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList;
 use Webkul\Support\Models\Company;
 use Webkul\Support\Models\Scopes\AllowedCompanyScope;
 
@@ -69,13 +69,13 @@ class UserForm
                                 Section::make(__('security::filament/resources/user.form.sections.permissions.title'))
                                     ->schema([
                                         // CheckboxList — Select multiple/searchable forces Alpine and can render empty.
-                                                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('roles_search'),
-                                                                                CheckboxList::make('roles')
+                                        LivewireSearchableCheckboxList::searchInput('roles_search'),
+                                        CheckboxList::make('roles')
                                             ->label(__('security::filament/resources/user.form.sections.permissions.fields.roles'))
                                             ->relationship('roles', 'name',
-                                    fn (\Illuminate\Database\Eloquent\Builder $query, \Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query, $get, 'roles', 'name'))
+                                                fn (Builder $query, Get $get) => LivewireSearchableCheckboxList::applySearch($query, $get, 'roles', 'name'))
                                             ->required()
-                                            
+
                                             ->columns(2)
                                             ->columnSpanFull()
                                             ->rule(function (?User $record) {
@@ -111,17 +111,14 @@ class UserForm
                                                     $set('teams', []);
                                                 }
                                             }),
-                                        // CheckboxList — Select multiple/searchable forces Alpine and can render empty.
-                                                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('teams_search'),
-                                                                                CheckboxList::make('teams')
+                                        Select::make('teams')
                                             ->label(__('security::filament/resources/user.form.sections.permissions.fields.teams'))
-                                            ->relationship(
-                                                name: 'teams',
-                                                titleAttribute: 'name',
-                                    modifyQueryUsing: fn (\Illuminate\Database\Eloquent\Builder $query, \Filament\Schemas\Components\Utilities\Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query, $get, 'teams', 'name'))
-                                            ->live()
-                                            
-                                            ->columns(2)
+                                            ->helperText(__('security::filament/resources/user.form.sections.permissions.fields.teams-help'))
+                                            ->relationship('teams', 'name')
+                                            ->multiple()
+                                            ->searchable()
+                                            ->native()
+                                            ->preload()
                                             ->required(fn (Get $get) => $get('resource_permission') == PermissionType::GROUP),
                                     ])
                                     ->columns(2),
@@ -130,7 +127,8 @@ class UserForm
                         Group::make()
                             ->schema([
                                 Section::make(__('security::filament/resources/user.form.sections.avatar.title'))
-                                    ->relationship('partner', 'avatar')
+                                    ->relationship('partner')
+                                    ->visible(fn (?User $record): bool => filled($record?->partner_id))
                                     ->schema([
                                         FileUpload::make('avatar')
                                             ->hiddenLabel()
@@ -169,11 +167,11 @@ class UserForm
                                 Section::make(__('security::filament/resources/user.form.sections.multi-company.title'))
                                     ->schema([
                                         // CheckboxList — Select multiple/searchable forces Alpine and can render empty.
-                                                                                \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::searchInput('allowed_companies_search'),
-                                                                                CheckboxList::make('allowed_companies')
+                                        LivewireSearchableCheckboxList::searchInput('allowed_companies_search'),
+                                        CheckboxList::make('allowed_companies')
                                             ->label(__('security::filament/resources/user.form.sections.multi-company.allowed-companies'))
-                                            ->relationship('allowedCompanies', 'name', fn (Builder $query, Get $get) => \Webkul\Support\Filament\Forms\Components\LivewireSearchableCheckboxList::applySearch($query->withoutGlobalScope(AllowedCompanyScope::class), $get, 'allowed_companies', 'name'))
-                                            
+                                            ->relationship('allowedCompanies', 'name', fn (Builder $query, Get $get) => LivewireSearchableCheckboxList::applySearch($query->withoutGlobalScope(AllowedCompanyScope::class), $get, 'allowed_companies', 'name'))
+
                                             ->columns(1),
                                         Select::make('default_company_id')
                                             ->label(__('security::filament/resources/user.form.sections.multi-company.default-company'))

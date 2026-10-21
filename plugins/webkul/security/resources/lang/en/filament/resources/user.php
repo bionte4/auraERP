@@ -36,6 +36,8 @@ return [
                     'resource-permission'                      => 'Resource Permission',
                     'resource-permission-self-change-disabled' => 'You cannot change your own resource permission. Ask another administrator to update it.',
                     'teams'                                    => 'Teams',
+                    'teams-search'                             => 'Search teams to add…',
+                    'teams-help'                               => 'Choose one or more teams. Search by name instead of listing every project team as checkboxes.',
                 ],
             ],
 

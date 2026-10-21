@@ -114,6 +114,7 @@ class LivewireSearchableCheckboxList
         string $name,
         string $titleAttribute = 'name',
         ?string $searchField = null,
+        bool $selectedOnlyWhenUnsearched = false,
     ): Builder {
         $searchField ??= self::searchFieldName($name);
         $search = trim((string) $get($searchField));
@@ -125,6 +126,14 @@ class LivewireSearchableCheckboxList
         $query->orderBy($titleAttribute);
 
         if ($search === '') {
+            if ($selectedOnlyWhenUnsearched) {
+                if ($selected === []) {
+                    return $query->whereRaw('0 = 1');
+                }
+
+                return $query->whereIn($query->getModel()->getQualifiedKeyName(), $selected);
+            }
+
             return $query;
         }
 

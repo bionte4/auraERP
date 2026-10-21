@@ -36,6 +36,8 @@ return [
                     'resource-permission'                      => 'Izin Sumber Daya',
                     'resource-permission-self-change-disabled' => 'Anda tidak dapat mengubah izin sumber daya Anda sendiri. Minta administrator lain untuk memperbaruinya.',
                     'teams'                                    => 'Tim',
+                    'teams-search'                             => 'Cari tim untuk ditambahkan…',
+                    'teams-help'                               => 'Pilih tim (bisa lebih dari satu). Daftar ini searchable agar tidak menampilkan ratusan checkbox sekaligus.',
                 ],
             ],
 
