@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\ValidationException;
 use Spatie\EloquentSortable\Sortable;
 use Spatie\EloquentSortable\SortableTrait;
 use Throwable;
@@ -24,6 +25,7 @@ use Webkul\Partner\Models\Partner;
 use Webkul\Project\Database\Factories\ProjectFactory;
 use Webkul\Project\Enums\TaskState;
 use Webkul\Project\Services\ProjectExpiryNotifier;
+use Webkul\Project\Services\ProjectGovernance;
 use Webkul\Project\Services\TeamMembershipSynchronizer;
 use Webkul\Security\Models\User;
 use Webkul\Security\Support\OwnerSource;
@@ -73,6 +75,8 @@ class Project extends Model implements Sortable
         'company_id',
         'user_id',
         'team_leader_employee_id',
+        'project_director_id',
+        'is_strategic',
         'creator_id',
     ];
 
@@ -83,6 +87,7 @@ class Project extends Model implements Sortable
         'operational_cost'        => 'float',
         'allocated_hours'         => 'integer',
         'is_active'               => 'boolean',
+        'is_strategic'            => 'boolean',
         'allow_timesheets'        => 'boolean',
         'allow_milestones'        => 'boolean',
         'allow_task_dependencies' => 'boolean',
@@ -110,6 +115,8 @@ class Project extends Model implements Sortable
             'partner.name'            => __('projects::models/project.log-attributes.partner'),
             'company.name'            => __('projects::models/project.log-attributes.company'),
             'user.name'               => __('projects::models/project.log-attributes.user'),
+            'director.name'           => __('projects::models/project.log-attributes.director'),
+            'is_strategic'            => __('projects::models/project.log-attributes.is_strategic'),
             'creator.name'            => __('projects::models/project.log-attributes.creator'),
         ];
     }
@@ -144,6 +151,11 @@ class Project extends Model implements Sortable
     public function teamLeader(): BelongsTo
     {
         return $this->belongsTo(Employee::class, 'team_leader_employee_id');
+    }
+
+    public function director(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'project_director_id');
     }
 
     public function stage(): BelongsTo
@@ -368,11 +380,16 @@ class Project extends Model implements Sortable
                     ->exists();
 
                 if ($conflict) {
-                    throw \Illuminate\Validation\ValidationException::withMessages([
+                    throw ValidationException::withMessages([
                         'team_leader_employee_id' => __('projects::filament/resources/project.form.sections.additional.fields.team-leader-unique'),
                     ]);
                 }
             }
+
+            ProjectGovernance::assertStrategicDirector(
+                (bool) $project->is_strategic,
+                $project->project_director_id,
+            );
         });
 
         static::saved(function (self $project): void {

@@ -63,14 +63,16 @@ class WelcomeDashboard extends BaseDashboard
      */
     public function getDashboardData(): array
     {
-        $totalProjects = $this->safeCount('projects_projects', ['is_active' => true]);
-        $totalEmployees = $this->safeCount('employees_employees', ['is_active' => true]);
+        $projectIds = $this->customerProjectIds();
+        $totalProjects = count($projectIds);
+        $customerCount = $this->customerCount();
+        $totalEmployees = $this->assignedEmployeeCount($projectIds);
 
-        $totalTasks = $this->safeCount('projects_tasks');
-        $completedTasks = $this->safeCountWhere('projects_tasks', fn (Builder $q) => $q->whereIn('state', ['1_done', 'done', '04_done']));
+        $totalTasks = $this->projectTaskCount($projectIds);
+        $completedTasks = $this->projectTaskCount($projectIds, ['1_done', 'done', '04_done']);
 
-        // Welcome "Total Revenue" / OpEx are project fields (project_value + operational_cost).
-        $totalRevenue = $this->safeSum('projects_projects', 'project_value', ['is_active' => true]);
+        // Welcome revenue follows Customer Projects (one client may have many projects).
+        $totalRevenue = $this->customerProjectSum('project_value');
         $operationalCost = $this->operationalCostTotal();
         $grossMargin = $totalRevenue > 0
             ? round((($totalRevenue - $operationalCost) / $totalRevenue) * 100, 1)
@@ -108,14 +110,14 @@ class WelcomeDashboard extends BaseDashboard
             $rateHref = $projectUrl;
         }
 
-        $projectDelta = $this->periodDeltaPercent('projects_projects', 'week', ['is_active' => true]);
+        $projectDelta = $this->customerProjectPeriodDelta('week');
         $employeeDelta = $this->periodDeltaPercent('employees_employees', 'month', ['is_active' => true]);
         $revenueDelta = $this->revenueDeltaPercent();
         $rateDelta = $this->periodDeltaPercent('projects_tasks', 'week');
 
         // Monthly series derived from live project / employee / task activity when available.
         $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        $monthlyBar = $this->monthlyCounts('projects_projects', ['is_active' => true]);
+        $monthlyBar = $this->monthlyCustomerProjectCounts();
         $monthlyActive = $this->monthlyCounts('employees_employees', ['is_active' => true]);
         $monthlyCurve = $this->monthlyTaskCompletionRates();
         $monthlyRevenueTrend = $this->monthlyRevenueSeries();
@@ -161,6 +163,7 @@ class WelcomeDashboard extends BaseDashboard
                     'title'     => 'Total Project',
                     'value'     => $this->formatCompactNumber($totalProjects),
                     'raw_value' => $totalProjects,
+                    'detail'    => $this->customerProjectDetail($customerCount),
                     'change'    => $projectDelta['label'],
                     'trend'     => $projectDelta['trend'],
                     'period'    => $projectDelta['period'],
@@ -219,6 +222,211 @@ class WelcomeDashboard extends BaseDashboard
                 'sites'    => $placementUrl,
             ],
         ];
+    }
+
+    /**
+     * Active customer projects: one client may own many rows.
+     */
+    protected function customerProjectQuery(): Builder
+    {
+        $query = $this->scopedQuery('projects_projects');
+
+        if (Schema::hasColumn('projects_projects', 'is_active')) {
+            $query->where('is_active', true);
+        }
+
+        if (Schema::hasColumn('projects_projects', 'partner_id')) {
+            $query->whereNotNull('partner_id');
+        }
+
+        return $query;
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    protected function customerProjectIds(): array
+    {
+        try {
+            if (! Schema::hasTable('projects_projects')) {
+                return [];
+            }
+
+            return $this->customerProjectQuery()
+                ->pluck('id')
+                ->map(fn ($id): int => (int) $id)
+                ->all();
+        } catch (Throwable) {
+            return [];
+        }
+    }
+
+    protected function customerCount(): int
+    {
+        try {
+            if (! Schema::hasTable('projects_projects') || ! Schema::hasColumn('projects_projects', 'partner_id')) {
+                return 0;
+            }
+
+            return (int) $this->customerProjectQuery()
+                ->selectRaw('count(distinct partner_id) as aggregate')
+                ->value('aggregate');
+        } catch (Throwable) {
+            return 0;
+        }
+    }
+
+    protected function customerProjectSum(string $column): float
+    {
+        try {
+            if (! Schema::hasTable('projects_projects') || ! Schema::hasColumn('projects_projects', $column)) {
+                return 0.0;
+            }
+
+            return (float) ($this->customerProjectQuery()->sum($column) ?? 0.0);
+        } catch (Throwable) {
+            return 0.0;
+        }
+    }
+
+    protected function customerProjectDetail(int $customerCount): string
+    {
+        $indonesian = str_starts_with((string) app()->getLocale(), 'id');
+
+        if ($indonesian) {
+            return $customerCount.' klien (satu klien bisa banyak proyek)';
+        }
+
+        return $customerCount.' customers (one client may have many projects)';
+    }
+
+    /**
+     * @param  array<int, int>  $projectIds
+     */
+    protected function assignedEmployeeCount(array $projectIds): int
+    {
+        return count($this->assignedEmployeeIds($projectIds));
+    }
+
+    /**
+     * @param  array<int, int>  $projectIds
+     * @return array<int, int>
+     */
+    protected function assignedEmployeeIds(array $projectIds): array
+    {
+        if ($projectIds === [] || ! Schema::hasTable('projects_project_employees')) {
+            return [];
+        }
+
+        try {
+            return DB::table('projects_project_employees')
+                ->whereIn('project_id', $projectIds)
+                ->distinct()
+                ->pluck('employee_id')
+                ->map(fn ($id): int => (int) $id)
+                ->filter()
+                ->values()
+                ->all();
+        } catch (Throwable) {
+            return [];
+        }
+    }
+
+    /**
+     * @param  array<int, int>  $projectIds
+     * @param  array<int, string>|null  $states
+     */
+    protected function projectTaskCount(array $projectIds, ?array $states = null, ?int $year = null, ?int $month = null): int
+    {
+        if ($projectIds === [] || ! Schema::hasTable('projects_tasks')) {
+            return 0;
+        }
+
+        try {
+            $query = $this->scopedQuery('projects_tasks')->whereIn('project_id', $projectIds);
+
+            if ($states !== null) {
+                $query->whereIn('state', $states);
+            }
+
+            if ($year && Schema::hasColumn('projects_tasks', 'created_at')) {
+                $query->whereYear('created_at', $year);
+            }
+
+            if ($month && Schema::hasColumn('projects_tasks', 'created_at')) {
+                $query->whereMonth('created_at', $month);
+            }
+
+            return (int) $query->count();
+        } catch (Throwable) {
+            return 0;
+        }
+    }
+
+    /**
+     * @return array{label: string, trend: string, period: string}
+     */
+    protected function customerProjectPeriodDelta(string $period): array
+    {
+        $periodLabel = $period === 'week' ? 'Since last week' : 'Since last month';
+
+        try {
+            if (! Schema::hasTable('projects_projects') || ! Schema::hasColumn('projects_projects', 'created_at')) {
+                return ['label' => '', 'trend' => 'flat', 'period' => $periodLabel];
+            }
+
+            $currentStart = $period === 'week' ? now()->startOfWeek() : now()->startOfMonth();
+            $previousStart = $period === 'week' ? now()->subWeek()->startOfWeek() : now()->subMonth()->startOfMonth();
+            $previousEnd = $currentStart->copy()->subSecond();
+
+            $current = (int) $this->customerProjectQuery()->where('created_at', '>=', $currentStart)->count();
+            $previous = (int) $this->customerProjectQuery()->whereBetween('created_at', [$previousStart, $previousEnd])->count();
+
+            if ($previous === 0 && $current === 0) {
+                return ['label' => '0%', 'trend' => 'flat', 'period' => $periodLabel];
+            }
+
+            if ($previous === 0) {
+                return ['label' => '100%', 'trend' => 'up', 'period' => $periodLabel];
+            }
+
+            $delta = round((($current - $previous) / max($previous, 1)) * 100, 2);
+
+            return [
+                'label'  => number_format(abs($delta), 2).'%',
+                'trend'  => $delta >= 0 ? 'up' : 'down',
+                'period' => $periodLabel,
+            ];
+        } catch (Throwable) {
+            return ['label' => '', 'trend' => 'flat', 'period' => $periodLabel];
+        }
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    protected function monthlyCustomerProjectCounts(): array
+    {
+        $series = array_fill(0, 12, 0);
+
+        try {
+            if (! Schema::hasTable('projects_projects') || ! Schema::hasColumn('projects_projects', 'created_at')) {
+                return $series;
+            }
+
+            $year = now()->year;
+
+            foreach (range(1, 12) as $month) {
+                $series[$month - 1] = (int) $this->customerProjectQuery()
+                    ->whereYear('created_at', $year)
+                    ->whereMonth('created_at', $month)
+                    ->count();
+            }
+        } catch (Throwable) {
+            //
+        }
+
+        return $series;
     }
 
     protected function formatCompactNumber(float|int $number): string
@@ -451,11 +659,7 @@ class WelcomeDashboard extends BaseDashboard
             return 0.0;
         }
 
-        $query = $this->scopedQuery($table)->whereBetween('created_at', [$from, $to]);
-
-        if (Schema::hasColumn($table, 'is_active')) {
-            $query->where('is_active', true);
-        }
+        $query = $this->customerProjectQuery()->whereBetween('created_at', [$from, $to]);
 
         return (float) ($query->sum($column) ?? 0.0);
     }
@@ -465,7 +669,7 @@ class WelcomeDashboard extends BaseDashboard
      */
     protected function operationalCostTotal(): float
     {
-        return $this->safeSum('projects_projects', 'operational_cost', ['is_active' => true]);
+        return $this->customerProjectSum('operational_cost');
     }
 
     protected function revenueCostDetail(float $operationalCost, ?float $grossMargin): string
@@ -485,7 +689,9 @@ class WelcomeDashboard extends BaseDashboard
     {
         try {
             if (class_exists(ProjectResource::class)) {
-                return ProjectResource::getUrl('index', panel: 'admin');
+                return ProjectResource::getUrl('index', [
+                    'activeTableView' => 'customer_projects',
+                ], panel: 'admin');
             }
         } catch (Throwable) {
             // Fall through when the Projects plugin routes are unavailable.
@@ -581,17 +787,11 @@ class WelcomeDashboard extends BaseDashboard
 
             $year = now()->year;
 
-            foreach (range(1, 12) as $month) {
-                $total = (int) $this->scopedQuery('projects_tasks')
-                    ->whereYear('created_at', $year)
-                    ->whereMonth('created_at', $month)
-                    ->count();
+            $projectIds = $this->customerProjectIds();
 
-                $completed = (int) $this->scopedQuery('projects_tasks')
-                    ->whereYear('created_at', $year)
-                    ->whereMonth('created_at', $month)
-                    ->whereIn('state', ['1_done', 'done', '04_done'])
-                    ->count();
+            foreach (range(1, 12) as $month) {
+                $total = $this->projectTaskCount($projectIds, null, $year, $month);
+                $completed = $this->projectTaskCount($projectIds, ['1_done', 'done', '04_done'], $year, $month);
 
                 $series[$month - 1] = $total > 0 ? round(($completed / $total) * 100, 1) : 0.0;
             }
@@ -658,8 +858,12 @@ class WelcomeDashboard extends BaseDashboard
 
             $placedByLocation = [];
 
+            $assignedEmployeeIds = $this->assignedEmployeeIds($this->customerProjectIds());
+
             $employeeRows = $this->scopedQuery('employees_employees')
                 ->when(Schema::hasColumn('employees_employees', 'is_active'), fn ($query) => $query->where('is_active', true))
+                ->when($assignedEmployeeIds !== [], fn ($query) => $query->whereIn('id', $assignedEmployeeIds))
+                ->when($assignedEmployeeIds === [], fn ($query) => $query->whereRaw('0 = 1'))
                 ->whereNotNull('work_location_id')
                 ->orderBy('name')
                 ->get(['work_location_id', 'name']);

@@ -23,6 +23,8 @@ return [
         'partner'                  => 'Customer',
         'company'                  => 'Company',
         'user'                     => 'Project Manager',
+        'director'                 => 'Project Director',
+        'is_strategic'             => 'Strategic',
         'creator'                  => 'Creator',
     ],
 ];

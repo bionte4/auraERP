@@ -328,6 +328,8 @@ Buka menu **Employees → Performance Plans → Evaluations** (`/admin/evaluatio
    - Buka menu **Project → Projects** (`/admin/project/projects`).
    - Pilih **Customer**, **Start Date & End Date**, serta **Project Value (`Nilai Proyek Rp`)**.
    - Daftar seluruh proyek dan total nilai kontrak per Customer dapat dilihat langsung pada tab **Proyek** di halaman detail Customer.
+   - **Kartu Welcome Overview (Admin)** mengikuti tab **Customer Projects**: Total Project = jumlah proyek (bukan jumlah klien), revenue = jumlah nilai per proyek, Total Employee = karyawan unik yang ditugaskan ke proyek-proyek itu. Satu klien dua kontrak tetap dihitung dua proyek.
+   - **Organisasi proyek:** 1 proyek = 1 Operation Manager (wajib; Admin tidak perlu jadi OM); 1 OM boleh banyak proyek; 1 Team Leader hanya 1 proyek aktif; proyek **Strategis** wajib 1 **Project Director** (boleh mengawasi banyak proyek strategis). Struktur ini tampil di tab **Struktur Organisasi**.
 2. **Penugasan Karyawan ke Proyek (dua arah — Admin & Operation Manager):**
    - **Bukan** untuk mengatur siapa **Manajer Proyek** — itu di langkah 3.
    - **Dari Proyek:** menu **Project → Tugaskan Karyawan (`Assign Employees`)** (`/admin/project/assign-employees`) → pilih **Proyek**, lalu pilih satu atau beberapa **Karyawan**, klik **Simpan Penugasan**.
@@ -337,7 +339,7 @@ Buka menu **Employees → Performance Plans → Evaluations** (`/admin/evaluatio
    - **Prasyarat akses login:** Pastikan karyawan punya **Pengguna Terkait (`Related User`)**. Tanpa ini, penugasan tetap tersimpan, tetapi karyawan belum bisa login/mengakses proyek.
    - Layar Project Assign: permission `page_project_assign_project_employees`. Tab di Employee mengikuti izin update Employee (plugin Projects harus terpasang).
 3. **Assign / Unassign Manajer Proyek (`Project Manager`) — satu orang per proyek:**
-   - Field di form proyek: **Manajer Proyek (`Project Manager`)** → kolom DB `projects_projects.user_id` (relasi ke **User**, biasanya user dengan role **Operation Manager**).
+   - Field di form proyek: **Manajer Proyek (`Project Manager`)** → kolom DB `projects_projects.user_id` (relasi ke **User** dengan role **Operation Manager** — pilihan form hanya OM). Proyek **Strategis** menampilkan field **Project Director** yang wajib diisi.
    - **Cara massal (disarankan):** **Project → Atur Project Manager** (`/admin/project/assign-project-managers`, khusus Admin; permission `page_project_assign_project_managers`) — semua proyek dalam satu tabel, ganti PM lewat dropdown per baris (pilihan hanya user berperan **Operation Manager**), langsung tersimpan dan tersinkron ke tim proyek. Chip di atas tabel menampilkan jumlah proyek per OM; filter **Belum ada manajer** + badge menu (jumlah proyek tanpa PM) memudahkan memburu proyek yatim. Mengganti/mengosongkan PM tidak menghapus PM lama dari anggota tim.
    - **Bulk via Excel/CSV (di halaman yang sama):** tombol **Template Project Manager** menghasilkan `template-assign-project-managers.xlsx` yang **sudah terisi semua proyek + email PM saat ini** (sheet kedua: daftar email OM yang valid). Ubah kolom `new_manager_email` (kosongkan = lepas PM), lalu **Impor Excel / CSV**. (Jangan tertukar dengan tombol **Template Impor Proyek** di halaman daftar Projects — itu template impor proyek umum.) Proyek dicocokkan via `project_id` (cadangan: nama persis), manajer via email dan wajib berperan Operation Manager; hasil impor menampilkan hitungan diperbarui/tidak berubah/dilewati beserta daftar baris bermasalah.
    - **Assign / ganti:**

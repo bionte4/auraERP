@@ -7,6 +7,7 @@ require_once __DIR__.'/../Helpers/TestBootstrapHelper.php';
 use Spatie\Permission\Models\Role;
 use Webkul\Employee\Models\Employee;
 use Webkul\Employee\Models\WorkLocation;
+use Webkul\Partner\Models\Partner;
 use Webkul\Project\Models\Project;
 use Webkul\Security\Models\User;
 use Webkul\Support\Filament\Pages\WelcomeDashboard;
@@ -156,6 +157,81 @@ it('includes null-company projects for company-scoped users without bypass', fun
 
     expect($projectKpi['raw_value'] ?? null)->toBe(2);
 });
+
+it('counts customer projects per row and unique assigned employees for welcome kpis', function (): void {
+    $company = Company::factory()->create();
+    $adminRoleName = config('filament-shield.panel_user.name', 'Admin');
+
+    foreach (['web', 'sanctum'] as $guard) {
+        Role::query()->firstOrCreate([
+            'name'       => $adminRoleName,
+            'guard_name' => $guard,
+        ]);
+    }
+
+    $admin = CompanyHelper::actingAsCompanyUser($company, ['bypass_company_scope']);
+    $admin->syncRoles([$adminRoleName]);
+
+    $customer = Partner::factory()->create([
+        'name'       => 'Welcome Customer',
+        'company_id' => $company->id,
+    ]);
+
+    $withCustomerA = Project::factory()->create([
+        'name'          => 'Customer Project A',
+        'company_id'    => $company->id,
+        'partner_id'    => $customer->id,
+        'is_active'     => true,
+        'project_value' => 1000,
+    ]);
+    $withCustomerB = Project::factory()->create([
+        'name'          => 'Customer Project B',
+        'company_id'    => $company->id,
+        'partner_id'    => $customer->id,
+        'is_active'     => true,
+        'project_value' => 500,
+    ]);
+    Project::factory()->create([
+        'name'          => 'Internal No Customer',
+        'company_id'    => $company->id,
+        'partner_id'    => null,
+        'is_active'     => true,
+        'project_value' => 9999,
+    ]);
+
+    $shared = Employee::create([
+        'name'       => 'Shared Assignee',
+        'company_id' => $company->id,
+        'is_active'  => true,
+    ]);
+    $onlyB = Employee::create([
+        'name'       => 'Only B Assignee',
+        'company_id' => $company->id,
+        'is_active'  => true,
+    ]);
+    Employee::create([
+        'name'       => 'Unassigned Staff',
+        'company_id' => $company->id,
+        'is_active'  => true,
+    ]);
+
+    $withCustomerA->employees()->syncWithoutDetaching([$shared->id]);
+    $withCustomerB->employees()->syncWithoutDetaching([$shared->id, $onlyB->id]);
+
+    app()->forgetInstance(CompanyContext::class);
+
+    $page = app(WelcomeDashboard::class);
+    $data = $page->getDashboardData();
+    $projectKpi = collect($data['kpis'] ?? [])->firstWhere('title', 'Total Project');
+    $revenueKpi = collect($data['kpis'] ?? [])->firstWhere('title', 'Total Revenue');
+    $employeeKpi = collect($data['kpis'] ?? [])->firstWhere('title', 'Total Employee');
+
+    expect($projectKpi['raw_value'] ?? null)->toBe(2)
+        ->and($projectKpi['detail'] ?? '')->toContain('1')
+        ->and($revenueKpi['raw_value'] ?? null)->toBe(1500.0)
+        ->and($employeeKpi['raw_value'] ?? null)->toBe(2);
+});
+
 it('maps employee placement markers from work locations with coordinates', function () {
     $company = Company::factory()->create();
     $adminRoleName = config('filament-shield.panel_user.name', 'Admin');
@@ -187,18 +263,25 @@ it('maps employee placement markers from work locations with coordinates', funct
         'is_active'  => true,
     ]);
 
-    Employee::create([
+    $budi = Employee::create([
         'name'             => 'Budi Penempatan',
         'company_id'       => $company->id,
         'work_location_id' => $jakarta->id,
         'is_active'        => true,
     ]);
-    Employee::create([
+    $siti = Employee::create([
         'name'             => 'Siti Penempatan',
         'company_id'       => $company->id,
         'work_location_id' => $jakarta->id,
         'is_active'        => true,
     ]);
+
+    $customerProject = Project::factory()->create([
+        'name'       => 'Map Customer Project',
+        'company_id' => $company->id,
+        'is_active'  => true,
+    ]);
+    $customerProject->employees()->syncWithoutDetaching([$budi->id, $siti->id]);
 
     app()->forgetInstance(CompanyContext::class);
 

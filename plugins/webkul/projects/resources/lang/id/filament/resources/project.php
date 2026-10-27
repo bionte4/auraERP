@@ -2,16 +2,16 @@
 
 return [
     'navigation' => [
-        'title' => 'Proyek',
+        'title'         => 'Proyek',
         'badge-tooltip' => 'Proyek aktif yang sudah lewat tenggat atau berakhir dalam 90 hari',
     ],
 
     'global-search' => [
-        'project-manager' => 'Manajer Proyek',
-                    'team-leader'                  => 'Team Leader',
-                    'team-leader-helper-text'      => 'Karyawan yang memimpin tim proyek ini. Satu team leader hanya dapat memimpin satu proyek aktif dan otomatis menjadi anggota proyek.',
-                    'team-leader-unique'           => 'Karyawan ini sudah memimpin proyek aktif lain.',
-        'customer'        => 'Pelanggan',
+        'project-manager'              => 'Manajer Proyek',
+        'team-leader'                  => 'Team Leader',
+        'team-leader-helper-text'      => 'Karyawan yang memimpin tim proyek ini. Satu team leader hanya dapat memimpin satu proyek aktif dan otomatis menjadi anggota proyek.',
+        'team-leader-unique'           => 'Karyawan ini sudah memimpin proyek aktif lain.',
+        'customer'                     => 'Pelanggan',
     ],
 
     'form' => [
@@ -30,20 +30,31 @@ return [
                 'title' => 'Informasi Tambahan',
 
                 'fields' => [
-                    'project-manager'             => 'Manajer Proyek',
-                    'customer'                    => 'Pelanggan (Customer)',
-                    'customer-helper-text'        => 'Satu pelanggan dapat memiliki banyak proyek.',
-                    'start-date'                  => 'Tanggal Mulai Proyek',
-                    'end-date'                    => 'Tanggal Akhir Proyek',
-                    'end-date-helper-text'        => 'Pengingat otomatis dikirim pada 3, 2, dan 1 bulan sebelum tanggal akhir.',
-                    'project-value'               => 'Nilai Proyek (Revenue)',
-                    'project-value-helper-text'   => 'Nilai kontrak / revenue proyek dalam Rupiah.',
-                    'operational-cost'            => 'Biaya Operasional',
-                    'operational-cost-helper-text'=> 'Estimasi atau anggaran biaya operasional proyek.',
-                    'allocated-hours'             => 'Jam yang Dialokasikan',
-                    'allocated-hours-helper-text' => 'Dalam jam (Mis. 1.5 jam berarti 1 jam 30 menit)',
-                    'tags'                        => 'Tag',
-                    'company'                     => 'Perusahaan',
+                    'project-manager'                   => 'Manajer Proyek (Operation Manager)',
+                    'project-manager-helper-text'       => 'Satu proyek ditangani tepat satu Operation Manager. Satu OM boleh menangani banyak proyek. Admin tidak wajib menjadi OM.',
+                    'project-manager-required'          => 'Proyek wajib memiliki satu Operation Manager.',
+                    'project-manager-must-be-om'        => 'Manajer proyek harus memiliki peran Operation Manager.',
+                    'team-leader'                       => 'Team Leader',
+                    'team-leader-helper-text'           => 'Karyawan yang memimpin tim proyek ini. Satu team leader hanya dapat memimpin satu proyek aktif dan otomatis menjadi anggota.',
+                    'team-leader-unique'                => 'Karyawan ini sudah memimpin proyek aktif lain.',
+                    'is-strategic'                      => 'Proyek strategis',
+                    'is-strategic-helper-text'          => 'Proyek strategis wajib memiliki satu Project Director. Satu director boleh mengawasi beberapa proyek strategis.',
+                    'project-director'                  => 'Project Director',
+                    'project-director-helper-text'      => 'Wajib untuk proyek strategis. Admin atau akun direksi dapat ditugaskan.',
+                    'project-director-required'         => 'Proyek strategis wajib memiliki satu Project Director.',
+                    'customer'                          => 'Pelanggan (Customer)',
+                    'customer-helper-text'              => 'Satu pelanggan dapat memiliki banyak proyek.',
+                    'start-date'                        => 'Tanggal Mulai Proyek',
+                    'end-date'                          => 'Tanggal Akhir Proyek',
+                    'end-date-helper-text'              => 'Pengingat otomatis dikirim pada 3, 2, dan 1 bulan sebelum tanggal akhir.',
+                    'project-value'                     => 'Nilai Proyek (Revenue)',
+                    'project-value-helper-text'         => 'Nilai kontrak / revenue proyek dalam Rupiah.',
+                    'operational-cost'                  => 'Biaya Operasional',
+                    'operational-cost-helper-text'      => 'Estimasi atau anggaran biaya operasional proyek.',
+                    'allocated-hours'                   => 'Jam yang Dialokasikan',
+                    'allocated-hours-helper-text'       => 'Dalam jam (Mis. 1.5 jam berarti 1 jam 30 menit)',
+                    'tags'                              => 'Tag',
+                    'company'                           => 'Perusahaan',
                 ],
             ],
 
@@ -80,6 +91,7 @@ return [
             'remaining-hours'   => 'Jam Tersisa',
             'health'            => 'Kesehatan',
             'project-manager'   => 'Manajer Proyek',
+            'strategic'         => 'Strategis',
         ],
 
         'groups' => [
@@ -164,6 +176,9 @@ return [
 
                 'entries' => [
                     'project-manager'        => 'Manajer Proyek',
+                    'team-leader'            => 'Team Leader',
+                    'is-strategic'           => 'Strategis',
+                    'project-director'       => 'Project Director',
                     'customer'               => 'Pelanggan',
                     'project-timeline'       => 'Periode Proyek',
                     'project-value'          => 'Nilai Proyek',

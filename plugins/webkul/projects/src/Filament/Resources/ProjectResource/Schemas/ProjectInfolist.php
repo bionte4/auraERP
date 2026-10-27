@@ -18,6 +18,7 @@ use Webkul\Project\Filament\Resources\ProjectResource\Pages\ManageMilestones;
 use Webkul\Project\Filament\Resources\ProjectResource\Pages\ManageTasks;
 use Webkul\Project\Models\Project;
 use Webkul\Project\Models\ProjectStage;
+use Webkul\Project\Services\OperationalScope;
 
 class ProjectInfolist
 {
@@ -55,6 +56,21 @@ class ProjectInfolist
                                             ->icon('heroicon-o-user')
                                             ->placeholder('—'),
 
+                                        TextEntry::make('teamLeader.name')
+                                            ->label(__('projects::filament/resources/project.infolist.sections.additional.entries.team-leader'))
+                                            ->icon('heroicon-o-flag')
+                                            ->placeholder('—'),
+
+                                        IconEntry::make('is_strategic')
+                                            ->label(__('projects::filament/resources/project.infolist.sections.additional.entries.is-strategic'))
+                                            ->boolean(),
+
+                                        TextEntry::make('director.name')
+                                            ->label(__('projects::filament/resources/project.infolist.sections.additional.entries.project-director'))
+                                            ->icon('heroicon-o-briefcase')
+                                            ->placeholder('—')
+                                            ->visible(fn (Project $record): bool => (bool) $record->is_strategic),
+
                                         TextEntry::make('partner.name')
                                             ->label(__('projects::filament/resources/project.infolist.sections.additional.entries.customer'))
                                             ->icon('heroicon-o-phone')
@@ -74,7 +90,7 @@ class ProjectInfolist
                                         TextEntry::make('project_value')
                                             ->label(__('projects::filament/resources/project.infolist.sections.additional.entries.project-value'))
                                             ->icon('heroicon-o-banknotes')
-                                            ->visible(fn (): bool => app(\Webkul\Project\Services\OperationalScope::class)->canViewProjectValue())
+                                            ->visible(fn (): bool => app(OperationalScope::class)->canViewProjectValue())
                                             ->state(fn (Project $record): string => $record->formattedProjectValue()),
 
                                         TextEntry::make('operational_cost')

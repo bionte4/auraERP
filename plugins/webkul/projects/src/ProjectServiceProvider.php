@@ -20,6 +20,7 @@ use Webkul\Project\Console\Commands\NotifyExpiringProjectsCommand;
 use Webkul\Project\Console\Commands\SyncTeamMembershipsCommand;
 use Webkul\Project\Models\Project;
 use Webkul\Project\Models\Task;
+use Webkul\Project\Services\OperationalScope;
 use Webkul\Project\Services\TeamMembershipSynchronizer;
 use Webkul\Security\Models\Team;
 
@@ -50,6 +51,7 @@ class ProjectServiceProvider extends PackageServiceProvider
                 '2026_10_16_140000_create_projects_project_employees_table',
                 '2026_10_16_222630_add_operational_cost_to_projects_projects_table',
                 '2026_10_20_130000_add_team_leader_to_projects_projects_table',
+                '2026_10_27_120000_add_strategic_director_to_projects_projects_table',
             ])
             ->runsMigrations()
             ->hasCommands([
@@ -111,7 +113,7 @@ class ProjectServiceProvider extends PackageServiceProvider
                                         TextEntry::make('customer_projects_total_value')
                                             ->label(__('projects::filament/resources/project.customer-projects.total-value'))
                                             ->icon('heroicon-o-banknotes')
-                                            ->visible(fn (): bool => app(\Webkul\Project\Services\OperationalScope::class)->canViewProjectValue())
+                                            ->visible(fn (): bool => app(OperationalScope::class)->canViewProjectValue())
                                             ->state(function (Partner $record): string {
                                                 if (! Schema::hasTable('projects_projects') || ! Schema::hasColumn('projects_projects', 'project_value')) {
                                                     return 'Rp 0';
@@ -142,7 +144,7 @@ class ProjectServiceProvider extends PackageServiceProvider
                                                     return '—';
                                                 }
 
-                                                $canViewProjectValue = app(\Webkul\Project\Services\OperationalScope::class)->canViewProjectValue();
+                                                $canViewProjectValue = app(OperationalScope::class)->canViewProjectValue();
 
                                                 return $projects->map(function (Project $p) use ($canViewProjectValue): string {
                                                     $period = ($p->start_date && $p->end_date)

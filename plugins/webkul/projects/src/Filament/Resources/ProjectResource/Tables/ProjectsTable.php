@@ -35,6 +35,7 @@ use Webkul\Project\Filament\Resources\ProjectResource;
 use Webkul\Project\Filament\Resources\ProjectResource\Pages\ManageMilestones;
 use Webkul\Project\Filament\Resources\ProjectResource\Pages\ManageTasks;
 use Webkul\Project\Models\Project;
+use Webkul\Project\Services\OperationalScope;
 
 class ProjectsTable
 {
@@ -44,7 +45,7 @@ class ProjectsTable
         // budget-control team (Accounting / Accounting Manager) see
         // the value badge and the value filter. See
         // OperationalScope::canViewProjectValue().
-        $canViewProjectValue = app(\Webkul\Project\Services\OperationalScope::class)->canViewProjectValue();
+        $canViewProjectValue = app(OperationalScope::class)->canViewProjectValue();
 
         return $table
             ->columns(array_merge([
@@ -149,8 +150,15 @@ class ProjectsTable
                             ->icon('heroicon-o-user')
                             ->label(__('projects::filament/resources/project.table.columns.project-manager'))
                             ->sortable(),
+                        TextColumn::make('is_strategic')
+                            ->badge()
+                            ->color('danger')
+                            ->state(fn (Project $record): ?string => $record->is_strategic
+                                ? __('projects::filament/resources/project.table.columns.strategic')
+                                : null)
+                            ->visible(fn (Project $record): bool => (bool) $record->is_strategic),
                     ])
-                        ->visible(fn (Project $record) => filled($record->user)),
+                        ->visible(fn (Project $record) => filled($record->user) || $record->is_strategic),
                     Stack::make([
                         TextColumn::make('tags.name')
                             ->badge()

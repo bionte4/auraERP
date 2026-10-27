@@ -2,16 +2,16 @@
 
 return [
     'navigation' => [
-        'title' => 'Projects',
+        'title'         => 'Projects',
         'badge-tooltip' => 'Active projects past due or ending within 90 days',
     ],
 
     'global-search' => [
-        'project-manager' => 'Project Manager',
-                    'team-leader'                  => 'Team Leader',
-                    'team-leader-helper-text'      => 'The employee leading the team of this project. A team leader can only lead one active project and is automatically added as a project member.',
-                    'team-leader-unique'           => 'This employee already leads another active project.',
-        'customer'        => 'Customer',
+        'project-manager'              => 'Project Manager',
+        'team-leader'                  => 'Team Leader',
+        'team-leader-helper-text'      => 'The employee leading the team of this project. A team leader can only lead one active project and is automatically added as a project member.',
+        'team-leader-unique'           => 'This employee already leads another active project.',
+        'customer'                     => 'Customer',
     ],
 
     'form' => [
@@ -30,20 +30,31 @@ return [
                 'title' => 'Additional Information',
 
                 'fields' => [
-                    'project-manager'             => 'Project Manager',
-                    'customer'                    => 'Customer',
-                    'customer-helper-text'        => 'One customer can have multiple projects.',
-                    'start-date'                  => 'Start Date',
-                    'end-date'                    => 'End Date',
-                    'end-date-helper-text'        => 'Automatic reminders are sent at 3, 2, and 1 months before the end date.',
-                    'project-value'               => 'Project Value (Revenue)',
-                    'project-value-helper-text'   => 'Contract or revenue value of the project.',
-                    'operational-cost'            => 'Operational Cost',
-                    'operational-cost-helper-text'=> 'Estimated or budgeted operational cost for this project.',
-                    'allocated-hours'             => 'Allocated Hours',
-                    'allocated-hours-helper-text' => 'In hours (Eg. 1.5 hours means 1 hour 30 minutes)',
-                    'tags'                        => 'Tags',
-                    'company'                     => 'Company',
+                    'project-manager'                   => 'Project Manager (Operation Manager)',
+                    'project-manager-helper-text'       => 'Exactly one Operation Manager per project. One OM may manage many projects. Admin is not required to be the OM.',
+                    'project-manager-required'          => 'A project must have one Operation Manager.',
+                    'project-manager-must-be-om'        => 'The project manager must have the Operation Manager role.',
+                    'team-leader'                       => 'Team Leader',
+                    'team-leader-helper-text'           => 'The employee leading this project team. One team leader may lead only one active project and is added as a member automatically.',
+                    'team-leader-unique'                => 'This employee already leads another active project.',
+                    'is-strategic'                      => 'Strategic project',
+                    'is-strategic-helper-text'          => 'Strategic projects require one Project Director. A director may oversee several strategic projects.',
+                    'project-director'                  => 'Project Director',
+                    'project-director-helper-text'      => 'Required for strategic projects. Admin or a director account may be assigned.',
+                    'project-director-required'         => 'A strategic project must have one Project Director.',
+                    'customer'                          => 'Customer',
+                    'customer-helper-text'              => 'One customer can have multiple projects.',
+                    'start-date'                        => 'Start Date',
+                    'end-date'                          => 'End Date',
+                    'end-date-helper-text'              => 'Automatic reminders are sent at 3, 2, and 1 months before the end date.',
+                    'project-value'                     => 'Project Value (Revenue)',
+                    'project-value-helper-text'         => 'Contract or revenue value of the project.',
+                    'operational-cost'                  => 'Operational Cost',
+                    'operational-cost-helper-text'      => 'Estimated or budgeted operational cost for this project.',
+                    'allocated-hours'                   => 'Allocated Hours',
+                    'allocated-hours-helper-text'       => 'In hours (Eg. 1.5 hours means 1 hour 30 minutes)',
+                    'tags'                              => 'Tags',
+                    'company'                           => 'Company',
                 ],
             ],
 
@@ -80,6 +91,7 @@ return [
             'remaining-hours'   => 'Remaining Hours',
             'health'            => 'Health',
             'project-manager'   => 'Project Manager',
+            'strategic'         => 'Strategic',
         ],
 
         'groups' => [
@@ -164,6 +176,9 @@ return [
 
                 'entries' => [
                     'project-manager'        => 'Project Manager',
+                    'team-leader'            => 'Team Leader',
+                    'is-strategic'           => 'Strategic',
+                    'project-director'       => 'Project Director',
                     'customer'               => 'Customer',
                     'project-timeline'       => 'Project Timeline',
                     'project-value'          => 'Project Value',

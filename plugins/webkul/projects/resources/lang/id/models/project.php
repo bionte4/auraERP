@@ -23,6 +23,8 @@ return [
         'partner'                  => 'Pelanggan',
         'company'                  => 'Perusahaan',
         'user'                     => 'Manajer Proyek',
+        'director'                 => 'Project Director',
+        'is_strategic'             => 'Strategis',
         'creator'                  => 'Pembuat',
     ],
 ];
