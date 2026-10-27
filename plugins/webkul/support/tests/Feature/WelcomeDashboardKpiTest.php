@@ -226,10 +226,14 @@ it('counts customer projects per row and unique assigned employees for welcome k
     $revenueKpi = collect($data['kpis'] ?? [])->firstWhere('title', 'Total Revenue');
     $employeeKpi = collect($data['kpis'] ?? [])->firstWhere('title', 'Total Employee');
 
+    $employeeTotal = (int) ($employeeKpi['raw_value'] ?? 0);
+
     expect($projectKpi['raw_value'] ?? null)->toBe(2)
         ->and($projectKpi['detail'] ?? '')->toContain('1')
         ->and($revenueKpi['raw_value'] ?? null)->toBe(1500.0)
-        ->and($employeeKpi['raw_value'] ?? null)->toBe(2);
+        ->and($employeeTotal)->toBeGreaterThanOrEqual(3)
+        ->and($employeeKpi['detail'] ?? '')->toMatch('/2 (assigned|ditugaskan)/')
+        ->and($employeeKpi['detail'] ?? '')->toMatch('/'.preg_quote((string) ($employeeTotal - 2), '/').' (unassigned|belum ditugaskan)/');
 });
 
 it('maps employee placement markers from work locations with coordinates', function () {

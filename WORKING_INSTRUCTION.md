@@ -328,7 +328,7 @@ Buka menu **Employees → Performance Plans → Evaluations** (`/admin/evaluatio
    - Buka menu **Project → Projects** (`/admin/project/projects`).
    - Pilih **Customer**, **Start Date & End Date**, serta **Project Value (`Nilai Proyek Rp`)**.
    - Daftar seluruh proyek dan total nilai kontrak per Customer dapat dilihat langsung pada tab **Proyek** di halaman detail Customer.
-   - **Kartu Welcome Overview (Admin)** mengikuti tab **Customer Projects**: Total Project = jumlah proyek (bukan jumlah klien), revenue = jumlah nilai per proyek, Total Employee = karyawan unik yang ditugaskan ke proyek-proyek itu. Satu klien dua kontrak tetap dihitung dua proyek.
+   - **Kartu Welcome Overview (Admin)** mengikuti tab **Customer Projects** untuk proyek/revenue. Total Employee = seluruh karyawan aktif (sama dengan menu Employees); baris bawah kartu memecah **ditugaskan** vs **belum ditugaskan** ke Customer Projects. Satu klien dua kontrak tetap dihitung dua proyek.
    - **Organisasi proyek:** 1 proyek = 1 Operation Manager (wajib; Admin tidak perlu jadi OM); 1 OM boleh banyak proyek; 1 Team Leader hanya 1 proyek aktif; proyek **Strategis** wajib 1 **Project Director** (boleh mengawasi banyak proyek strategis). Struktur ini tampil di tab **Struktur Organisasi**.
 2. **Penugasan Karyawan ke Proyek (dua arah — Admin & Operation Manager):**
    - **Bukan** untuk mengatur siapa **Manajer Proyek** — itu di langkah 3.

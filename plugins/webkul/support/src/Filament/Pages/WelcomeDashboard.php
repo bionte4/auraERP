@@ -66,7 +66,9 @@ class WelcomeDashboard extends BaseDashboard
         $projectIds = $this->customerProjectIds();
         $totalProjects = count($projectIds);
         $customerCount = $this->customerCount();
-        $totalEmployees = $this->assignedEmployeeCount($projectIds);
+        $totalEmployees = $this->activeEmployeeCount();
+        $assignedEmployees = $this->assignedActiveEmployeeCount($projectIds);
+        $unassignedEmployees = max(0, $totalEmployees - $assignedEmployees);
 
         $totalTasks = $this->projectTaskCount($projectIds);
         $completedTasks = $this->projectTaskCount($projectIds, ['1_done', 'done', '04_done']);
@@ -187,6 +189,7 @@ class WelcomeDashboard extends BaseDashboard
                     'title'     => 'Total Employee',
                     'value'     => $this->formatCompactNumber($totalEmployees),
                     'raw_value' => $totalEmployees,
+                    'detail'    => $this->employeeAssignmentDetail($assignedEmployees, $unassignedEmployees),
                     'change'    => $employeeDelta['label'],
                     'trend'     => $employeeDelta['trend'],
                     'period'    => $employeeDelta['period'],
@@ -300,12 +303,46 @@ class WelcomeDashboard extends BaseDashboard
         return $customerCount.' customers (one client may have many projects)';
     }
 
+    protected function activeEmployeeCount(): int
+    {
+        return $this->safeCount('employees_employees', ['is_active' => true]);
+    }
+
     /**
+     * Assigned people who are still on the active employee roster.
+     *
      * @param  array<int, int>  $projectIds
      */
-    protected function assignedEmployeeCount(array $projectIds): int
+    protected function assignedActiveEmployeeCount(array $projectIds): int
     {
-        return count($this->assignedEmployeeIds($projectIds));
+        $assignedIds = $this->assignedEmployeeIds($projectIds);
+
+        if ($assignedIds === [] || ! Schema::hasTable('employees_employees')) {
+            return 0;
+        }
+
+        try {
+            return (int) $this->scopedQuery('employees_employees')
+                ->when(
+                    Schema::hasColumn('employees_employees', 'is_active'),
+                    fn ($query) => $query->where('is_active', true)
+                )
+                ->whereIn('id', $assignedIds)
+                ->count();
+        } catch (Throwable) {
+            return 0;
+        }
+    }
+
+    protected function employeeAssignmentDetail(int $assigned, int $unassigned): string
+    {
+        $indonesian = str_starts_with((string) app()->getLocale(), 'id');
+
+        if ($indonesian) {
+            return $assigned.' ditugaskan · '.$unassigned.' belum ditugaskan';
+        }
+
+        return $assigned.' assigned · '.$unassigned.' unassigned';
     }
 
     /**

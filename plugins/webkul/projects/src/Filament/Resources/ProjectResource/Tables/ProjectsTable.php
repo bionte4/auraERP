@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 use Webkul\Chatter\Filament\Actions\ActivityTableAction;
 use Webkul\Partner\Models\Partner;
 use Webkul\Project\Enums\ProjectVisibility;
@@ -150,15 +151,28 @@ class ProjectsTable
                             ->icon('heroicon-o-user')
                             ->label(__('projects::filament/resources/project.table.columns.project-manager'))
                             ->sortable(),
-                        TextColumn::make('is_strategic')
+                        TextColumn::make('strategic_badge')
+                            ->label(__('projects::filament/resources/project.table.columns.strategic'))
                             ->badge()
                             ->color('danger')
-                            ->state(fn (Project $record): ?string => $record->is_strategic
-                                ? __('projects::filament/resources/project.table.columns.strategic')
-                                : null)
-                            ->visible(fn (Project $record): bool => (bool) $record->is_strategic),
+                            ->state(function (Project $record): ?string {
+                                if (! Schema::hasColumn('projects_projects', 'is_strategic') || ! $record->is_strategic) {
+                                    return null;
+                                }
+
+                                return __('projects::filament/resources/project.table.columns.strategic');
+                            }),
                     ])
-                        ->visible(fn (Project $record) => filled($record->user) || $record->is_strategic),
+                        ->visible(function (?Project $record): bool {
+                            if (! $record) {
+                                return false;
+                            }
+
+                            $isStrategic = Schema::hasColumn('projects_projects', 'is_strategic')
+                                && (bool) $record->is_strategic;
+
+                            return filled($record->user) || $isStrategic;
+                        }),
                     Stack::make([
                         TextColumn::make('tags.name')
                             ->badge()

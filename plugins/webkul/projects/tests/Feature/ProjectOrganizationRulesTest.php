@@ -1,13 +1,16 @@
 <?php
 
 use Illuminate\Validation\ValidationException;
+use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
 use Webkul\Employee\Models\Employee;
 use Webkul\Partner\Models\Partner;
+use Webkul\Project\Filament\Resources\ProjectResource\Pages\ListProjects;
 use Webkul\Project\Models\Project;
 use Webkul\Project\Services\ProjectGovernance;
 use Webkul\Security\Models\User;
 
+require_once __DIR__.'/../../../support/tests/Helpers/FilamentHelper.php';
 require_once __DIR__.'/../../../support/tests/Helpers/SecurityHelper.php';
 require_once __DIR__.'/../../../support/tests/Helpers/TestBootstrapHelper.php';
 
@@ -83,4 +86,22 @@ it('keeps team leader limited to one active project', function (): void {
         'team_leader_employee_id' => $leader->id,
         'is_active'               => true,
     ]))->toThrow(ValidationException::class);
+});
+
+it('renders the customer projects table without a server error', function (): void {
+    FilamentHelper::actingAs([
+        'view_any_project_project',
+        'view_project_project',
+    ]);
+
+    $customer = Partner::factory()->create(['name' => 'List Customer']);
+    Project::factory()->create([
+        'name'       => 'Listed Customer Project',
+        'partner_id' => $customer->id,
+        'is_active'  => true,
+    ]);
+
+    Livewire::withQueryParams(['activeTableView' => 'customer_projects'])
+        ->test(ListProjects::class)
+        ->assertOk();
 });
