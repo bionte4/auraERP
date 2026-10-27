@@ -182,10 +182,20 @@ class OperationalScope
             return [];
         }
 
-        return Project::query()
+        $projectIds = Project::query()
             ->withoutGlobalScopes()
             ->where('team_leader_employee_id', $employeeId)
-            ->pluck('id')
+            ->pluck('id');
+
+        if (Schema::hasTable('projects_project_units')) {
+            $projectIds = $projectIds->merge(
+                DB::table('projects_project_units')
+                    ->where('team_leader_employee_id', $employeeId)
+                    ->pluck('project_id')
+            );
+        }
+
+        return $projectIds
             ->map(fn ($id): int => (int) $id)
             ->unique()
             ->values()

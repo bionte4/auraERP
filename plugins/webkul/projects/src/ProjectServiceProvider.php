@@ -52,6 +52,7 @@ class ProjectServiceProvider extends PackageServiceProvider
                 '2026_10_16_222630_add_operational_cost_to_projects_projects_table',
                 '2026_10_20_130000_add_team_leader_to_projects_projects_table',
                 '2026_10_27_120000_add_strategic_director_to_projects_projects_table',
+                '2026_10_27_140000_create_projects_project_units_table',
             ])
             ->runsMigrations()
             ->hasCommands([

@@ -74,10 +74,12 @@ it('synchronizes standard RBAC roles (Admin, HRD, Kasir, Staff) and assigns appr
         ->and($hrdRole->hasPermissionTo('view_any_attendance_attendance::site'))->toBeTrue()
         ->and($hrdRole->hasPermissionTo('page_project_weekly_operations_report'))->toBeTrue()
         ->and($hrdRole->hasPermissionTo('page_project_customer_project_weekly_report'))->toBeFalse()
+        ->and($hrdRole->hasPermissionTo('page_project_multi_project_customers'))->toBeFalse()
         ->and($hrdRole->hasPermissionTo('widget_project_operation_manager_actions_widget'))->toBeFalse()
         ->and($opMgrRole->hasPermissionTo('view_any_project_project'))->toBeTrue()
         ->and($opMgrRole->hasPermissionTo('create_evaluation_evaluation'))->toBeTrue()
         ->and($opMgrRole->hasPermissionTo('page_project_customer_project_weekly_report'))->toBeTrue()
+        ->and($opMgrRole->hasPermissionTo('page_project_multi_project_customers'))->toBeTrue()
         ->and($opMgrRole->hasPermissionTo('delete_security_user'))->toBeFalse()
         ->and(
             $opMgrRole->permissions->pluck('name')->contains(

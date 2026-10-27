@@ -29,6 +29,19 @@ class ManageOrgStructure extends Page
 
     public function mount(int|string $record): void
     {
-        $this->record = $this->resolveRecord($record);
+        $this->record = $this->resolveRecord($record)->load([
+            'director',
+            'user.employee.job',
+            'user.employee.department',
+            'teamLeader.job',
+            'teamLeader.department',
+            'employees.job',
+            'employees.department',
+            'units.department',
+            'units.mos.job',
+            'units.mos.department',
+            'units.teamLeader.job',
+            'units.teamLeader.department',
+        ]);
     }
 }

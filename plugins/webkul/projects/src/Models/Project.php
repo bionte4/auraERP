@@ -158,6 +158,11 @@ class Project extends Model implements Sortable
         return $this->belongsTo(User::class, 'project_director_id');
     }
 
+    public function units(): HasMany
+    {
+        return $this->hasMany(ProjectUnit::class);
+    }
+
     public function stage(): BelongsTo
     {
         return $this->belongsTo(ProjectStage::class);
@@ -371,7 +376,11 @@ class Project extends Model implements Sortable
         });
 
         static::saving(function (self $project): void {
-            // One team leader may only lead one active project at a time.
+            if ($project->is_strategic) {
+                $project->team_leader_employee_id = null;
+            }
+
+            // One team leader may only lead one active non-strategic project at a time.
             if ($project->team_leader_employee_id && $project->is_active && $project->isDirty('team_leader_employee_id', 'is_active')) {
                 $conflict = static::query()
                     ->where('team_leader_employee_id', $project->team_leader_employee_id)

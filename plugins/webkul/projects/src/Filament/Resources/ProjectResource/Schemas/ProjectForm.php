@@ -6,6 +6,7 @@ use Closure;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Radio;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -85,6 +86,7 @@ class ProjectForm
                                     ->label(__('projects::filament/resources/project.form.sections.additional.fields.team-leader'))
                                     ->relationship('teamLeader', 'name')
                                     ->preload()
+                                    ->visible(fn (Get $get): bool => ! (bool) $get('is_strategic'))
                                     ->helperText(__('projects::filament/resources/project.form.sections.additional.fields.team-leader-helper-text')),
                                 Toggle::make('is_strategic')
                                     ->label(__('projects::filament/resources/project.form.sections.additional.fields.is-strategic'))
@@ -100,6 +102,35 @@ class ProjectForm
                                     ->native()
                                     ->visible(fn (Get $get): bool => (bool) $get('is_strategic'))
                                     ->required(fn (Get $get): bool => (bool) $get('is_strategic')),
+                                Repeater::make('units')
+                                    ->label(__('projects::filament/resources/project.form.sections.additional.fields.units'))
+                                    ->helperText(__('projects::filament/resources/project.form.sections.additional.fields.units-helper-text'))
+                                    ->relationship()
+                                    ->visible(fn (Get $get): bool => (bool) $get('is_strategic'))
+                                    ->dehydrated(fn (Get $get): bool => (bool) $get('is_strategic'))
+                                    ->minItems(fn (Get $get): int => (bool) $get('is_strategic') ? 1 : 0)
+                                    ->defaultItems(1)
+                                    ->columns(3)
+                                    ->schema([
+                                        Select::make('department_id')
+                                            ->label(__('projects::filament/resources/project.form.sections.additional.fields.unit-department'))
+                                            ->relationship('department', 'name')
+                                            ->searchable()
+                                            ->preload()
+                                            ->required(),
+                                        Select::make('mos_employee_id')
+                                            ->label(__('projects::filament/resources/project.form.sections.additional.fields.unit-mos'))
+                                            ->relationship('mos', 'name')
+                                            ->searchable()
+                                            ->preload()
+                                            ->required(),
+                                        Select::make('team_leader_employee_id')
+                                            ->label(__('projects::filament/resources/project.form.sections.additional.fields.unit-team-leader'))
+                                            ->relationship('teamLeader', 'name')
+                                            ->searchable()
+                                            ->preload()
+                                            ->required(),
+                                    ]),
                                 Select::make('partner_id')
                                     ->label(__('projects::filament/resources/project.form.sections.additional.fields.customer'))
                                     ->relationship(
@@ -189,37 +220,37 @@ class ProjectForm
                         Section::make(__('projects::filament/resources/project.form.sections.settings.title'))
                             ->schema([
                                 Radio::make('visibility')
-                                        ->label(__('projects::filament/resources/project.form.sections.settings.fields.visibility'))
-                                        ->default('internal')
-                                        ->options(ProjectVisibility::options())
-                                        ->descriptions([
-                                            'private'  => __('projects::filament/resources/project.form.sections.settings.fields.private-description'),
-                                            'internal' => __('projects::filament/resources/project.form.sections.settings.fields.internal-description'),
-                                            'public'   => __('projects::filament/resources/project.form.sections.settings.fields.public-description'),
-                                        ])
-                                        ->hintIcon('heroicon-m-question-mark-circle', tooltip: __('projects::filament/resources/project.form.sections.settings.fields.visibility-hint-tooltip')),
+                                    ->label(__('projects::filament/resources/project.form.sections.settings.fields.visibility'))
+                                    ->default('internal')
+                                    ->options(ProjectVisibility::options())
+                                    ->descriptions([
+                                        'private'  => __('projects::filament/resources/project.form.sections.settings.fields.private-description'),
+                                        'internal' => __('projects::filament/resources/project.form.sections.settings.fields.internal-description'),
+                                        'public'   => __('projects::filament/resources/project.form.sections.settings.fields.public-description'),
+                                    ])
+                                    ->hintIcon('heroicon-m-question-mark-circle', tooltip: __('projects::filament/resources/project.form.sections.settings.fields.visibility-hint-tooltip')),
 
                                 Fieldset::make(__('projects::filament/resources/project.form.sections.settings.fields.time-management'))
-                                        ->schema([
-                                            Toggle::make('allow_timesheets')
-                                                ->label(__('projects::filament/resources/project.form.sections.settings.fields.allow-timesheets'))
-                                                ->helperText(__('projects::filament/resources/project.form.sections.settings.fields.allow-timesheets-helper-text'))
-                                                ->visible(ProjectResource::getTimeSettings()->enable_timesheets),
-                                        ])
-                                        ->columns(1)
-                                        ->visible(ProjectResource::getTimeSettings()->enable_timesheets)
-                                        ->default(ProjectResource::getTimeSettings()->enable_timesheets),
+                                    ->schema([
+                                        Toggle::make('allow_timesheets')
+                                            ->label(__('projects::filament/resources/project.form.sections.settings.fields.allow-timesheets'))
+                                            ->helperText(__('projects::filament/resources/project.form.sections.settings.fields.allow-timesheets-helper-text'))
+                                            ->visible(ProjectResource::getTimeSettings()->enable_timesheets),
+                                    ])
+                                    ->columns(1)
+                                    ->visible(ProjectResource::getTimeSettings()->enable_timesheets)
+                                    ->default(ProjectResource::getTimeSettings()->enable_timesheets),
 
                                 Fieldset::make(__('projects::filament/resources/project.form.sections.settings.fields.task-management'))
-                                        ->schema([
-                                            Toggle::make('allow_milestones')
-                                                ->label(__('projects::filament/resources/project.form.sections.settings.fields.allow-milestones'))
-                                                ->helperText(__('projects::filament/resources/project.form.sections.settings.fields.allow-milestones-helper-text'))
-                                                ->visible(ProjectResource::getTaskSettings()->enable_milestones)
-                                                ->default(ProjectResource::getTaskSettings()->enable_milestones),
-                                        ])
-                                        ->columns(1)
-                                        ->visible(ProjectResource::getTaskSettings()->enable_milestones),
+                                    ->schema([
+                                        Toggle::make('allow_milestones')
+                                            ->label(__('projects::filament/resources/project.form.sections.settings.fields.allow-milestones'))
+                                            ->helperText(__('projects::filament/resources/project.form.sections.settings.fields.allow-milestones-helper-text'))
+                                            ->visible(ProjectResource::getTaskSettings()->enable_milestones)
+                                            ->default(ProjectResource::getTaskSettings()->enable_milestones),
+                                    ])
+                                    ->columns(1)
+                                    ->visible(ProjectResource::getTaskSettings()->enable_milestones),
                             ]),
                     ])
                     ->columnSpan(['lg' => 1]),

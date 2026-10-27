@@ -1,12 +1,16 @@
 <?php
 
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
+use Webkul\Employee\Models\Department;
 use Webkul\Employee\Models\Employee;
 use Webkul\Partner\Models\Partner;
 use Webkul\Project\Filament\Resources\ProjectResource\Pages\ListProjects;
 use Webkul\Project\Models\Project;
+use Webkul\Project\Models\ProjectUnit;
 use Webkul\Project\Services\ProjectGovernance;
 use Webkul\Security\Models\User;
 
@@ -18,6 +22,14 @@ beforeEach(function (): void {
     TestBootstrapHelper::ensurePluginInstalled('employees');
     TestBootstrapHelper::ensurePluginInstalled('projects');
     SecurityHelper::disableUserEvents();
+
+    if (! Schema::hasTable('projects_project_units')) {
+        Artisan::call('migrate', [
+            '--path'           => 'plugins/webkul/projects/database/migrations/2026_10_27_140000_create_projects_project_units_table.php',
+            '--force'          => true,
+            '--no-interaction' => true,
+        ]);
+    }
 });
 
 afterEach(fn () => SecurityHelper::restoreUserEvents());
@@ -86,6 +98,38 @@ it('keeps team leader limited to one active project', function (): void {
         'team_leader_employee_id' => $leader->id,
         'is_active'               => true,
     ]))->toThrow(ValidationException::class);
+});
+
+it('requires function units with distinct mos and team lead on strategic projects', function (): void {
+    $director = User::withoutEvents(fn () => User::factory()->create(['name' => 'Director Units']));
+    $project = Project::factory()->create([
+        'is_strategic'        => true,
+        'project_director_id' => $director->id,
+        'is_active'           => true,
+    ]);
+
+    expect(fn () => ProjectGovernance::assertStrategicUnits($project->fresh()))
+        ->toThrow(ValidationException::class);
+
+    $department = Department::factory()->create(['name' => 'Network Operation']);
+    $mos = Employee::factory()->create(['user_id' => null]);
+    $lead = Employee::factory()->create(['user_id' => null]);
+
+    expect(fn () => ProjectGovernance::assertUnitLeadership($mos->id, $mos->id))
+        ->toThrow(ValidationException::class);
+
+    $unit = ProjectUnit::query()->create([
+        'project_id'              => $project->id,
+        'department_id'           => $department->id,
+        'mos_employee_id'         => $mos->id,
+        'team_leader_employee_id' => $lead->id,
+    ]);
+
+    expect($unit->mos_employee_id)->toBe($mos->id)
+        ->and($project->fresh()->team_leader_employee_id)->toBeNull()
+        ->and($project->employees()->whereKey([$mos->id, $lead->id])->count())->toBe(2);
+
+    ProjectGovernance::assertStrategicUnits($project->fresh());
 });
 
 it('renders the customer projects table without a server error', function (): void {

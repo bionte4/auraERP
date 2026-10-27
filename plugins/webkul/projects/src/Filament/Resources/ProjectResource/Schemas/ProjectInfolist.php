@@ -59,7 +59,8 @@ class ProjectInfolist
                                         TextEntry::make('teamLeader.name')
                                             ->label(__('projects::filament/resources/project.infolist.sections.additional.entries.team-leader'))
                                             ->icon('heroicon-o-flag')
-                                            ->placeholder('—'),
+                                            ->placeholder('—')
+                                            ->visible(fn (Project $record): bool => ! $record->is_strategic),
 
                                         IconEntry::make('is_strategic')
                                             ->label(__('projects::filament/resources/project.infolist.sections.additional.entries.is-strategic'))
@@ -70,6 +71,23 @@ class ProjectInfolist
                                             ->icon('heroicon-o-briefcase')
                                             ->placeholder('—')
                                             ->visible(fn (Project $record): bool => (bool) $record->is_strategic),
+
+                                        TextEntry::make('strategic_units')
+                                            ->label(__('projects::filament/resources/project.infolist.sections.additional.entries.units'))
+                                            ->visible(fn (Project $record): bool => (bool) $record->is_strategic)
+                                            ->state(function (Project $record): string {
+                                                $units = $record->units()->with(['department', 'mos', 'teamLeader'])->get();
+
+                                                if ($units->isEmpty()) {
+                                                    return '—';
+                                                }
+
+                                                return $units
+                                                    ->map(fn ($unit): string => ($unit->department?->name ?? '—')
+                                                        .' · MOS: '.($unit->mos?->name ?? '—')
+                                                        .' · TL: '.($unit->teamLeader?->name ?? '—'))
+                                                    ->implode("\n");
+                                            }),
 
                                         TextEntry::make('partner.name')
                                             ->label(__('projects::filament/resources/project.infolist.sections.additional.entries.customer'))

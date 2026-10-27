@@ -7,6 +7,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use Webkul\Chatter\Filament\Actions\ChatterAction;
 use Webkul\Project\Filament\Resources\ProjectResource;
+use Webkul\Project\Services\ProjectGovernance;
 
 class EditProject extends EditRecord
 {
@@ -18,6 +19,20 @@ class EditProject extends EditRecord
             ->success()
             ->title(__('projects::filament/resources/project/pages/edit-project.notification.title'))
             ->body(__('projects::filament/resources/project/pages/edit-project.notification.body'));
+    }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        if ($data['is_strategic'] ?? false) {
+            $data['team_leader_employee_id'] = null;
+        }
+
+        return $data;
+    }
+
+    protected function afterSave(): void
+    {
+        ProjectGovernance::assertStrategicUnits($this->getRecord());
     }
 
     protected function getHeaderActions(): array
