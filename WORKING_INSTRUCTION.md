@@ -16,13 +16,13 @@ Perintah `security:sync-rbac` **menyetel ulang** permission role non-Admin denga
 
 | Role | Hak Akses Utama |
 | :--- | :--- |
-| **Admin** | Akses penuh ke seluruh modul, pengaturan perusahaan, manajemen User, Role & Permission, **Audit Trail**, **Backup Database**, **IP Diblokir** (khusus Admin), dan instalasi plugin. |
+| **Admin** | Akses penuh ke seluruh modul, pengaturan perusahaan, manajemen User, Role & Permission, **Welcome Overview** (KPI eksekutif), **Klien multi-proyek**, **Audit Trail**, **Backup Database**, **IP Diblokir** (khusus Admin), dan instalasi plugin. Admin **tidak** wajib menjadi Operation Manager / MOS / Team Lead. |
 | **HRD** | Karyawan, Kontrak, Departemen, Lokasi Kerja (Geofence), Absensi, Cuti/Izin (`Time Off`), Rencana Kinerja, Evaluasi, **Dashboard Evaluasi**, Rekrutmen, **Laporan Ops Mingguan** (internal), widget kehadiran. **Tidak** mendapat: Customer Project Weekly Report, widget aksi OM, Sales/Purchase/Inventory, Maintenance/Aset. |
-| **Operation Manager** | Proyek (`Projects`), **Teams** (lihat/buat/ubah tim proyek; tanpa hak hapus tim), **Tugaskan Karyawan**, Tasks, Timesheets, Mitra (`Partners`), **Laporan Ops Mingguan**, **Laporan Mingguan Proyek untuk Klien** (Excel), Dashboard Proyek + widget OM, Absensi/Cuti untuk approval tim, **Penilaian Kinerja (L1/L2)** + **Dashboard Evaluasi**. **Karyawan di proyek yang ia tangani** (tambah/edit/hapus per record — hapus hanya soft-delete, tanpa hapus massal/permanen — tetapi daftar & akses record karyawan otomatis terscope: **lihat** = anggota proyeknya + dirinya + bawahan langsung + karyawan buatannya, **edit/hapus hanya** di proyek di mana ia **Project Manager** (+ karyawan buatannya); di proyek di mana ia hanya anggota, karyawan hanya bisa dilihat). **Daftar Projects & Tasks juga hanya menampilkan proyek yang ditugaskan kepadanya** (sebagai PM atau anggota via karyawan tertaut) — OM tanpa penugasan melihat daftar kosong; kartu Team Board mengikuti scope yang sama. Accounting & Admin/HRD tetap melihat seluruh daftar proyek. **Tidak** mendapat modul penuh Sales, Purchase, atau Inventory (itu domain Admin/Accounting sesuai kebutuhan). |
+| **Operation Manager** | Proyek (`Projects`), **Klien multi-proyek** (klien dengan ≥2 proyek aktif, terscope ke proyek OM), **Teams** (lihat/buat/ubah tim proyek; tanpa hak hapus tim), **Tugaskan Karyawan**, Tasks, Timesheets, Mitra (`Partners`), **Laporan Ops Mingguan**, **Laporan Mingguan Proyek untuk Klien** (Excel), Dashboard Proyek + widget OM, Absensi/Cuti untuk approval tim, **Penilaian Kinerja (L1/L2)** + **Dashboard Evaluasi**. **Karyawan di proyek yang ia tangani** (tambah/edit/hapus per record — hapus hanya soft-delete, tanpa hapus massal/permanen — tetapi daftar & akses record karyawan otomatis terscope: **lihat** = anggota proyeknya + dirinya + bawahan langsung + karyawan buatannya, **edit/hapus hanya** di proyek di mana ia **Project Manager** (+ karyawan buatannya); di proyek di mana ia hanya anggota, karyawan hanya bisa dilihat). **Daftar Projects & Tasks juga hanya menampilkan proyek yang ditugaskan kepadanya** (sebagai PM atau anggota via karyawan tertaut) — OM tanpa penugasan melihat daftar kosong; kartu Team Board mengikuti scope yang sama. Accounting & Admin/HRD tetap melihat seluruh daftar proyek. **Tidak** mendapat modul penuh Sales, Purchase, atau Inventory (itu domain Admin/Accounting sesuai kebutuhan). **Tidak** mendapat **Welcome Overview** (khusus Admin). |
 | **Accounting Manager** | Seluruh hak Accounting **termasuk menghapus** invoice pelanggan, bill vendor, payment & jurnal akuntansi (delete/restore/force-delete), serta **Kontrol Anggaran Proyek se-perusahaan** (tanpa scope tim) dan **Dashboard → Hari Saya** bundle accounting penuh. Role ini untuk manajer akunting — berikan lewat **Settings → Users** setelah deploy; user Accounting lama **tidak** otomatis naik ke role ini. |
 | **Accounting** *(staff)* | Invoice pelanggan, bill vendor, payment, partners/products terkait — **buat & ubah saja, tidak bisa menghapus** dokumen keuangan (hapus/restore/force-delete khusus Accounting Manager). **Dashboard → Hari Saya** dengan kontrol anggaran tim (invoice terbuka, overdue AR/AP, payment pending, budget proyek tim) dan halaman **Project → Kontrol Anggaran Proyek** terbatas pada proyek timnya. |
 | **Kasir** | Mengoperasikan **POS Terminal** (`/admin/pos-terminal`), membuka/menutup sesi shift kasir (`POS Sessions`), membuat transaksi penjualan kasir (`POS Orders`), melihat katalog produk & pelanggan, serta melakukan absensi (`/admin/absen`). |
-| **Team Leader** | Self-service seperti Staff + lihat karyawan & departemen + Project Dashboard. **Hanya melihat satu proyek yang ia pimpin** (`Team Leader` di form proyek, berbasis karyawan): daftar proyek, task, timesheet, dan widget operasional terscope ke proyek tersebut. Satu karyawan hanya boleh memimpin **satu proyek aktif**; leader otomatis menjadi anggota proyek. Tidak dapat membuat/mengubah proyek atau mengelola karyawan (bukan approver). Struktur pimpinan terlihat di tab **Struktur Organisasi** pada detail proyek (PM → Team Leader → Anggota). |
+| **Team Leader** | Self-service seperti Staff + lihat karyawan & departemen + Project Dashboard. **Hanya melihat proyek yang ia pimpin** (berbasis karyawan): daftar proyek, task, timesheet, dan widget operasional terscope ke situ. **Proyek biasa:** 1 orang hanya boleh menjadi Team Leader **satu proyek aktif** (field `Team Leader` di form). **Proyek strategis:** Team Lead ada **per unit fungsi** (bukan 1 untuk seluruh proyek); 1 orang hanya memimpin **satu unit aktif**. MOS (**Manajer Operasional Site**) adalah peran unit, terpisah dari Operation Manager. Leader/MOS otomatis menjadi anggota proyek. Tidak dapat membuat/mengubah proyek atau mengelola karyawan (bukan approver). Struktur terlihat di tab **Struktur Organisasi** (Director → OM → unit MOS+Team Lead → Anggota). |
 | **Staff (Karyawan)** | Daftar **Proyek & Task hanya menampilkan proyek tempat ia ditugaskan** (anggota/PM). Self-service: Absensi, Cuti/Izin pribadi, Timesheet & update tugas proyek, melihat Performance Plan & Evaluation miliknya sendiri, Hari Saya / Team Board. **Tidak** akses **Dashboard Evaluasi** agregat maupun `view_any_evaluation`. |
 
 ### B. 3 Tingkatan Scope Data (`Resource Permission` pada Menu Settings → Users)
@@ -102,9 +102,9 @@ VPS menarik dari fork `bionte4/auraERP` (branch `master`) karena akses write ke 
 cd /var/www/auraerp
 git remote add fork https://github.com/bionte4/auraERP.git 2>/dev/null || true
 git fetch fork && git merge fork/master
-sudo -u www-data php artisan migrate --force
-sudo -u www-data php artisan security:sync-rbac
-sudo -u www-data php artisan optimize:clear
+sudo -u www-data env HOME=/tmp php artisan migrate --force
+sudo -u www-data env HOME=/tmp php artisan security:sync-rbac
+sudo -u www-data env HOME=/tmp php artisan optimize:clear
 ```
 **Penting:** jalankan Artisan sebagai `www-data`. Jika muncul `Permission denied` pada `storage/logs` atau `bootstrap/cache`, perbaiki ownership lalu ulangi (lihat §12).
 
@@ -223,7 +223,7 @@ Dua master data terpisah:
 1. **Work Location / Penempatan** (`Employees → Configurations → Work Locations`, `/admin/employees/configurations/work-locations`):
    - Isi **Nama**, **Kota**, **Latitude & Longitude** (opsional tapi wajib agar muncul di peta Welcome).
    - Di form karyawan (**Work Information → Work Location**), pilih penempatan tersebut.
-   - Peta **Welcome → Penempatan Karyawan** menghitung jumlah karyawan aktif per Work Location (bukan clock-in absensi).
+   - Peta **Welcome → Penempatan Karyawan** (khusus Admin) menghitung karyawan aktif **yang ditugaskan ke Customer Projects**, dikelompokkan per Work Location (bukan clock-in absensi). Karyawan belum di-assign ke proyek klien tidak muncul di peta.
 2. **Lokasi kerja absensi / Work sites** (`Employees → Attendance ▾ → Lokasi kerja`, `/admin/employees/attendance-sites`):
    - Khusus geofence **Clock In / Clock Out** (lat/lng + radius). Tidak dipakai sebagai sumber peta Welcome.
 
@@ -325,12 +325,21 @@ Buka menu **Employees → Performance Plans → Evaluations** (`/admin/evaluatio
 ## 7. Manajemen Proyek Multi-Customer, Penugasan Karyawan, Nilai Proyek, Reminder 3-2-1 Bulan & Bulk Import
 
 1. **Satu Customer Memiliki Banyak Proyek (`1 Customer → N Projects`):**
-   - Buka menu **Project → Projects** (`/admin/project/projects`).
+   - Buka menu **Project → Projects** (`/admin/project/projects`). Tab **My Projects** = proyek yang dipimpin user login; tab **Customer Projects** = semua proyek yang punya klien (`partner_id` terisi). Satu klien dua kontrak = dua baris.
    - Pilih **Customer**, **Start Date & End Date**, serta **Project Value (`Nilai Proyek Rp`)**.
-   - Daftar seluruh proyek dan total nilai kontrak per Customer dapat dilihat langsung pada tab **Proyek** di halaman detail Customer.
-   - **Klien dengan lebih dari satu proyek:** menu **Project → Klien multi-proyek (`Multi-project customers`)** (`/admin/project/multi-project-customers`, Admin & Operation Manager). Hanya klien yang punya **dua atau lebih** Customer Projects aktif; kolom jumlah proyek, total nilai (jika Anda berhak melihat nilai kontrak), dan nama proyek. Tombol **Lihat klien** membuka tab Proyek di Contacts; **Lihat proyek** membuka tab Customer Projects.
-   - **Kartu Welcome Overview (Admin)** mengikuti tab **Customer Projects** untuk proyek/revenue. Total Employee = seluruh karyawan aktif (sama dengan menu Employees); baris bawah kartu memecah **ditugaskan** vs **belum ditugaskan** ke Customer Projects. Satu klien dua kontrak tetap dihitung dua proyek.
-   - **Organisasi proyek:** 1 proyek = 1 Operation Manager (wajib; Admin tidak perlu jadi OM); 1 OM boleh banyak proyek. Proyek biasa: 1 Team Leader hanya 1 proyek aktif. Proyek **Strategis** wajib 1 **Project Director** plus **minimal satu unit fungsi** (departemen); setiap unit punya **MOS (Manajer Operasional Site)** dan **Team Lead** yang berbeda orang. MOS/TL unik per unit aktif. Struktur ini tampil di tab **Struktur Organisasi**.
+   - Daftar seluruh proyek dan total nilai kontrak per Customer: tab **Proyek** di halaman detail Customer (**Contact → Contacts**).
+   - **Klien dengan ≥ 2 proyek aktif:** **Project → Klien multi-proyek** (`/admin/project/multi-project-customers`; Admin & OM; permission `page_project_multi_project_customers`). Kolom: nama klien, jumlah proyek, total nilai (jika berhak melihat nilai kontrak), nama proyek. **Lihat klien** → Contacts tab Proyek; **Lihat proyek** → tab Customer Projects. OM hanya melihat klien yang proyeknya masuk scope-nya. HRD/Staff/Kasir tidak mendapat menu ini.
+   - **Welcome Overview** (`/admin/welcome`, **khusus Admin**):
+     - **Total Project** = jumlah baris Customer Projects (bukan jumlah klien); baris bawah = `N klien (satu klien bisa banyak proyek)`. Klik kartu membuka tab Customer Projects.
+     - **Total Revenue / OpEx** = jumlah nilai proyek klien itu (proyek internal tanpa customer tidak dihitung).
+     - **Total Employee** = seluruh karyawan aktif (angka besar sama dengan menu Employees); baris bawah = `ditugaskan · belum ditugaskan` ke Customer Projects.
+     - Peta penempatan hanya karyawan yang **ditugaskan** ke proyek klien.
+   - **Organisasi proyek (aturan):**
+     - 1 proyek = 1 **Operation Manager** (wajib di form; pilihan hanya user role OM). Admin **tidak** wajib menjadi OM.
+     - 1 OM boleh banyak proyek.
+     - **Proyek biasa:** 1 Team Leader hanya 1 proyek aktif (field form).
+     - **Proyek strategis:** wajib 1 **Project Director** (boleh Admin/akun direksi; satu director boleh banyak proyek strategis) **dan** minimal 1 **unit fungsi** (departemen HRD). Setiap unit: **MOS (Manajer Operasional Site)** + **Team Lead** (orang berbeda). MOS ≠ OM. Satu departemen tidak boleh dobel di proyek yang sama. MOS/TL tidak boleh memegang kursi unit aktif lain. MOS & TL otomatis menjadi anggota proyek. Field Team Leader level proyek **disembunyikan** pada proyek strategis.
+     - Lihat hasilnya di tab **Struktur Organisasi** pada detail proyek.
 2. **Penugasan Karyawan ke Proyek (dua arah — Admin & Operation Manager):**
    - **Bukan** untuk mengatur siapa **Manajer Proyek** — itu di langkah 3.
    - **Dari Proyek:** menu **Project → Tugaskan Karyawan (`Assign Employees`)** (`/admin/project/assign-employees`) → pilih **Proyek**, lalu pilih satu atau beberapa **Karyawan**, klik **Simpan Penugasan**.
@@ -340,17 +349,15 @@ Buka menu **Employees → Performance Plans → Evaluations** (`/admin/evaluatio
    - **Prasyarat akses login:** Pastikan karyawan punya **Pengguna Terkait (`Related User`)**. Tanpa ini, penugasan tetap tersimpan, tetapi karyawan belum bisa login/mengakses proyek.
    - Layar Project Assign: permission `page_project_assign_project_employees`. Tab di Employee mengikuti izin update Employee (plugin Projects harus terpasang).
 3. **Assign / Unassign Manajer Proyek (`Project Manager`) — satu orang per proyek:**
-   - Field di form proyek: **Manajer Proyek (`Project Manager`)** → kolom DB `projects_projects.user_id` (relasi ke **User** dengan role **Operation Manager** — pilihan form hanya OM). Proyek **Strategis** menampilkan field **Project Director** yang wajib diisi.
+   - Field di form proyek: **Manajer Proyek (`Project Manager`)** → kolom DB `projects_projects.user_id` (relasi ke **User** dengan role **Operation Manager** — pilihan form hanya OM, **wajib terisi**). Toggle **Proyek strategis** menampilkan **Project Director** (wajib) dan repeater **Unit fungsi** (departemen + MOS + Team Lead, minimal satu baris).
+   - **Cara isi proyek strategis:** Edit proyek → nyalakan **Proyek strategis** → pilih Director → **Tambah unit** (Departemen/fungsi, MOS, Team Lead) → Save. MOS dan Team Lead harus karyawan berbeda. Cek di tab **Struktur Organisasi**.
    - **Cara massal (disarankan):** **Project → Atur Project Manager** (`/admin/project/assign-project-managers`, khusus Admin; permission `page_project_assign_project_managers`) — semua proyek dalam satu tabel, ganti PM lewat dropdown per baris (pilihan hanya user berperan **Operation Manager**), langsung tersimpan dan tersinkron ke tim proyek. Chip di atas tabel menampilkan jumlah proyek per OM; filter **Belum ada manajer** + badge menu (jumlah proyek tanpa PM) memudahkan memburu proyek yatim. Mengganti/mengosongkan PM tidak menghapus PM lama dari anggota tim.
    - **Bulk via Excel/CSV (di halaman yang sama):** tombol **Template Project Manager** menghasilkan `template-assign-project-managers.xlsx` yang **sudah terisi semua proyek + email PM saat ini** (sheet kedua: daftar email OM yang valid). Ubah kolom `new_manager_email` (kosongkan = lepas PM), lalu **Impor Excel / CSV**. (Jangan tertukar dengan tombol **Template Impor Proyek** di halaman daftar Projects — itu template impor proyek umum.) Proyek dicocokkan via `project_id` (cadangan: nama persis), manajer via email dan wajib berperan Operation Manager; hasil impor menampilkan hitungan diperbarui/tidak berubah/dilewati beserta daftar baris bermasalah.
    - **Assign / ganti:**
      1. Buka **Project → Projects** (`/admin/project/projects`) → Edit proyek.
      2. Di bagian **Additional / tambahan**, pilih user pada **Manajer Proyek**.
      3. **Save**. User tersebut otomatis masuk anggota Tim proyek (sinkron saat simpan proyek).
-   - **Unassign (lepaskan):**
-     1. Edit proyek yang sama.
-     2. **Kosongkan** field **Manajer Proyek** (clear), atau ganti ke user lain.
-     3. **Save**. Hanya boleh ada **satu** manajer; mengganti user = melepas manajer lama.
+   - **Unassign (lepaskan):** form proyek **tidak boleh kosongkan** PM (wajib OM). Ganti ke OM lain di form, atau (Admin) **Project → Atur Project Manager** untuk mengosongkan PM bila darurat. Hanya boleh ada **satu** manajer; mengganti user = melepas manajer lama.
    - **Cek cepat:** **Project → Dashboard** (`/admin/project`) → widget **Operation Manager — Proyek sebagai Manajer Proyek** (OM + jumlah proyek aktif sebagai manajer).
    - **Bedakan:** Manajer Proyek ≠ daftar karyawan assign (langkah 2) ≠ **Assignees** di Task.
 4. **Penugasan kerja harian lewat Task:**
@@ -363,7 +370,7 @@ Buka menu **Employees → Performance Plans → Evaluations** (`/admin/evaluatio
    - Widget **Kehadiran hari ini**: hadir / terlambat / belum absen (scope).
    - Widget **Operation Manager — Proyek sebagai Manajer Proyek** menampilkan OM + jumlah proyek aktif sebagai **Manajer Proyek** (hasil assign di langkah 3).
    - Widget **Anggaran Operasional & Realisasi Opex (proyek saya)** (OM & Team Leader, permission `widget_project_operational_budget_widget`): per proyek yang dikelola/dipimpin tampil **Anggaran Operasional · Biaya Vendor (aktual) · Sisa Anggaran · Serapan % + status** dari bill vendor *posted* yang terkait proyek. Widget ini sengaja **tanpa nilai kontrak dan tanpa data invoice** — nilai kontrak adalah data finansial khusus Admin & tim budget-control (lihat poin 10).
-   - Widget **Tanggung Jawab Proyek & Team Leader** (Admin + **Operation Manager & Team Leader**, permission `widget_project_project_responsibility_widget`): satu baris per proyek aktif — **Proyek · Customer · Project Manager · Team Leader · Jumlah Anggota · Progress Tugas (% selesai/total) · Tugas Terlambat (badge merah) · Sisa Waktu ke end date**; baris dapat diklik ke detail proyek dan mengikuti filter atas Project Dashboard. Scope otomatis: OM melihat proyek yang dikelola/diikutinya, **Team Leader hanya proyek yang dipimpinnya**, Admin semua. Sama seperti widget opex, widget ini **tanpa nilai kontrak** — murni tanggung jawab & kesehatan proyek.
+   - Widget **Tanggung Jawab Proyek & Team Leader** (Admin + **Operation Manager & Team Leader**, permission `widget_project_project_responsibility_widget`): satu baris per proyek aktif — **Proyek · Customer · Project Manager · Team Leader · Jumlah Anggota · Progress Tugas (% selesai/total) · Tugas Terlambat (badge merah) · Sisa Waktu ke end date**; baris dapat diklik ke detail proyek dan mengikuti filter atas Project Dashboard. Scope otomatis: OM melihat proyek yang dikelola/diikutinya, **Team Leader hanya proyek yang dipimpinnya** (termasuk sebagai Team Lead **unit** pada proyek strategis), Admin semua. Sama seperti widget opex, widget ini **tanpa nilai kontrak** — murni tanggung jawab & kesehatan proyek.
    - **Dashboard → Hari Saya** (`/admin/my-day`) — kartu fokus harian per peran (Admin/HRD/OM/Staff/Kasir).
    - **Laporan Ops Mingguan** (`/admin/weekly-operations-report`) — metrik internal + beban jam/proyek per karyawan + unduh Excel. Permission: `page_project_weekly_operations_report` (**Admin / HRD / OM**; data mengikuti `OperationalScope`).
    - **Laporan Mingguan Proyek untuk Klien** (`/admin/customer-project-weekly-report`) — Excel siap klien: pilih **1 proyek**, rentang tanggal kustom, **preview di layar**, lalu unduh. Judul task overdue/masking diterapkan; jam kerja disembunyikan. Permission: `page_project_customer_project_weekly_report` (**Admin / OM**; **bukan** HRD).
@@ -371,7 +378,7 @@ Buka menu **Employees → Performance Plans → Evaluations** (`/admin/evaluatio
    - **Tugaskan Karyawan**: opsi karyawan menampilkan kapasitas (`N proyek · X jam/minggu`); tombol **Buat Related User yang hilang**. Checkbox penugasan disinkronkan Livewire saat ganti proyek.
    - **Employee → Ringkasan 360** (`…/overview`) — proyek, kapasitas, cuti, aset, evaluasi, buat Related User 1-klik.
    - **Team Board** (`/admin/team-board`): pilihan tampilan **Kartu Tim / Ringkas / Daftar** + **pencarian** nama tim/proyek + **sortir** (nama, anggota, proyek, task, progress, nilai, terakhir diperbarui) yang tersimpan per sesi, plus mode **Kanban Proyek** (seret karyawan antar proyek) untuk Admin/OM — rinciannya di Bagian 1.C poin 5.
-   - Permission terkait (setelah `security:sync-rbac`): `page_support_my_day_dashboard`, `page_project_weekly_operations_report`, `page_project_customer_project_weekly_report`, `widget_project_attendance_presence_widget`, widget OM.
+   - Permission terkait (setelah `security:sync-rbac`): `page_support_welcome_dashboard` (Admin), `page_project_multi_project_customers` (Admin/OM), `page_support_my_day_dashboard`, `page_project_weekly_operations_report`, `page_project_customer_project_weekly_report`, `widget_project_attendance_presence_widget`, widget OM.
 6. **Link Tim ↔ Proyek eksplisit:** di **Settings → Teams** pilih **Proyek terkait**. Sinkron anggota & Team Board mengutamakan link ini; jika kosong, fallback cocok nama. Melepas karyawan dari proyek juga melepaskan mereka dari task terbuka proyek tersebut.
 7. **Reminder Berjenjang 3, 2, dan 1 Bulan Sebelum `End Date` Proyek:**
    - Sistem memberi badge peringatan dan notifikasi otomatis pada sisa waktu `61–90 hari` (**3 Bulan**), `31–60 hari` (**2 Bulan**), `0–30 hari` (**1 Bulan**), dan saat **Berakhir** (`php artisan projects:notify-expiring-projects`).
@@ -454,7 +461,7 @@ git merge fork/master && \
 composer install --no-dev --optimize-autoloader && \
 sudo chown -R www-data:www-data storage bootstrap/cache public && \
 sudo chmod -R ug+rwx storage bootstrap/cache && \
-sudo -u www-data php artisan migrate --force --no-interaction && \
+sudo -u www-data env HOME=/tmp php artisan migrate --force --no-interaction && \
 sudo -u www-data php artisan integrations:install --no-interaction && \
 sudo -u www-data php artisan projects:sync-team-memberships && \
 sudo -u www-data php artisan security:sync-rbac && \
@@ -475,12 +482,20 @@ sudo -u www-data php artisan optimize
 ```
 
 **Catatan deploy:**
-1. Selalu pakai **`sudo -u www-data php artisan …`** agar log & cache tidak jadi milik `ubuntu`/`root` lalu memblokir web/CLI berikutnya.
+1. Selalu pakai **`sudo -u www-data env HOME=/tmp php artisan …`** agar log & cache tidak jadi milik `ubuntu`/`root` lalu memblokir web/CLI berikutnya.
 2. `composer install` memicu `filament:upgrade` (post-autoload-dump). Ownership `storage` + `bootstrap/cache` + `public` harus writable oleh user yang menjalankan Composer/Artisan.
-3. `security:sync-rbac` **wajib** setelah perubahan RBAC: menyetel ulang baseline Admin/HRD/OM/Accounting/Accounting Manager/Kasir/Staff/Team Leader dan **mencabut** grant non-baseline (termasuk audit/backup dari non-Admin).
+3. `security:sync-rbac` **wajib** setelah perubahan RBAC: menyetel ulang baseline Admin/HRD/OM/Accounting/Accounting Manager/Kasir/Staff/Team Leader dan **mencabut** grant non-baseline (termasuk audit/backup dari non-Admin). Tanpa sync ini, menu **Klien multi-proyek** belum muncul untuk OM.
 4. `integrations:install` dan `projects:sync-team-memberships` aman dijalankan ulang (idempotent).
-5. Setelah deploy RBAC: logout/login ulang di browser, lalu uji singkat:
+5. Migrasi plugin Projects kadang **tidak** ikut `php artisan migrate` biasa. Jika tab **Customer Projects** 500 atau form strategis error kolom/tabel, jalankan path eksplisit:
+   ```bash
+   sudo -u www-data env HOME=/tmp php artisan migrate --force --no-interaction \
+     --path=plugins/webkul/projects/database/migrations/2026_10_27_120000_add_strategic_director_to_projects_projects_table.php
+   sudo -u www-data env HOME=/tmp php artisan migrate --force --no-interaction \
+     --path=plugins/webkul/projects/database/migrations/2026_10_27_140000_create_projects_project_units_table.php
+   ```
+6. Setelah deploy RBAC: logout/login ulang di browser, lalu uji singkat:
    - Staff/Kasir **tidak** bisa buka Dashboard Evaluasi
-   - HRD **tidak** punya Customer Project Weekly Report / widget aksi OM
-   - OM **tidak** punya menu penuh Sales/Purchase/Inventory
-   - Admin tetap penuh akses; OM bisa preview+unduh laporan klien
+   - HRD **tidak** punya Customer Project Weekly Report, **Klien multi-proyek**, atau widget aksi OM
+   - OM **tidak** punya menu penuh Sales/Purchase/Inventory dan **tidak** punya Welcome Overview
+   - Admin: Welcome Overview, Klien multi-proyek, form proyek strategis (Director + unit MOS/Team Lead)
+   - OM bisa preview+unduh laporan klien dan membuka Klien multi-proyek (scope-nya)
